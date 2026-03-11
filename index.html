@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dan Dan 日記整理器</title>
+    <style>
+      :root {
+        --bg: #fff8fc;
+        --card: #ffffff;
+        --primary: #ff7eb6;
+        --primary-dark: #ff5da6;
+        --text: #4b3e4d;
+        --muted: #8f7b8f;
+        --line: #f7d5e7;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+        background: radial-gradient(circle at top, #ffeaf5, var(--bg));
+        color: var(--text);
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .app {
+        width: min(920px, 100%);
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 20px;
+        box-shadow: 0 8px 24px rgba(255, 126, 182, 0.14);
+        padding: 24px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(1.5rem, 2vw + 1rem, 2.1rem);
+        color: var(--primary-dark);
+      }
+
+      .subtitle {
+        margin: 8px 0 20px;
+        color: var(--muted);
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 220px;
+        padding: 14px;
+        border-radius: 14px;
+        border: 2px solid var(--line);
+        resize: vertical;
+        font-size: 1rem;
+        line-height: 1.7;
+        color: var(--text);
+      }
+
+      .controls {
+        display: flex;
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-size: 0.96rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .organize-btn {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .organize-btn:hover {
+        background: var(--primary-dark);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+        margin-top: 22px;
+      }
+
+      .card {
+        border: 2px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        background: #fffcfe;
+      }
+
+      .card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .card h2 {
+        margin: 0;
+        font-size: 1rem;
+        color: var(--primary-dark);
+      }
+
+      .copy-btn {
+        background: #ffe2f0;
+        color: #9e3e71;
+        font-size: 0.85rem;
+        padding: 6px 12px;
+      }
+
+      .output {
+        margin: 0;
+        white-space: pre-wrap;
+        line-height: 1.7;
+        min-height: 64px;
+      }
+
+      .hint {
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <h1>✨ Dan Dan 日記整理器</h1>
+      <p class="subtitle">把今天的想法貼進來，一鍵整理成可愛好讀的小回報。</p>
+
+      <textarea id="diaryInput" placeholder="例：今天早上開會有點緊張，但下午完成了重要提案，心情變超好！"></textarea>
+      <div class="controls">
+        <button class="organize-btn" id="organizeBtn">整理日記</button>
+      </div>
+
+      <section class="grid">
+        <article class="card">
+          <div class="card-head">
+            <h2>今日日記</h2>
+            <button class="copy-btn" data-copy="fullDiary">一鍵複製</button>
+          </div>
+          <p class="output" id="fullDiary">（整理後會顯示在這裡）</p>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <h2>小蝦蝦版短版回報</h2>
+            <button class="copy-btn" data-copy="shortReport">一鍵複製</button>
+          </div>
+          <p class="output" id="shortReport">（整理後會顯示在這裡）</p>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <h2>今日金句</h2>
+            <button class="copy-btn" data-copy="quote">一鍵複製</button>
+          </div>
+          <p class="output" id="quote">（整理後會顯示在這裡）</p>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <h2>今日情緒關鍵字</h2>
+            <button class="copy-btn" data-copy="mood">一鍵複製</button>
+          </div>
+          <p class="output" id="mood">（整理後會顯示在這裡）</p>
+        </article>
+      </section>
+
+      <p class="hint">小提醒：這是前端離線小工具，內容不會被上傳。</p>
+    </main>
+
+    <script>
+      const input = document.getElementById("diaryInput");
+      const organizeBtn = document.getElementById("organizeBtn");
+      const outputs = {
+        fullDiary: document.getElementById("fullDiary"),
+        shortReport: document.getElementById("shortReport"),
+        quote: document.getElementById("quote"),
+        mood: document.getElementById("mood"),
+      };
+
+      const moodMap = [
+        { key: "開心", words: ["開心", "快樂", "興奮", "滿足"] },
+        { key: "緊張", words: ["緊張", "焦慮", "壓力", "不安"] },
+        { key: "感恩", words: ["感謝", "感恩", "幸運", "珍惜"] },
+        { key: "疲憊", words: ["累", "疲憊", "睏", "沒力"] },
+        { key: "平靜", words: ["平靜", "放鬆", "穩定", "安心"] },
+      ];
+
+      function splitSentences(text) {
+        return text
+          .split(/[。！？!?.\n]/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+
+      function getMoodKeywords(text) {
+        const found = moodMap
+          .filter((item) => item.words.some((word) => text.includes(word)))
+          .map((item) => item.key);
+
+        if (found.length) return found.join("、");
+        return "平穩、努力、前進";
+      }
+
+      function organizeDiary(rawText) {
+        const text = rawText.trim();
+        if (!text) {
+          return {
+            fullDiary: "請先輸入今天的日記內容喔～",
+            shortReport: "尚未有內容可整理。",
+            quote: "今天也值得一句溫柔的鼓勵。",
+            mood: "待補充",
+          };
+        }
+
+        const sentences = splitSentences(text);
+        const opening = sentences[0] || "今天努力地過了一天";
+        const ending = sentences[sentences.length - 1] || opening;
+
+        const shortReport = `今天重點：${opening}。\n目前進度：${ending}。\n整體來說，有在穩穩前進！`;
+        const quote = `「${ending.replace(/[，,]$/, "")}，我做得到。」`;
+
+        return {
+          fullDiary: text,
+          shortReport,
+          quote,
+          mood: getMoodKeywords(text),
+        };
+      }
+
+      organizeBtn.addEventListener("click", () => {
+        const result = organizeDiary(input.value);
+        Object.entries(result).forEach(([key, value]) => {
+          outputs[key].textContent = value;
+        });
+      });
+
+      document.querySelectorAll(".copy-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const key = btn.dataset.copy;
+          const text = outputs[key].textContent;
+          try {
+            await navigator.clipboard.writeText(text);
+            const oldText = btn.textContent;
+            btn.textContent = "已複製！";
+            setTimeout(() => {
+              btn.textContent = oldText;
+            }, 1000);
+          } catch {
+            alert("複製失敗，請手動複製文字。");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
