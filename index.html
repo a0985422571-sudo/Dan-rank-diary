@@ -86,6 +86,15 @@
         background: var(--primary-dark);
       }
 
+      .clear-btn {
+        background: #ffe2f0;
+        color: #9e3e71;
+      }
+
+      .clear-btn:hover {
+        background: #ffd0e6;
+      }
+
       .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -143,6 +152,7 @@
       <textarea id="diaryInput" placeholder="例：今天早上開會有點緊張，但下午完成了重要提案，心情變超好！"></textarea>
       <div class="controls">
         <button class="organize-btn" id="organizeBtn">整理日記</button>
+        <button class="clear-btn" id="clearBtn">清空全部</button>
       </div>
 
       <section class="grid">
@@ -185,11 +195,19 @@
     <script>
       const input = document.getElementById("diaryInput");
       const organizeBtn = document.getElementById("organizeBtn");
+      const clearBtn = document.getElementById("clearBtn");
       const outputs = {
         fullDiary: document.getElementById("fullDiary"),
         shortReport: document.getElementById("shortReport"),
         quote: document.getElementById("quote"),
         mood: document.getElementById("mood"),
+      };
+      const storageKey = "danDanDiaryData";
+      const defaultOutputs = {
+        fullDiary: "（整理後會顯示在這裡）",
+        shortReport: "（整理後會顯示在這裡）",
+        quote: "（整理後會顯示在這裡）",
+        mood: "（整理後會顯示在這裡）",
       };
 
       const moodMap = [
@@ -242,11 +260,47 @@
         };
       }
 
+      function applyOutputs(data) {
+        Object.entries(outputs).forEach(([key, el]) => {
+          el.textContent = data[key] || defaultOutputs[key];
+        });
+      }
+
+      function saveData() {
+        const payload = {
+          input: input.value,
+          outputs: Object.fromEntries(
+            Object.entries(outputs).map(([key, el]) => [key, el.textContent])
+          ),
+        };
+        localStorage.setItem(storageKey, JSON.stringify(payload));
+      }
+
+      function loadData() {
+        const stored = localStorage.getItem(storageKey);
+        if (!stored) return;
+
+        try {
+          const data = JSON.parse(stored);
+          input.value = data.input || "";
+          applyOutputs(data.outputs || {});
+        } catch {
+          localStorage.removeItem(storageKey);
+        }
+      }
+
       organizeBtn.addEventListener("click", () => {
         const result = organizeDiary(input.value);
-        Object.entries(result).forEach(([key, value]) => {
-          outputs[key].textContent = value;
-        });
+        applyOutputs(result);
+        saveData();
+      });
+
+      input.addEventListener("input", saveData);
+
+      clearBtn.addEventListener("click", () => {
+        input.value = "";
+        applyOutputs(defaultOutputs);
+        localStorage.removeItem(storageKey);
       });
 
       document.querySelectorAll(".copy-btn").forEach((btn) => {
@@ -265,6 +319,8 @@
           }
         });
       });
+
+      loadData();
     </script>
   </body>
 </html>
