@@ -8,6 +8,10 @@
       :root {
         --bg: #fff8fc;
         --bg-accent: #ffeaf5;
+        --bg-decor-1: radial-gradient(circle at 8% 18%, rgba(255, 147, 196, 0.16) 0, rgba(255, 147, 196, 0.16) 9px, transparent 10px);
+        --bg-decor-2: radial-gradient(circle at 92% 84%, rgba(255, 255, 255, 0.65) 0, rgba(255, 255, 255, 0.65) 6px, transparent 7px);
+        --bg-decor-3: radial-gradient(circle at 82% 16%, rgba(255, 188, 221, 0.2) 0, rgba(255, 188, 221, 0.2) 10px, transparent 11px);
+        --corner-decor: radial-gradient(circle at top right, rgba(255, 171, 211, 0.24), transparent 56%);
         --card: #ffffff;
         --card-soft: #fffcfe;
         --primary: #ff7eb6;
@@ -28,7 +32,12 @@
       body {
         margin: 0;
         font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-        background: radial-gradient(circle at top, var(--bg-accent), var(--bg));
+        background:
+          var(--bg-decor-1),
+          var(--bg-decor-2),
+          var(--bg-decor-3),
+          radial-gradient(circle at top, var(--bg-accent), var(--bg));
+        background-attachment: fixed;
         color: var(--text);
         min-height: 100vh;
         display: grid;
@@ -37,12 +46,23 @@
       }
 
       .app {
+        position: relative;
         width: min(920px, 100%);
         background: var(--card);
         border: 2px solid var(--line);
         border-radius: 20px;
         box-shadow: 0 8px 24px var(--shadow);
         padding: 24px;
+        overflow: hidden;
+      }
+
+      .app::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: var(--corner-decor);
+        opacity: 0.9;
       }
 
       .app-head {
@@ -271,6 +291,7 @@
       }
 
       .history details {
+        position: relative;
         border: 2px solid var(--line);
         background: var(--card-soft);
         border-radius: 12px;
@@ -282,6 +303,29 @@
         cursor: pointer;
         font-weight: 700;
         color: var(--text);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .history-summary-text {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .history-delete-btn {
+        border: 2px solid var(--line);
+        border-radius: 999px;
+        background: var(--btn-soft-bg);
+        color: var(--btn-soft-text);
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 4px 10px;
+      }
+
+      .history-delete-btn:hover {
+        background: var(--btn-soft-hover);
       }
 
       .history-item-content {
@@ -436,6 +480,14 @@
         pink: {
           bg: "#fff8fc",
           bgAccent: "#ffeaf5",
+          bgDecor1:
+            "radial-gradient(circle at 8% 18%, rgba(255, 141, 191, 0.16) 0, rgba(255, 141, 191, 0.16) 9px, transparent 10px), radial-gradient(circle at 11% 22%, rgba(255, 255, 255, 0.72) 0, rgba(255, 255, 255, 0.72) 3px, transparent 4px), radial-gradient(circle at 14% 18%, rgba(255, 177, 215, 0.22) 0, rgba(255, 177, 215, 0.22) 5px, transparent 6px)",
+          bgDecor2:
+            "radial-gradient(circle at 88% 84%, rgba(255, 255, 255, 0.62) 0, rgba(255, 255, 255, 0.62) 6px, transparent 7px), radial-gradient(circle at 84% 81%, rgba(255, 186, 221, 0.18) 0, rgba(255, 186, 221, 0.18) 8px, transparent 9px)",
+          bgDecor3:
+            "radial-gradient(circle at 78% 16%, rgba(255, 197, 227, 0.2) 0, rgba(255, 197, 227, 0.2) 10px, transparent 11px), radial-gradient(circle at 74% 12%, rgba(255, 255, 255, 0.7) 0, rgba(255, 255, 255, 0.7) 4px, transparent 5px)",
+          cornerDecor:
+            "radial-gradient(circle at top right, rgba(255, 171, 211, 0.22), transparent 56%), radial-gradient(circle at bottom left, rgba(255, 221, 238, 0.3), transparent 52%)",
           card: "#ffffff",
           cardSoft: "#fffcfe",
           primary: "#ff7eb6",
@@ -451,6 +503,14 @@
         starry: {
           bg: "#0f1226",
           bgAccent: "#1a2148",
+          bgDecor1:
+            "radial-gradient(circle at 9% 18%, rgba(255, 243, 197, 0.25) 0, rgba(255, 243, 197, 0.25) 2px, transparent 3px), radial-gradient(circle at 13% 26%, rgba(165, 186, 255, 0.33) 0, rgba(165, 186, 255, 0.33) 1.8px, transparent 2.8px)",
+          bgDecor2:
+            "radial-gradient(circle at 88% 82%, rgba(252, 237, 172, 0.24) 0, rgba(252, 237, 172, 0.24) 3px, transparent 4px), radial-gradient(circle at 83% 78%, rgba(133, 152, 227, 0.28) 0, rgba(133, 152, 227, 0.28) 8px, transparent 9px)",
+          bgDecor3:
+            "radial-gradient(circle at 80% 14%, rgba(132, 158, 255, 0.22) 0, rgba(132, 158, 255, 0.22) 12px, transparent 13px), radial-gradient(circle at 78% 13%, rgba(255, 248, 212, 0.27) 0, rgba(255, 248, 212, 0.27) 4px, transparent 5px)",
+          cornerDecor:
+            "radial-gradient(circle at top right, rgba(80, 106, 194, 0.28), transparent 54%), radial-gradient(circle at bottom left, rgba(64, 84, 156, 0.2), transparent 58%)",
           card: "#1b2345",
           cardSoft: "#212b52",
           primary: "#7fa8ff",
@@ -466,6 +526,14 @@
         matcha: {
           bg: "#f5f7ed",
           bgAccent: "#e5efdb",
+          bgDecor1:
+            "radial-gradient(circle at 8% 20%, rgba(150, 187, 129, 0.17) 0, rgba(150, 187, 129, 0.17) 9px, transparent 10px), radial-gradient(circle at 11% 24%, rgba(236, 247, 220, 0.78) 0, rgba(236, 247, 220, 0.78) 4px, transparent 5px)",
+          bgDecor2:
+            "radial-gradient(circle at 87% 82%, rgba(222, 199, 161, 0.18) 0, rgba(222, 199, 161, 0.18) 11px, transparent 12px), radial-gradient(circle at 82% 78%, rgba(171, 203, 149, 0.18) 0, rgba(171, 203, 149, 0.18) 7px, transparent 8px)",
+          bgDecor3:
+            "radial-gradient(circle at 80% 15%, rgba(173, 205, 148, 0.2) 0, rgba(173, 205, 148, 0.2) 12px, transparent 13px), radial-gradient(circle at 76% 12%, rgba(250, 253, 239, 0.74) 0, rgba(250, 253, 239, 0.74) 4px, transparent 5px)",
+          cornerDecor:
+            "radial-gradient(circle at top right, rgba(176, 205, 150, 0.22), transparent 56%), radial-gradient(circle at bottom left, rgba(239, 229, 205, 0.28), transparent 50%)",
           card: "#ffffff",
           cardSoft: "#f8fbf2",
           primary: "#7da869",
@@ -481,6 +549,14 @@
         sunset: {
           bg: "#fff4e9",
           bgAccent: "#ffe2cb",
+          bgDecor1:
+            "radial-gradient(circle at 10% 18%, rgba(245, 164, 104, 0.2) 0, rgba(245, 164, 104, 0.2) 10px, transparent 11px), radial-gradient(circle at 12% 22%, rgba(255, 236, 205, 0.82) 0, rgba(255, 236, 205, 0.82) 5px, transparent 6px)",
+          bgDecor2:
+            "radial-gradient(circle at 88% 83%, rgba(255, 210, 143, 0.22) 0, rgba(255, 210, 143, 0.22) 12px, transparent 13px), radial-gradient(circle at 84% 79%, rgba(255, 244, 222, 0.64) 0, rgba(255, 244, 222, 0.64) 7px, transparent 8px)",
+          bgDecor3:
+            "radial-gradient(circle at 80% 16%, rgba(255, 176, 116, 0.2) 0, rgba(255, 176, 116, 0.2) 14px, transparent 15px), radial-gradient(circle at 76% 13%, rgba(255, 227, 193, 0.68) 0, rgba(255, 227, 193, 0.68) 6px, transparent 7px)",
+          cornerDecor:
+            "radial-gradient(circle at top right, rgba(244, 162, 102, 0.26), transparent 56%), radial-gradient(circle at bottom left, rgba(255, 218, 177, 0.3), transparent 50%)",
           card: "#ffffff",
           cardSoft: "#fffaf4",
           primary: "#f08a4b",
@@ -500,6 +576,10 @@
         const root = document.documentElement;
         root.style.setProperty("--bg", theme.bg);
         root.style.setProperty("--bg-accent", theme.bgAccent);
+        root.style.setProperty("--bg-decor-1", theme.bgDecor1);
+        root.style.setProperty("--bg-decor-2", theme.bgDecor2);
+        root.style.setProperty("--bg-decor-3", theme.bgDecor3);
+        root.style.setProperty("--corner-decor", theme.cornerDecor);
         root.style.setProperty("--card", theme.card);
         root.style.setProperty("--card-soft", theme.cardSoft);
         root.style.setProperty("--primary", theme.primary);
@@ -629,15 +709,35 @@
         localStorage.setItem(historyStorageKey, JSON.stringify(history));
       }
 
+      function deleteHistoryEntry(index) {
+        const history = loadHistory();
+        history.splice(index, 1);
+        saveHistory(history);
+        renderHistory();
+      }
+
       function renderHistory() {
         const history = loadHistory();
         historyList.innerHTML = "";
         historyEmpty.style.display = history.length ? "none" : "block";
 
-        history.forEach((item) => {
+        history.forEach((item, index) => {
           const details = document.createElement("details");
           const summary = document.createElement("summary");
-          summary.textContent = `${item.date || "未記錄日期"}｜${item.theme || "未記錄主題"}`;
+
+          const summaryText = document.createElement("span");
+          summaryText.className = "history-summary-text";
+          summaryText.textContent = `${item.date || "未記錄日期"}｜${item.theme || "未記錄主題"}`;
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.className = "history-delete-btn";
+          deleteBtn.textContent = "刪除此篇";
+          deleteBtn.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            deleteHistoryEntry(index);
+          });
 
           const content = document.createElement("div");
           content.className = "history-item-content";
@@ -649,6 +749,9 @@
             `【今日情緒關鍵字】\n${item.mood || "（空白）"}`,
             `【明天要記得】\n${item.tomorrowNote || "（尚未填寫）"}`,
           ].join("\n\n");
+
+          summary.appendChild(summaryText);
+          summary.appendChild(deleteBtn);
 
           details.appendChild(summary);
           details.appendChild(content);
