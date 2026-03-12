@@ -53,6 +53,17 @@
         flex-wrap: wrap;
       }
 
+      .title-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .today-date {
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
       .theme-select {
         border: 2px solid var(--line);
         border-radius: 999px;
@@ -89,6 +100,7 @@
         display: flex;
         gap: 12px;
         margin-top: 14px;
+        flex-wrap: wrap;
       }
 
       button {
@@ -116,6 +128,30 @@
 
       .clear-btn:hover {
         background: var(--btn-soft-hover);
+      }
+
+      .copy-all-btn {
+        background: var(--btn-soft-bg);
+        color: var(--btn-soft-text);
+      }
+
+      .copy-all-btn:hover {
+        background: var(--btn-soft-hover);
+      }
+
+      .tomorrow-wrap {
+        margin-top: 14px;
+      }
+
+      .tomorrow-wrap label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      #tomorrowNoteInput {
+        min-height: 100px;
       }
 
       .grid {
@@ -174,7 +210,10 @@
   <body>
     <main class="app">
       <div class="app-head">
-        <h1>✨ Dan Dan 日記整理器</h1>
+        <div class="title-wrap">
+          <h1>✨ Dan Dan 日記整理器</h1>
+          <span class="today-date" id="todayDate">今日日期：----</span>
+        </div>
         <label>
           <span style="font-size: 0.9rem; color: var(--muted); margin-right: 6px">主題</span>
           <select id="themeSelect" class="theme-select">
@@ -191,6 +230,12 @@
       <div class="controls">
         <button class="organize-btn" id="organizeBtn">整理日記</button>
         <button class="clear-btn" id="clearBtn">清空全部</button>
+        <button class="copy-all-btn" id="copyAllBtn">一鍵複製全部</button>
+      </div>
+
+      <div class="tomorrow-wrap">
+        <label for="tomorrowNoteInput">明天要記得</label>
+        <textarea id="tomorrowNoteInput" placeholder="例：早上 9:00 前寄出會議簡報、記得買牛奶。"></textarea>
       </div>
 
       <section class="grid">
@@ -234,7 +279,10 @@
       const input = document.getElementById("diaryInput");
       const organizeBtn = document.getElementById("organizeBtn");
       const clearBtn = document.getElementById("clearBtn");
+      const copyAllBtn = document.getElementById("copyAllBtn");
       const themeSelect = document.getElementById("themeSelect");
+      const todayDate = document.getElementById("todayDate");
+      const tomorrowNoteInput = document.getElementById("tomorrowNoteInput");
       const outputs = {
         fullDiary: document.getElementById("fullDiary"),
         shortReport: document.getElementById("shortReport"),
@@ -243,6 +291,7 @@
       };
       const storageKey = "danDanDiaryData";
       const themeStorageKey = "danDanDiaryTheme";
+
       const defaultOutputs = {
         fullDiary: "（整理後會顯示在這裡）",
         shortReport: "（整理後會顯示在這裡）",
@@ -339,6 +388,17 @@
         root.style.setProperty("--btn-soft-hover", theme.btnSoftHover);
       }
 
+      function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}/${month}/${day}`;
+      }
+
+      function renderTodayDate() {
+        todayDate.textContent = `今日日期：${formatDate(new Date())}`;
+      }
+
       function loadTheme() {
         const savedTheme = localStorage.getItem(themeStorageKey);
         const themeName = themes[savedTheme] ? savedTheme : "pink";
@@ -397,6 +457,7 @@
       function saveData() {
         const payload = {
           input: input.value,
+          tomorrowNote: tomorrowNoteInput.value,
           outputs: Object.fromEntries(
             Object.entries(outputs).map(([key, el]) => [key, el.textContent])
           ),
@@ -411,6 +472,7 @@
         try {
           const data = JSON.parse(stored);
           input.value = data.input || "";
+          tomorrowNoteInput.value = data.tomorrowNote || "";
           applyOutputs(data.outputs || {});
         } catch {
           localStorage.removeItem(storageKey);
@@ -424,11 +486,40 @@
       });
 
       input.addEventListener("input", saveData);
+      tomorrowNoteInput.addEventListener("input", saveData);
 
       clearBtn.addEventListener("click", () => {
         input.value = "";
+        tomorrowNoteInput.value = "";
         applyOutputs(defaultOutputs);
         localStorage.removeItem(storageKey);
+      });
+
+      copyAllBtn.addEventListener("click", async () => {
+        const message = [
+          `📅 日期：${formatDate(new Date())}`,
+          "",
+          `【今日日記】\n${outputs.fullDiary.textContent}`,
+          "",
+          `【小蝦蝦版短版回報】\n${outputs.shortReport.textContent}`,
+          "",
+          `【今日金句】\n${outputs.quote.textContent}`,
+          "",
+          `【今日情緒關鍵字】\n${outputs.mood.textContent}`,
+          "",
+          `【明天要記得】\n${tomorrowNoteInput.value.trim() || "（尚未填寫）"}`,
+        ].join("\n");
+
+        try {
+          await navigator.clipboard.writeText(message);
+          const oldText = copyAllBtn.textContent;
+          copyAllBtn.textContent = "全部已複製！";
+          setTimeout(() => {
+            copyAllBtn.textContent = oldText;
+          }, 1200);
+        } catch {
+          alert("複製失敗，請手動複製文字。\n\n" + message);
+        }
       });
 
       themeSelect.addEventListener("change", () => {
@@ -454,6 +545,7 @@
         });
       });
 
+      renderTodayDate();
       loadTheme();
       loadData();
     </script>
