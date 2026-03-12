@@ -103,6 +103,33 @@
         flex-wrap: wrap;
       }
 
+      .mood-helper {
+        margin-top: 14px;
+      }
+
+      .mood-helper-title {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .mood-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .mood-btn {
+        background: var(--btn-soft-bg);
+        color: var(--btn-soft-text);
+        font-weight: 600;
+        padding: 8px 12px;
+      }
+
+      .mood-btn:hover {
+        background: var(--btn-soft-hover);
+      }
+
       button {
         border: 0;
         border-radius: 999px;
@@ -205,6 +232,16 @@
         color: var(--muted);
         font-size: 0.9rem;
       }
+
+      .encouragement {
+        margin-top: 12px;
+        padding: 10px 14px;
+        border: 2px dashed var(--line);
+        border-radius: 12px;
+        background: var(--card-soft);
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
     </style>
   </head>
   <body>
@@ -232,6 +269,17 @@
         <button class="clear-btn" id="clearBtn">清空全部</button>
         <button class="copy-all-btn" id="copyAllBtn">一鍵複製全部</button>
       </div>
+
+      <section class="mood-helper">
+        <p class="mood-helper-title">今日情緒快捷鍵（懶得打字版）</p>
+        <div class="mood-buttons">
+          <button class="mood-btn" data-mood="開心、被愛、有活力">🥺❤️ 開心</button>
+          <button class="mood-btn" data-mood="混亂、卡住、腦袋打結">😵‍💫 混亂</button>
+          <button class="mood-btn" data-mood="感動、被治癒、想抱抱">🥹 感動</button>
+          <button class="mood-btn" data-mood="吐槽、無言、但還是撐住">🙄🤌 吐槽</button>
+          <button class="mood-btn" data-mood="累、想躺平、需要充電">😴 累</button>
+        </div>
+      </section>
 
       <div class="tomorrow-wrap">
         <label for="tomorrowNoteInput">明天要記得</label>
@@ -272,6 +320,8 @@
         </article>
       </section>
 
+      <p class="encouragement" id="encouragement">（整理完會跳出一句小鼓勵）</p>
+
       <p class="hint">小提醒：這是前端離線小工具，內容不會被上傳。</p>
     </main>
 
@@ -291,6 +341,20 @@
       };
       const storageKey = "danDanDiaryData";
       const themeStorageKey = "danDanDiaryTheme";
+      const encouragementEl = document.getElementById("encouragement");
+
+      const encouragements = [
+        "你已經很努力了，今天先給自己一個小愛心。",
+        "慢慢來也沒關係，你不是在比賽啦。",
+        "有做到一點點，就值得被誇一點點。",
+        "今天辛苦了，明天的你會接住現在的你。",
+        "卡住不等於失敗，只是腦袋在整理檔案。",
+        "先喝口水，再往前一步，這樣就很棒。",
+        "你不是沒進步，只是進步得很低調。",
+        "累了就休息，休息不是偷懶是續命。",
+        "今天的你有撐住，真的很可以。",
+        "不用完美，能誠實記錄就已經超讚。",
+      ];
 
       const defaultOutputs = {
         fullDiary: "（整理後會顯示在這裡）",
@@ -298,6 +362,8 @@
         quote: "（整理後會顯示在這裡）",
         mood: "（整理後會顯示在這裡）",
       };
+
+      const defaultEncouragement = "（整理完會跳出一句小鼓勵）";
 
       const moodMap = [
         { key: "開心", words: ["開心", "快樂", "興奮", "滿足"] },
@@ -448,6 +514,11 @@
         };
       }
 
+      function getRandomEncouragement() {
+        const index = Math.floor(Math.random() * encouragements.length);
+        return encouragements[index];
+      }
+
       function applyOutputs(data) {
         Object.entries(outputs).forEach(([key, el]) => {
           el.textContent = data[key] || defaultOutputs[key];
@@ -458,6 +529,7 @@
         const payload = {
           input: input.value,
           tomorrowNote: tomorrowNoteInput.value,
+          encouragement: encouragementEl.textContent,
           outputs: Object.fromEntries(
             Object.entries(outputs).map(([key, el]) => [key, el.textContent])
           ),
@@ -473,6 +545,7 @@
           const data = JSON.parse(stored);
           input.value = data.input || "";
           tomorrowNoteInput.value = data.tomorrowNote || "";
+          encouragementEl.textContent = data.encouragement || defaultEncouragement;
           applyOutputs(data.outputs || {});
         } catch {
           localStorage.removeItem(storageKey);
@@ -482,7 +555,16 @@
       organizeBtn.addEventListener("click", () => {
         const result = organizeDiary(input.value);
         applyOutputs(result);
+        encouragementEl.textContent = getRandomEncouragement();
         saveData();
+      });
+
+      document.querySelectorAll(".mood-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const moodText = btn.dataset.mood || "";
+          outputs.mood.textContent = moodText;
+          saveData();
+        });
       });
 
       input.addEventListener("input", saveData);
@@ -492,6 +574,7 @@
         input.value = "";
         tomorrowNoteInput.value = "";
         applyOutputs(defaultOutputs);
+        encouragementEl.textContent = defaultEncouragement;
         localStorage.removeItem(storageKey);
       });
 
