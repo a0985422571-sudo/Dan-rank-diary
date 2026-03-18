@@ -226,6 +226,34 @@
         background: var(--btn-soft-hover);
       }
 
+      .jet-wrap {
+        margin-top: 10px;
+        min-height: 34px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .jet-btn {
+        background: var(--btn-soft-bg);
+        color: var(--btn-soft-text);
+      }
+
+      .jet-btn:hover {
+        background: var(--btn-soft-hover);
+      }
+
+      .jet-output {
+        font-size: 1.2rem;
+        color: var(--text);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+      }
+
+      .jet-output.show {
+        opacity: 1;
+      }
+
       .tomorrow-wrap {
         margin-top: 14px;
       }
@@ -381,6 +409,9 @@
             <option value="starry">星空色</option>
             <option value="matcha">抹茶拿鐵</option>
             <option value="sunset">夕陽橘</option>
+            <option value="falconWatch">侏儒獵鷹觀察模式</option>
+            <option value="starCookie">星餅乾宇宙</option>
+            <option value="mintSoda">薄荷汽水</option>
           </select>
         </label>
       </div>
@@ -392,6 +423,10 @@
         <button class="clear-btn" id="clearBtn">清空全部</button>
         <button class="copy-all-btn" id="copyAllBtn">一鍵複製全部</button>
         <button class="export-btn" id="exportTxtBtn">匯出 txt</button>
+      </div>
+      <div class="jet-wrap">
+        <button class="jet-btn" id="jetBtn">今日噴射</button>
+        <span class="jet-output" id="jetOutput" aria-live="polite"></span>
       </div>
 
       <section class="mood-helper">
@@ -462,6 +497,8 @@
       const copyAllBtn = document.getElementById("copyAllBtn");
       const exportTxtBtn = document.getElementById("exportTxtBtn");
       const themeSelect = document.getElementById("themeSelect");
+      const jetBtn = document.getElementById("jetBtn");
+      const jetOutput = document.getElementById("jetOutput");
       const todayDate = document.getElementById("todayDate");
       const tomorrowNoteInput = document.getElementById("tomorrowNoteInput");
       const historyList = document.getElementById("historyList");
@@ -498,6 +535,8 @@
       };
 
       const defaultEncouragement = "（整理完會跳出一句小鼓勵）";
+      const jetEmojis = ["🥺🫳❤️", "🙄🤌", "👀✨", "🍬✨", "bonk", "😼🌽", "🐹💥", "🫳🍓❤️"];
+      let jetTimer = null;
 
       const moodMap = [
         { key: "開心", words: ["開心", "快樂", "興奮", "滿足"] },
@@ -599,6 +638,75 @@
           btnSoftBg: "#ffe4cf",
           btnSoftText: "#8a512f",
           btnSoftHover: "#ffd4b3",
+        },
+        falconWatch: {
+          bg: "#f4efe6",
+          bgAccent: "#e4d7bf",
+          bgDecor1:
+            "radial-gradient(circle at 10% 20%, rgba(139, 107, 63, 0.12) 0, rgba(139, 107, 63, 0.12) 10px, transparent 11px)",
+          bgDecor2:
+            "radial-gradient(circle at 88% 82%, rgba(255, 250, 242, 0.7) 0, rgba(255, 250, 242, 0.7) 8px, transparent 9px)",
+          bgDecor3:
+            "radial-gradient(circle at 80% 15%, rgba(216, 199, 170, 0.36) 0, rgba(216, 199, 170, 0.36) 12px, transparent 13px)",
+          cornerDecor:
+            "radial-gradient(circle at top right, rgba(139, 107, 63, 0.18), transparent 56%)",
+          card: "#fffaf2",
+          cardSoft: "#f8f1e5",
+          primary: "#8b6b3f",
+          primaryDark: "#6f5430",
+          text: "#4b3e2d",
+          muted: "#7b6d58",
+          line: "#d8c7aa",
+          shadow: "rgba(139, 107, 63, 0.14)",
+          btnSoftBg: "#ece0cb",
+          btnSoftText: "#6f5430",
+          btnSoftHover: "#e4d7bf",
+        },
+        starCookie: {
+          bg: "#0f1226",
+          bgAccent: "#1a2148",
+          bgDecor1:
+            "radial-gradient(circle at 9% 18%, rgba(247, 168, 255, 0.24) 0, rgba(247, 168, 255, 0.24) 2px, transparent 3px)",
+          bgDecor2:
+            "radial-gradient(circle at 88% 82%, rgba(166, 190, 255, 0.24) 0, rgba(166, 190, 255, 0.24) 8px, transparent 9px)",
+          bgDecor3:
+            "radial-gradient(circle at 80% 14%, rgba(247, 168, 255, 0.14) 0, rgba(247, 168, 255, 0.14) 12px, transparent 13px)",
+          cornerDecor:
+            "radial-gradient(circle at top right, rgba(166, 190, 255, 0.2), transparent 54%)",
+          card: "#1b2345",
+          cardSoft: "#212b52",
+          primary: "#f7a8ff",
+          primaryDark: "#a6beff",
+          text: "#e5ebff",
+          muted: "#b8c2ef",
+          line: "#44508c",
+          shadow: "rgba(166, 190, 255, 0.18)",
+          btnSoftBg: "#2d3870",
+          btnSoftText: "#e5ebff",
+          btnSoftHover: "#394782",
+        },
+        mintSoda: {
+          bg: "#e9fbf6",
+          bgAccent: "#d4f5ed",
+          bgDecor1:
+            "radial-gradient(circle at 8% 18%, rgba(66, 191, 162, 0.14) 0, rgba(66, 191, 162, 0.14) 9px, transparent 10px)",
+          bgDecor2:
+            "radial-gradient(circle at 88% 83%, rgba(255, 255, 255, 0.78) 0, rgba(255, 255, 255, 0.78) 7px, transparent 8px)",
+          bgDecor3:
+            "radial-gradient(circle at 80% 16%, rgba(189, 231, 221, 0.34) 0, rgba(189, 231, 221, 0.34) 12px, transparent 13px)",
+          cornerDecor:
+            "radial-gradient(circle at top right, rgba(66, 191, 162, 0.14), transparent 56%)",
+          card: "#ffffff",
+          cardSoft: "#f3fffb",
+          primary: "#42bfa2",
+          primaryDark: "#21937d",
+          text: "#2f4b45",
+          muted: "#5d7d76",
+          line: "#bde7dd",
+          shadow: "rgba(66, 191, 162, 0.14)",
+          btnSoftBg: "#d9f4ec",
+          btnSoftText: "#2d7668",
+          btnSoftHover: "#c5eee3",
         },
       };
 
@@ -908,6 +1016,17 @@
         const selected = themeSelect.value;
         applyTheme(selected);
         localStorage.setItem(themeStorageKey, selected);
+      });
+
+      jetBtn.addEventListener("click", () => {
+        const randomEmoji = jetEmojis[Math.floor(Math.random() * jetEmojis.length)];
+        jetOutput.textContent = randomEmoji;
+        jetOutput.classList.add("show");
+        if (jetTimer) clearTimeout(jetTimer);
+        jetTimer = setTimeout(() => {
+          jetOutput.classList.remove("show");
+          jetTimer = null;
+        }, 1800);
       });
 
       document.querySelectorAll(".copy-btn").forEach((btn) => {
