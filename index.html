@@ -464,6 +464,13 @@
       // ===== 工具函式 =====
       const money = (num) => `NT$ ${Number(num || 0).toLocaleString("zh-Hant-TW")}`;
       const uid = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const escapeHTML = (value) =>
+        String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
 
       function save() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -538,7 +545,7 @@
 
       function updateSuggestions() {
         const names = [...new Set(state.items.map((x) => x.client.trim()).filter(Boolean))];
-        el.suggestions.innerHTML = names.map((name) => `<option value="${name}"></option>`).join("");
+        el.suggestions.innerHTML = names.map((name) => `<option value="${escapeHTML(name)}"></option>`).join("");
       }
 
       function renderList() {
@@ -563,16 +570,19 @@
       function itemHTML(item, isHistory) {
         const dueInfo = getDueInfo(item);
         const completedMeta = isHistory ? `<div class="meta">完成時間：${new Date(item.completedAt).toLocaleString("zh-Hant-TW")}</div>` : "";
+        const safeClient = escapeHTML(item.client);
+        const safeStatus = escapeHTML(item.status);
+        const safeNote = item.note ? escapeHTML(item.note) : "（無備註）";
 
         return `
           <article class="item" data-id="${item.id}">
             <div class="row">
               <div>
-                <div class="name">${item.client}</div>
+                <div class="name">${safeClient}</div>
                 <div class="money">${money(item.amount)}</div>
               </div>
               <div style="display:flex; gap:6px; align-items:flex-start;">
-                <button class="status-btn" data-action="cycle-status" data-id="${item.id}">${item.status}</button>
+                <button class="status-btn" data-action="cycle-status" data-id="${item.id}">${safeStatus}</button>
                 ${
                   isHistory
                     ? ""
@@ -583,9 +593,29 @@
             <div class="due ${dueInfo.cls}">${dueInfo.text}</div>
             <div class="meta">建立：${new Date(item.createdAt).toLocaleDateString("zh-Hant-TW")}</div>
             ${completedMeta}
-            <div class="note">${item.note ? item.note : "（無備註）"}</div>
+            <div class="note">${safeNote}</div>
           </article>
         `;
+      }
+
+      function setItemCompletion(item, shouldComplete, options = {}) {
+        const { withCuteSpray = false, switchToHistory = false } = options;
+        const wasCompleted = Boolean(item.completedAt);
+
+        if (shouldComplete) {
+          item.status = "完成";
+          if (!wasCompleted) {
+            item.completedAt = new Date().toISOString();
+            if (withCuteSpray) {
+              spray("cute", 44);
+              addSprayCount("cute");
+            }
+            if (switchToHistory) setTab("history");
+          }
+          return;
+        }
+
+        if (wasCompleted) item.completedAt = null;
       }
 
       function setTab(tab) {
@@ -687,7 +717,13 @@
 
         if (action === "cycle-status") {
           const idx = STATUS_FLOW.indexOf(item.status);
-          item.status = STATUS_FLOW[(idx + 1) % STATUS_FLOW.length];
+          const nextStatus = STATUS_FLOW[(idx + 1) % STATUS_FLOW.length];
+          if (nextStatus === "完成") {
+            setItemCompletion(item, true, { withCuteSpray: true, switchToHistory: true });
+          } else {
+            item.status = nextStatus;
+            setItemCompletion(item, false);
+          }
           save();
           renderList();
         }
@@ -696,13 +732,9 @@
           const card = btn.closest(".item");
           card.classList.add("slide-out");
           setTimeout(() => {
-            item.completedAt = new Date().toISOString();
-            item.status = "完成";
+            setItemCompletion(item, true, { withCuteSpray: true, switchToHistory: true });
             save();
             renderList();
-            spray("cute", 44); // 完成時自動可愛噴射
-            addSprayCount("cute");
-            setTab("history");
           }, 350);
         }
       });
