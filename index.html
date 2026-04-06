@@ -178,6 +178,7 @@
       }
 
       .item {
+        position: relative;
         border: 2px solid #f7e3f0;
         border-radius: 12px;
         padding: 10px;
@@ -238,6 +239,18 @@
         font-size: 0.83rem;
       }
 
+      .mood-chip {
+        display: inline-flex;
+        align-items: center;
+        margin-top: 4px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: #fff1f8;
+        color: #a64683;
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
       .note {
         margin-top: 6px;
         background: #fff9fc;
@@ -260,6 +273,121 @@
       .due.overdue {
         color: var(--danger);
         animation: shake 0.4s ease-in-out infinite alternate;
+      }
+
+      .today-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: #fff;
+        background: linear-gradient(90deg, #ff7fbc, #ffa6cf);
+        border-radius: 999px;
+        padding: 3px 8px;
+      }
+
+      .diary-wrap {
+        margin-top: 8px;
+        border: 1px dashed #f0cde1;
+        background: #fffbfd;
+        border-radius: 10px;
+        padding: 8px;
+      }
+
+      .diary-summary {
+        cursor: pointer;
+        font-weight: 700;
+        color: #98567c;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .diary-summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .diary-timeline {
+        margin-top: 8px;
+        display: grid;
+        gap: 7px;
+      }
+
+      .diary-entry {
+        border-left: 3px solid #ffd2e8;
+        padding-left: 8px;
+      }
+
+      .diary-entry-time {
+        color: var(--muted);
+        font-size: 0.77rem;
+      }
+
+      .diary-entry-text {
+        font-size: 0.88rem;
+        margin-top: 2px;
+        white-space: pre-wrap;
+      }
+
+      .diary-actions {
+        margin-top: 8px;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .tiny-btn {
+        border: 0;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .add-diary-btn {
+        background: #ffe6f4;
+        color: #b14683;
+      }
+
+      .save-diary-btn {
+        background: #def7e9;
+        color: #18864f;
+      }
+
+      .diary-form {
+        margin-top: 8px;
+        display: none;
+        background: #fff;
+        border: 1px solid #f5dceb;
+        border-radius: 10px;
+        padding: 8px;
+      }
+
+      .diary-form.show {
+        display: block;
+      }
+
+      .filter-row {
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .filter-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 0.86rem;
+        user-select: none;
+      }
+
+      .filter-toggle input {
+        width: auto;
+        margin: 0;
       }
 
       @keyframes shake {
@@ -326,6 +454,14 @@
         .form-grid,
         .stats {
           grid-template-columns: 1fr;
+        }
+
+        .item {
+          padding: 10px 8px;
+        }
+
+        .row {
+          align-items: flex-start;
         }
 
         .spray-dock {
@@ -398,6 +534,14 @@
                 <option>完成</option>
               </select>
             </label>
+            <label>
+              心情標籤（可選）
+              <select id="moodInput"></select>
+            </label>
+            <label class="full">
+              初始感想（可選）
+              <textarea id="reflectionInput" placeholder="今天進度、心情、對話紀錄都可以寫在這裡…"></textarea>
+            </label>
           </div>
           <button class="add-btn" type="submit">＋ 新增委託</button>
         </form>
@@ -408,6 +552,12 @@
         <div class="tabs">
           <button class="tab active" data-tab="active">進行中</button>
           <button class="tab" data-tab="history">歷史紀錄</button>
+        </div>
+        <div class="filter-row">
+          <label class="filter-toggle">
+            <input id="diaryOnlyInput" type="checkbox" />
+            只看有心情紀錄
+          </label>
         </div>
         <div id="activeList" class="list"></div>
         <div id="historyList" class="list" style="display:none;"></div>
@@ -430,12 +580,14 @@
         sass: ["🙄", "💅", "✨", "😏"],
         firework: ["🎆", "🎇", "✨", "💥"],
       };
+      const MOOD_OPTIONS = ["", "🙂穩定", "😵‍💫混亂", "😤煩躁", "🥹感動", "😴累", "✨順利"];
 
       const state = {
         items: [],
         sprayCounts: { cute: 0, poop: 0, sass: 0 },
         manualMonthResetAt: null, // 手動重設本月統計的時間
         currentTab: "active",
+        diaryOnly: false,
       };
 
       const el = {
@@ -445,10 +597,13 @@
         note: document.getElementById("noteInput"),
         due: document.getElementById("dueInput"),
         status: document.getElementById("statusInput"),
+        mood: document.getElementById("moodInput"),
+        reflection: document.getElementById("reflectionInput"),
         activeList: document.getElementById("activeList"),
         historyList: document.getElementById("historyList"),
         tabs: [...document.querySelectorAll(".tab")],
         suggestions: document.getElementById("clientSuggestions"),
+        diaryOnlyInput: document.getElementById("diaryOnlyInput"),
         statActiveCount: document.getElementById("statActiveCount"),
         statActiveAmount: document.getElementById("statActiveAmount"),
         statCurrentMonth: document.getElementById("statCurrentMonth"),
@@ -471,6 +626,9 @@
           .replace(/>/g, "&gt;")
           .replace(/"/g, "&quot;")
           .replace(/'/g, "&#39;");
+      const formatDateTime = (iso) => new Date(iso).toLocaleString("zh-Hant-TW", { hour12: false });
+      const isSameDate = (a, b) =>
+        new Date(a).toLocaleDateString("zh-Hant-TW") === new Date(b).toLocaleDateString("zh-Hant-TW");
 
       function save() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -485,6 +643,13 @@
           state.sprayCounts = parsed.sprayCounts || { cute: 0, poop: 0, sass: 0 };
           state.manualMonthResetAt = parsed.manualMonthResetAt || null;
           state.currentTab = parsed.currentTab || "active";
+          state.diaryOnly = Boolean(parsed.diaryOnly);
+          state.items = state.items.map((item) => ({
+            ...item,
+            moodTag: item.moodTag || "",
+            reflections: Array.isArray(item.reflections) ? item.reflections : [],
+            lastUpdatedAt: item.lastUpdatedAt || item.completedAt || item.createdAt,
+          }));
         } catch {
           localStorage.removeItem(STORAGE_KEY);
         }
@@ -553,15 +718,18 @@
         const history = state.items
           .filter((x) => x.completedAt)
           .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+        const filteredActive = state.diaryOnly ? active.filter((x) => x.reflections.length > 0) : active;
+        const filteredHistory = state.diaryOnly ? history.filter((x) => x.reflections.length > 0) : history;
 
-        el.activeList.innerHTML = active.length
-          ? active.map((item) => itemHTML(item, false)).join("")
+        el.activeList.innerHTML = filteredActive.length
+          ? filteredActive.map((item) => itemHTML(item, false)).join("")
           : '<div class="empty">目前沒有進行中的委託 ✨</div>';
 
-        el.historyList.innerHTML = history.length
-          ? history.map((item) => itemHTML(item, true)).join("")
+        el.historyList.innerHTML = filteredHistory.length
+          ? filteredHistory.map((item) => itemHTML(item, true)).join("")
           : '<div class="empty">還沒有歷史紀錄～</div>';
 
+        el.diaryOnlyInput.checked = state.diaryOnly;
         updateStats();
         updateSuggestions();
         updateSprayCountUI();
@@ -573,13 +741,33 @@
         const safeClient = escapeHTML(item.client);
         const safeStatus = escapeHTML(item.status);
         const safeNote = item.note ? escapeHTML(item.note) : "（無備註）";
+        const safeMood = item.moodTag ? `<div class="mood-chip">${escapeHTML(item.moodTag)}</div>` : "";
+        const reflections = item.reflections || [];
+        const hasTodayEntry = reflections.some((x) => isSameDate(x.createdAt, new Date()));
+        const todayBadge = hasTodayEntry ? '<div class="today-badge">今日有更新</div>' : "";
+        const latestMeta = `<div class="meta">最後更新：${formatDateTime(item.lastUpdatedAt || item.createdAt)}</div>`;
+        const diaryTimeline = reflections.length
+          ? reflections
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+              .map(
+                (entry) => `
+                  <div class="diary-entry">
+                    <div class="diary-entry-time">${formatDateTime(entry.createdAt)} ${entry.moodTag ? `・${escapeHTML(entry.moodTag)}` : ""}</div>
+                    <div class="diary-entry-text">${escapeHTML(entry.text)}</div>
+                  </div>
+                `
+              )
+              .join("")
+          : '<div class="empty" style="padding:6px 0;">還沒有感想，來記一筆吧 💗</div>';
 
         return `
           <article class="item" data-id="${item.id}">
+            ${todayBadge}
             <div class="row">
               <div>
                 <div class="name">${safeClient}</div>
                 <div class="money">${money(item.amount)}</div>
+                ${safeMood}
               </div>
               <div style="display:flex; gap:6px; align-items:flex-start;">
                 <button class="status-btn" data-action="cycle-status" data-id="${item.id}">${safeStatus}</button>
@@ -593,7 +781,33 @@
             <div class="due ${dueInfo.cls}">${dueInfo.text}</div>
             <div class="meta">建立：${new Date(item.createdAt).toLocaleDateString("zh-Hant-TW")}</div>
             ${completedMeta}
+            ${latestMeta}
             <div class="note">${safeNote}</div>
+            <div class="diary-wrap">
+              <details ${!isHistory ? "open" : ""}>
+                <summary class="diary-summary">
+                  <span>📝 委託日記（${reflections.length}）</span>
+                  <span>展開 / 收合</span>
+                </summary>
+                <div class="diary-timeline">${diaryTimeline}</div>
+              </details>
+              <div class="diary-actions">
+                <button class="tiny-btn add-diary-btn" data-action="toggle-diary-form" data-id="${item.id}">＋新增感想</button>
+              </div>
+              <div class="diary-form" data-form-for="${item.id}">
+                <label>
+                  心情標籤
+                  <select data-diary-mood="${item.id}">
+                    ${MOOD_OPTIONS.map((m) => `<option value="${escapeHTML(m)}">${m || "（不選）"}</option>`).join("")}
+                  </select>
+                </label>
+                <label>
+                  感想文字
+                  <textarea data-diary-text="${item.id}" placeholder="例如：草稿完成，今天有點累"></textarea>
+                </label>
+                <button class="tiny-btn save-diary-btn" data-action="add-reflection" data-id="${item.id}">儲存感想</button>
+              </div>
+            </div>
           </article>
         `;
       }
@@ -606,6 +820,7 @@
           item.status = "完成";
           if (!wasCompleted) {
             item.completedAt = new Date().toISOString();
+            item.lastUpdatedAt = new Date().toISOString();
             if (withCuteSpray) {
               spray("cute", 44);
               addSprayCount("cute");
@@ -616,6 +831,7 @@
         }
 
         if (wasCompleted) item.completedAt = null;
+        item.lastUpdatedAt = new Date().toISOString();
       }
 
       function setTab(tab) {
@@ -683,6 +899,8 @@
       // ===== 事件 =====
       el.form.addEventListener("submit", (e) => {
         e.preventDefault();
+        const now = new Date().toISOString();
+        const initialReflection = el.reflection.value.trim();
         const payload = {
           id: uid(),
           client: el.client.value.trim(),
@@ -690,7 +908,12 @@
           note: el.note.value.trim(),
           dueDate: el.due.value,
           status: el.status.value,
-          createdAt: new Date().toISOString(),
+          moodTag: el.mood.value,
+          reflections: initialReflection
+            ? [{ id: uid(), moodTag: el.mood.value, text: initialReflection, createdAt: now }]
+            : [],
+          createdAt: now,
+          lastUpdatedAt: now,
           completedAt: null,
         };
 
@@ -724,6 +947,7 @@
             item.status = nextStatus;
             setItemCompletion(item, false);
           }
+          item.lastUpdatedAt = new Date().toISOString();
           save();
           renderList();
         }
@@ -736,6 +960,33 @@
             save();
             renderList();
           }, 350);
+        }
+
+        if (action === "toggle-diary-form") {
+          const form = document.querySelector(`[data-form-for="${id}"]`);
+          if (!form) return;
+          form.classList.toggle("show");
+        }
+
+        if (action === "add-reflection") {
+          const moodSelect = document.querySelector(`[data-diary-mood="${id}"]`);
+          const textInput = document.querySelector(`[data-diary-text="${id}"]`);
+          const text = textInput?.value.trim() || "";
+          if (!text) {
+            alert("請先輸入感想文字再儲存喔。");
+            return;
+          }
+          const moodTag = moodSelect?.value || "";
+          item.reflections.push({
+            id: uid(),
+            moodTag,
+            text,
+            createdAt: new Date().toISOString(),
+          });
+          if (moodTag) item.moodTag = moodTag;
+          item.lastUpdatedAt = new Date().toISOString();
+          save();
+          renderList();
         }
       });
 
@@ -762,7 +1013,14 @@
         spray("firework", 120);
       });
 
+      el.diaryOnlyInput.addEventListener("change", (e) => {
+        state.diaryOnly = e.target.checked;
+        save();
+        renderList();
+      });
+
       // ===== 啟動 =====
+      el.mood.innerHTML = MOOD_OPTIONS.map((m) => `<option value="${escapeHTML(m)}">${m || "（不選）"}</option>`).join("");
       load();
       renderList();
       setTab(state.currentTab);
