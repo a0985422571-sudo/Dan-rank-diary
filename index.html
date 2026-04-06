@@ -3,22 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dan Dan 日記整理器</title>
+    <title>委託追蹤器</title>
     <style>
       :root {
-        --bg: #fff8fc;
-        --bg-accent: #ffeaf5;
+        --bg: #fff9fd;
         --card: #ffffff;
-        --card-soft: #fffcfe;
-        --primary: #ff7eb6;
-        --primary-dark: #ff5da6;
-        --text: #4b3e4d;
-        --muted: #8f7b8f;
-        --line: #f7d5e7;
-        --shadow: rgba(255, 126, 182, 0.14);
-        --btn-soft-bg: #ffe2f0;
-        --btn-soft-text: #9e3e71;
-        --btn-soft-hover: #ffd0e6;
+        --ink: #4a3f57;
+        --muted: #847690;
+        --line: #f2d8ea;
+        --accent: #ff7fbc;
+        --accent-2: #7bd2ff;
+        --ok: #26b36c;
+        --warn: #f2a33a;
+        --danger: #ff5d74;
+        --shadow: 0 10px 28px rgba(252, 127, 195, 0.14);
       }
 
       * {
@@ -27,435 +25,716 @@
 
       body {
         margin: 0;
-        font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-        background: radial-gradient(circle at top, var(--bg-accent), var(--bg));
-        color: var(--text);
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        padding: 24px;
+        background: radial-gradient(circle at 20% 0%, #fff0f8, var(--bg));
+        font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+        color: var(--ink);
       }
 
-      .app {
-        width: min(920px, 100%);
-        background: var(--card);
-        border: 2px solid var(--line);
-        border-radius: 20px;
-        box-shadow: 0 8px 24px var(--shadow);
-        padding: 24px;
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 16px 14px 92px;
       }
 
-      .app-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      .theme-select {
-        border: 2px solid var(--line);
-        border-radius: 999px;
-        padding: 8px 12px;
-        color: var(--text);
-        background: var(--card);
-        font-size: 0.92rem;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: clamp(1.5rem, 2vw + 1rem, 2.1rem);
-        color: var(--primary-dark);
+      .title {
+        margin: 6px 0 2px;
+        font-size: clamp(1.5rem, 4.5vw, 2rem);
       }
 
       .subtitle {
-        margin: 8px 0 20px;
+        margin: 0 0 14px;
         color: var(--muted);
+        font-size: 0.95rem;
       }
 
-      textarea {
-        width: 100%;
-        min-height: 220px;
-        padding: 14px;
-        border-radius: 14px;
+      .card {
+        background: var(--card);
         border: 2px solid var(--line);
-        resize: vertical;
-        font-size: 1rem;
-        line-height: 1.7;
-        color: var(--text);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 14px;
+        margin-bottom: 12px;
       }
 
-      .controls {
-        display: flex;
-        gap: 12px;
-        margin-top: 14px;
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
       }
 
-      button {
+      .stat {
+        border: 2px dashed #f7def0;
+        border-radius: 12px;
+        padding: 10px;
+        background: #fffafd;
+      }
+
+      .stat .label {
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+
+      .stat .value {
+        font-weight: 800;
+        margin-top: 2px;
+      }
+
+      .stat .small {
+        font-size: 0.85rem;
+        margin-top: 2px;
+      }
+
+      .reset-month-btn,
+      .clear-all-btn {
         border: 0;
         border-radius: 999px;
-        padding: 10px 18px;
-        font-size: 0.96rem;
+        padding: 8px 12px;
         font-weight: 700;
         cursor: pointer;
       }
 
-      .organize-btn {
-        background: var(--primary);
-        color: #fff;
+      .reset-month-btn {
+        background: #ffe7f4;
+        color: #b14683;
       }
 
-      .organize-btn:hover {
-        background: var(--primary-dark);
+      .clear-all-btn {
+        background: #ffe7ea;
+        color: #ba4158;
+        margin-left: 8px;
       }
 
-      .clear-btn {
-        background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
-      }
-
-      .clear-btn:hover {
-        background: var(--btn-soft-hover);
-      }
-
-      .grid {
+      .form-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 14px;
-        margin-top: 22px;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
       }
 
-      .card {
+      label {
+        font-size: 0.86rem;
+        color: var(--muted);
+        display: block;
+      }
+
+      input,
+      textarea,
+      select {
+        margin-top: 4px;
+        width: 100%;
         border: 2px solid var(--line);
-        border-radius: 16px;
-        padding: 14px;
-        background: var(--card-soft);
+        border-radius: 10px;
+        font: inherit;
+        color: var(--ink);
+        padding: 9px 10px;
+        background: #fff;
       }
 
-      .card-head {
+      textarea {
+        min-height: 76px;
+        resize: vertical;
+      }
+
+      .full {
+        grid-column: 1 / -1;
+      }
+
+      .add-btn {
+        width: 100%;
+        border: 0;
+        border-radius: 12px;
+        padding: 11px 12px;
+        margin-top: 10px;
+        background: linear-gradient(90deg, var(--accent), #ffa0d0);
+        color: #fff;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .tabs {
         display: flex;
-        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .tab {
+        border: 2px solid var(--line);
+        background: #fff;
+        border-radius: 999px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-weight: 700;
+        color: var(--muted);
+      }
+
+      .tab.active {
+        color: #fff;
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .item {
+        border: 2px solid #f7e3f0;
+        border-radius: 12px;
+        padding: 10px;
+        background: #fff;
+        transition: transform 0.35s ease, opacity 0.35s ease, max-height 0.35s ease, margin 0.35s ease;
+        max-height: 350px;
+        overflow: hidden;
+      }
+
+      .item.slide-out {
+        transform: translateX(120%);
+        opacity: 0;
+        max-height: 0;
+        margin: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        border-width: 0;
+      }
+
+      .row {
+        display: flex;
         justify-content: space-between;
         gap: 8px;
-        margin-bottom: 8px;
       }
 
-      .card h2 {
-        margin: 0;
-        font-size: 1rem;
-        color: var(--primary-dark);
+      .name {
+        font-weight: 800;
       }
 
-      .copy-btn {
-        background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
-        font-size: 0.85rem;
-        padding: 6px 12px;
+      .money {
+        color: #0f8f58;
+        font-weight: 800;
       }
 
-      .copy-btn:hover {
-        background: var(--btn-soft-hover);
+      .status-btn,
+      .complete-btn {
+        border: 0;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 5px 10px;
+        cursor: pointer;
       }
 
-      .output {
-        margin: 0;
+      .status-btn {
+        background: #edf6ff;
+        color: #3973a5;
+      }
+
+      .complete-btn {
+        background: #ddf8e9;
+        color: #169b5a;
+      }
+
+      .meta {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 0.83rem;
+      }
+
+      .note {
+        margin-top: 6px;
+        background: #fff9fc;
+        border-radius: 8px;
+        padding: 7px;
+        font-size: 0.9rem;
         white-space: pre-wrap;
-        line-height: 1.7;
-        min-height: 64px;
       }
 
-      .hint {
-        margin-top: 14px;
+      .due {
+        margin-top: 6px;
+        font-size: 0.84rem;
+        font-weight: 700;
+      }
+
+      .due.soon {
+        color: var(--warn);
+      }
+
+      .due.overdue {
+        color: var(--danger);
+        animation: shake 0.4s ease-in-out infinite alternate;
+      }
+
+      @keyframes shake {
+        from {
+          transform: translateX(-2px);
+        }
+        to {
+          transform: translateX(2px);
+        }
+      }
+
+      .empty {
+        text-align: center;
         color: var(--muted);
         font-size: 0.9rem;
+        padding: 10px;
+      }
+
+      .spray-dock {
+        position: fixed;
+        left: 50%;
+        bottom: 10px;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+        z-index: 30;
+      }
+
+      .spray-btn {
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 12px;
+        color: #fff;
+        font-weight: 800;
+        font-size: 0.85rem;
+        cursor: pointer;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+      }
+
+      .spray-btn small {
+        display: block;
+        font-size: 0.68rem;
+        opacity: 0.9;
+      }
+
+      .cute { background: linear-gradient(90deg, #ff8ec4, #ff75af); }
+      .poop { background: linear-gradient(90deg, #a27a58, #835b3b); }
+      .sass { background: linear-gradient(90deg, #7c8cff, #a563ff); }
+
+      .particle {
+        position: fixed;
+        pointer-events: none;
+        z-index: 60;
+        font-size: 24px;
+        animation: burst 1s ease-out forwards;
+      }
+
+      @keyframes burst {
+        0% { transform: translate(0, 0) scale(1); opacity: 1; }
+        100% { transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(25deg); opacity: 0; }
+      }
+
+      @media (max-width: 720px) {
+        .form-grid,
+        .stats {
+          grid-template-columns: 1fr;
+        }
+
+        .spray-dock {
+          width: calc(100% - 18px);
+        }
+
+        .spray-btn {
+          flex: 1;
+          padding: 10px 8px;
+        }
       }
     </style>
   </head>
   <body>
-    <main class="app">
-      <div class="app-head">
-        <h1>✨ Dan Dan 日記整理器</h1>
-        <label>
-          <span style="font-size: 0.9rem; color: var(--muted); margin-right: 6px">主題</span>
-          <select id="themeSelect" class="theme-select">
-            <option value="pink">粉紅膠囊</option>
-            <option value="starry">星空色</option>
-            <option value="matcha">抹茶拿鐵</option>
-            <option value="sunset">夕陽橘</option>
-          </select>
-        </label>
-      </div>
-      <p class="subtitle">把今天的想法貼進來，一鍵整理成可愛好讀的小回報。</p>
+    <main class="wrap">
+      <h1 class="title">🧾 委託追蹤器</h1>
+      <p class="subtitle">可愛輕鬆版：手機可用、資料會自動保存、完成會自動噴可愛特效。</p>
 
-      <textarea id="diaryInput" placeholder="例：今天早上開會有點緊張，但下午完成了重要提案，心情變超好！"></textarea>
-      <div class="controls">
-        <button class="organize-btn" id="organizeBtn">整理日記</button>
-        <button class="clear-btn" id="clearBtn">清空全部</button>
-      </div>
-
-      <section class="grid">
-        <article class="card">
-          <div class="card-head">
-            <h2>今日日記</h2>
-            <button class="copy-btn" data-copy="fullDiary">一鍵複製</button>
+      <section class="card">
+        <div class="stats">
+          <div class="stat">
+            <div class="label">進行中數量</div>
+            <div class="value" id="statActiveCount">0 筆</div>
           </div>
-          <p class="output" id="fullDiary">（整理後會顯示在這裡）</p>
-        </article>
-
-        <article class="card">
-          <div class="card-head">
-            <h2>小蝦蝦版短版回報</h2>
-            <button class="copy-btn" data-copy="shortReport">一鍵複製</button>
+          <div class="stat">
+            <div class="label">進行中總金額</div>
+            <div class="value" id="statActiveAmount">NT$ 0</div>
           </div>
-          <p class="output" id="shortReport">（整理後會顯示在這裡）</p>
-        </article>
-
-        <article class="card">
-          <div class="card-head">
-            <h2>今日金句</h2>
-            <button class="copy-btn" data-copy="quote">一鍵複製</button>
+          <div class="stat">
+            <div class="label">本月完成金額</div>
+            <div class="value" id="statCurrentMonth">NT$ 0</div>
           </div>
-          <p class="output" id="quote">（整理後會顯示在這裡）</p>
-        </article>
-
-        <article class="card">
-          <div class="card-head">
-            <h2>今日情緒關鍵字</h2>
-            <button class="copy-btn" data-copy="mood">一鍵複製</button>
+          <div class="stat">
+            <div class="label">上月完成金額</div>
+            <div class="value" id="statLastMonth">NT$ 0</div>
+            <div class="small" id="statCompare">本月與上月持平</div>
           </div>
-          <p class="output" id="mood">（整理後會顯示在這裡）</p>
-        </article>
+        </div>
+        <div style="margin-top:10px;">
+          <button class="reset-month-btn" id="resetMonthBtn">手動歸零本月統計</button>
+          <button class="clear-all-btn" id="clearAllBtn">全部清空</button>
+        </div>
       </section>
 
-      <p class="hint">小提醒：這是前端離線小工具，內容不會被上傳。</p>
+      <section class="card">
+        <form id="commissionForm">
+          <div class="form-grid">
+            <label>
+              委託人
+              <input id="clientInput" list="clientSuggestions" placeholder="例如：小花" required />
+            </label>
+            <label>
+              金額（NTD）
+              <input id="amountInput" type="number" min="0" step="1" placeholder="例如：2500" required />
+            </label>
+            <label class="full">
+              細節備註
+              <textarea id="noteInput" placeholder="尺寸、用途、需求重點…"></textarea>
+            </label>
+            <label>
+              截止日期
+              <input id="dueInput" type="date" required />
+            </label>
+            <label>
+              狀態
+              <select id="statusInput">
+                <option>等報價</option>
+                <option>進行中</option>
+                <option>等確認</option>
+                <option>完成</option>
+              </select>
+            </label>
+          </div>
+          <button class="add-btn" type="submit">＋ 新增委託</button>
+        </form>
+        <datalist id="clientSuggestions"></datalist>
+      </section>
+
+      <section class="card">
+        <div class="tabs">
+          <button class="tab active" data-tab="active">進行中</button>
+          <button class="tab" data-tab="history">歷史紀錄</button>
+        </div>
+        <div id="activeList" class="list"></div>
+        <div id="historyList" class="list" style="display:none;"></div>
+      </section>
     </main>
 
+    <div class="spray-dock">
+      <button class="spray-btn cute" data-spray="cute">可愛噴射 <small id="countCute">0 次</small></button>
+      <button class="spray-btn poop" data-spray="poop">大便噴射 <small id="countPoop">0 次</small></button>
+      <button class="spray-btn sass" data-spray="sass">🙄💅噴射 <small id="countSass">0 次</small></button>
+    </div>
+
     <script>
-      const input = document.getElementById("diaryInput");
-      const organizeBtn = document.getElementById("organizeBtn");
-      const clearBtn = document.getElementById("clearBtn");
-      const themeSelect = document.getElementById("themeSelect");
-      const outputs = {
-        fullDiary: document.getElementById("fullDiary"),
-        shortReport: document.getElementById("shortReport"),
-        quote: document.getElementById("quote"),
-        mood: document.getElementById("mood"),
-      };
-      const storageKey = "danDanDiaryData";
-      const themeStorageKey = "danDanDiaryTheme";
-      const defaultOutputs = {
-        fullDiary: "（整理後會顯示在這裡）",
-        shortReport: "（整理後會顯示在這裡）",
-        quote: "（整理後會顯示在這裡）",
-        mood: "（整理後會顯示在這裡）",
+      // ===== 基本設定 =====
+      const STORAGE_KEY = "commissionTrackerV1";
+      const STATUS_FLOW = ["等報價", "進行中", "等確認", "完成"];
+      const SPRAY_EMOJI = {
+        cute: ["✨", "💖", "🌸", "🫧"],
+        poop: ["💩", "🤎", "🪵", "😵"],
+        sass: ["🙄", "💅", "✨", "😏"],
+        firework: ["🎆", "🎇", "✨", "💥"],
       };
 
-      const moodMap = [
-        { key: "開心", words: ["開心", "快樂", "興奮", "滿足"] },
-        { key: "緊張", words: ["緊張", "焦慮", "壓力", "不安"] },
-        { key: "感恩", words: ["感謝", "感恩", "幸運", "珍惜"] },
-        { key: "疲憊", words: ["累", "疲憊", "睏", "沒力"] },
-        { key: "平靜", words: ["平靜", "放鬆", "穩定", "安心"] },
-      ];
-
-      const themes = {
-        pink: {
-          bg: "#fff8fc",
-          bgAccent: "#ffeaf5",
-          card: "#ffffff",
-          cardSoft: "#fffcfe",
-          primary: "#ff7eb6",
-          primaryDark: "#ff5da6",
-          text: "#4b3e4d",
-          muted: "#8f7b8f",
-          line: "#f7d5e7",
-          shadow: "rgba(255, 126, 182, 0.14)",
-          btnSoftBg: "#ffe2f0",
-          btnSoftText: "#9e3e71",
-          btnSoftHover: "#ffd0e6",
-        },
-        starry: {
-          bg: "#0f1226",
-          bgAccent: "#1a2148",
-          card: "#1b2345",
-          cardSoft: "#212b52",
-          primary: "#7fa8ff",
-          primaryDark: "#a6beff",
-          text: "#e5ebff",
-          muted: "#b6c0eb",
-          line: "#3b467e",
-          shadow: "rgba(8, 12, 30, 0.45)",
-          btnSoftBg: "#2f3d72",
-          btnSoftText: "#d8e0ff",
-          btnSoftHover: "#3b4a84",
-        },
-        matcha: {
-          bg: "#f5f7ed",
-          bgAccent: "#e5efdb",
-          card: "#ffffff",
-          cardSoft: "#f8fbf2",
-          primary: "#7da869",
-          primaryDark: "#5f8550",
-          text: "#394635",
-          muted: "#6f7d67",
-          line: "#d6e3c6",
-          shadow: "rgba(94, 127, 85, 0.14)",
-          btnSoftBg: "#e8f1da",
-          btnSoftText: "#4f6647",
-          btnSoftHover: "#dce9c9",
-        },
-        sunset: {
-          bg: "#fff4e9",
-          bgAccent: "#ffe2cb",
-          card: "#ffffff",
-          cardSoft: "#fffaf4",
-          primary: "#f08a4b",
-          primaryDark: "#d86d2f",
-          text: "#573f33",
-          muted: "#8c6b5a",
-          line: "#f3ceb3",
-          shadow: "rgba(200, 116, 56, 0.18)",
-          btnSoftBg: "#ffe4cf",
-          btnSoftText: "#8a512f",
-          btnSoftHover: "#ffd4b3",
-        },
+      const state = {
+        items: [],
+        sprayCounts: { cute: 0, poop: 0, sass: 0 },
+        manualMonthResetAt: null, // 手動重設本月統計的時間
+        currentTab: "active",
       };
 
-      function applyTheme(themeName) {
-        const theme = themes[themeName] || themes.pink;
-        const root = document.documentElement;
-        root.style.setProperty("--bg", theme.bg);
-        root.style.setProperty("--bg-accent", theme.bgAccent);
-        root.style.setProperty("--card", theme.card);
-        root.style.setProperty("--card-soft", theme.cardSoft);
-        root.style.setProperty("--primary", theme.primary);
-        root.style.setProperty("--primary-dark", theme.primaryDark);
-        root.style.setProperty("--text", theme.text);
-        root.style.setProperty("--muted", theme.muted);
-        root.style.setProperty("--line", theme.line);
-        root.style.setProperty("--shadow", theme.shadow);
-        root.style.setProperty("--btn-soft-bg", theme.btnSoftBg);
-        root.style.setProperty("--btn-soft-text", theme.btnSoftText);
-        root.style.setProperty("--btn-soft-hover", theme.btnSoftHover);
+      const el = {
+        form: document.getElementById("commissionForm"),
+        client: document.getElementById("clientInput"),
+        amount: document.getElementById("amountInput"),
+        note: document.getElementById("noteInput"),
+        due: document.getElementById("dueInput"),
+        status: document.getElementById("statusInput"),
+        activeList: document.getElementById("activeList"),
+        historyList: document.getElementById("historyList"),
+        tabs: [...document.querySelectorAll(".tab")],
+        suggestions: document.getElementById("clientSuggestions"),
+        statActiveCount: document.getElementById("statActiveCount"),
+        statActiveAmount: document.getElementById("statActiveAmount"),
+        statCurrentMonth: document.getElementById("statCurrentMonth"),
+        statLastMonth: document.getElementById("statLastMonth"),
+        statCompare: document.getElementById("statCompare"),
+        countCute: document.getElementById("countCute"),
+        countPoop: document.getElementById("countPoop"),
+        countSass: document.getElementById("countSass"),
+        resetMonthBtn: document.getElementById("resetMonthBtn"),
+        clearAllBtn: document.getElementById("clearAllBtn"),
+      };
+
+      // ===== 工具函式 =====
+      const money = (num) => `NT$ ${Number(num || 0).toLocaleString("zh-Hant-TW")}`;
+      const uid = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+      function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       }
 
-      function loadTheme() {
-        const savedTheme = localStorage.getItem(themeStorageKey);
-        const themeName = themes[savedTheme] ? savedTheme : "pink";
-        themeSelect.value = themeName;
-        applyTheme(themeName);
-      }
-
-      function splitSentences(text) {
-        return text
-          .split(/[。！？!?.\n]/)
-          .map((s) => s.trim())
-          .filter(Boolean);
-      }
-
-      function getMoodKeywords(text) {
-        const found = moodMap
-          .filter((item) => item.words.some((word) => text.includes(word)))
-          .map((item) => item.key);
-
-        if (found.length) return found.join("、");
-        return "平穩、努力、前進";
-      }
-
-      function organizeDiary(rawText) {
-        const text = rawText.trim();
-        if (!text) {
-          return {
-            fullDiary: "請先輸入今天的日記內容喔～",
-            shortReport: "尚未有內容可整理。",
-            quote: "今天也值得一句溫柔的鼓勵。",
-            mood: "待補充",
-          };
-        }
-
-        const sentences = splitSentences(text);
-        const opening = sentences[0] || "今天努力地過了一天";
-        const ending = sentences[sentences.length - 1] || opening;
-
-        const shortReport = `今天重點：${opening}。\n目前進度：${ending}。\n整體來說，有在穩穩前進！`;
-        const quote = `「${ending.replace(/[，,]$/, "")}，我做得到。」`;
-
-        return {
-          fullDiary: text,
-          shortReport,
-          quote,
-          mood: getMoodKeywords(text),
-        };
-      }
-
-      function applyOutputs(data) {
-        Object.entries(outputs).forEach(([key, el]) => {
-          el.textContent = data[key] || defaultOutputs[key];
-        });
-      }
-
-      function saveData() {
-        const payload = {
-          input: input.value,
-          outputs: Object.fromEntries(
-            Object.entries(outputs).map(([key, el]) => [key, el.textContent])
-          ),
-        };
-        localStorage.setItem(storageKey, JSON.stringify(payload));
-      }
-
-      function loadData() {
-        const stored = localStorage.getItem(storageKey);
-        if (!stored) return;
-
+      function load() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
         try {
-          const data = JSON.parse(stored);
-          input.value = data.input || "";
-          applyOutputs(data.outputs || {});
+          const parsed = JSON.parse(raw);
+          state.items = Array.isArray(parsed.items) ? parsed.items : [];
+          state.sprayCounts = parsed.sprayCounts || { cute: 0, poop: 0, sass: 0 };
+          state.manualMonthResetAt = parsed.manualMonthResetAt || null;
+          state.currentTab = parsed.currentTab || "active";
         } catch {
-          localStorage.removeItem(storageKey);
+          localStorage.removeItem(STORAGE_KEY);
         }
       }
 
-      organizeBtn.addEventListener("click", () => {
-        const result = organizeDiary(input.value);
-        applyOutputs(result);
-        saveData();
-      });
+      function getDueInfo(item) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const due = new Date(item.dueDate + "T00:00:00");
+        const diffDays = Math.floor((due - today) / 86400000);
 
-      input.addEventListener("input", saveData);
+        if (diffDays < 0) return { text: `⚠ 已逾期 ${Math.abs(diffDays)} 天`, cls: "overdue" };
+        if (diffDays <= 3) return { text: `⏰ 即將到期（剩 ${diffDays} 天）`, cls: "soon" };
+        return { text: `截止：${item.dueDate}`, cls: "" };
+      }
 
-      clearBtn.addEventListener("click", () => {
-        input.value = "";
-        applyOutputs(defaultOutputs);
-        localStorage.removeItem(storageKey);
-      });
+      function isCurrentMonth(dateObj) {
+        const now = new Date();
+        return dateObj.getFullYear() === now.getFullYear() && dateObj.getMonth() === now.getMonth();
+      }
 
-      themeSelect.addEventListener("change", () => {
-        const selected = themeSelect.value;
-        applyTheme(selected);
-        localStorage.setItem(themeStorageKey, selected);
-      });
+      function monthCompletedAmount(offset = 0) {
+        const now = new Date();
+        const target = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+        const start = new Date(target.getFullYear(), target.getMonth(), 1);
+        const end = new Date(target.getFullYear(), target.getMonth() + 1, 1);
 
-      document.querySelectorAll(".copy-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const key = btn.dataset.copy;
-          const text = outputs[key].textContent;
-          try {
-            await navigator.clipboard.writeText(text);
-            const oldText = btn.textContent;
-            btn.textContent = "已複製！";
-            setTimeout(() => {
-              btn.textContent = oldText;
-            }, 1000);
-          } catch {
-            alert("複製失敗，請手動複製文字。");
-          }
+        return state.items
+          .filter((x) => x.completedAt)
+          .filter((x) => {
+            const done = new Date(x.completedAt);
+            return done >= start && done < end;
+          })
+          .filter((x) => {
+            // 手動重設僅影響「本月」
+            if (offset !== 0 || !state.manualMonthResetAt) return true;
+            return new Date(x.completedAt) >= new Date(state.manualMonthResetAt);
+          })
+          .reduce((sum, x) => sum + Number(x.amount || 0), 0);
+      }
+
+      function updateStats() {
+        const active = state.items.filter((x) => !x.completedAt);
+        const activeAmount = active.reduce((sum, x) => sum + Number(x.amount || 0), 0);
+        const currentMonthAmount = monthCompletedAmount(0);
+        const lastMonthAmount = monthCompletedAmount(-1);
+        const diff = currentMonthAmount - lastMonthAmount;
+
+        el.statActiveCount.textContent = `${active.length} 筆`;
+        el.statActiveAmount.textContent = money(activeAmount);
+        el.statCurrentMonth.textContent = money(currentMonthAmount);
+        el.statLastMonth.textContent = money(lastMonthAmount);
+
+        if (diff > 0) el.statCompare.textContent = `比上月多 ${money(diff)}`;
+        else if (diff < 0) el.statCompare.textContent = `比上月少 ${money(Math.abs(diff))}`;
+        else el.statCompare.textContent = "本月與上月持平";
+      }
+
+      function updateSuggestions() {
+        const names = [...new Set(state.items.map((x) => x.client.trim()).filter(Boolean))];
+        el.suggestions.innerHTML = names.map((name) => `<option value="${name}"></option>`).join("");
+      }
+
+      function renderList() {
+        const active = state.items.filter((x) => !x.completedAt);
+        const history = state.items
+          .filter((x) => x.completedAt)
+          .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+
+        el.activeList.innerHTML = active.length
+          ? active.map((item) => itemHTML(item, false)).join("")
+          : '<div class="empty">目前沒有進行中的委託 ✨</div>';
+
+        el.historyList.innerHTML = history.length
+          ? history.map((item) => itemHTML(item, true)).join("")
+          : '<div class="empty">還沒有歷史紀錄～</div>';
+
+        updateStats();
+        updateSuggestions();
+        updateSprayCountUI();
+      }
+
+      function itemHTML(item, isHistory) {
+        const dueInfo = getDueInfo(item);
+        const completedMeta = isHistory ? `<div class="meta">完成時間：${new Date(item.completedAt).toLocaleString("zh-Hant-TW")}</div>` : "";
+
+        return `
+          <article class="item" data-id="${item.id}">
+            <div class="row">
+              <div>
+                <div class="name">${item.client}</div>
+                <div class="money">${money(item.amount)}</div>
+              </div>
+              <div style="display:flex; gap:6px; align-items:flex-start;">
+                <button class="status-btn" data-action="cycle-status" data-id="${item.id}">${item.status}</button>
+                ${
+                  isHistory
+                    ? ""
+                    : `<button class="complete-btn" data-action="complete" data-id="${item.id}" title="完成並移到歷史">✅</button>`
+                }
+              </div>
+            </div>
+            <div class="due ${dueInfo.cls}">${dueInfo.text}</div>
+            <div class="meta">建立：${new Date(item.createdAt).toLocaleDateString("zh-Hant-TW")}</div>
+            ${completedMeta}
+            <div class="note">${item.note ? item.note : "（無備註）"}</div>
+          </article>
+        `;
+      }
+
+      function setTab(tab) {
+        state.currentTab = tab;
+        el.tabs.forEach((btn) => btn.classList.toggle("active", btn.dataset.tab === tab));
+        el.activeList.style.display = tab === "active" ? "grid" : "none";
+        el.historyList.style.display = tab === "history" ? "grid" : "none";
+        save();
+      }
+
+      // ===== 噴射特效 =====
+      function spray(type, pieces = 40) {
+        const emojis = SPRAY_EMOJI[type] || SPRAY_EMOJI.cute;
+        for (let i = 0; i < pieces; i += 1) {
+          const p = document.createElement("span");
+          p.className = "particle";
+          p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          p.style.left = `${Math.random() * 100}vw`;
+          p.style.top = `${Math.random() * 100}vh`;
+          p.style.setProperty("--dx", `${(Math.random() - 0.5) * 220}px`);
+          p.style.setProperty("--dy", `${(Math.random() - 0.5) * 220}px`);
+          p.style.animationDuration = `${0.8 + Math.random() * 0.9}s`;
+          document.body.appendChild(p);
+          setTimeout(() => p.remove(), 1500);
+        }
+      }
+
+      function addSprayCount(type) {
+        state.sprayCounts[type] += 1;
+        updateSprayCountUI();
+        save();
+      }
+
+      function updateSprayCountUI() {
+        el.countCute.textContent = `${state.sprayCounts.cute} 次`;
+        el.countPoop.textContent = `${state.sprayCounts.poop} 次`;
+        el.countSass.textContent = `${state.sprayCounts.sass} 次`;
+      }
+
+      function bindSprayButtons() {
+        const btns = [...document.querySelectorAll(".spray-btn")];
+        btns.forEach((btn) => {
+          const type = btn.dataset.spray;
+          let timer = null;
+
+          const trigger = () => {
+            spray(type, 34);
+            addSprayCount(type);
+          };
+
+          btn.addEventListener("click", trigger);
+          btn.addEventListener("pointerdown", () => {
+            timer = setInterval(trigger, 220);
+          });
+          const stop = () => {
+            clearInterval(timer);
+            timer = null;
+          };
+          btn.addEventListener("pointerup", stop);
+          btn.addEventListener("pointercancel", stop);
+          btn.addEventListener("pointerleave", stop);
         });
+      }
+
+      // ===== 事件 =====
+      el.form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const payload = {
+          id: uid(),
+          client: el.client.value.trim(),
+          amount: Number(el.amount.value || 0),
+          note: el.note.value.trim(),
+          dueDate: el.due.value,
+          status: el.status.value,
+          createdAt: new Date().toISOString(),
+          completedAt: null,
+        };
+
+        if (!payload.client || !payload.dueDate || payload.amount < 0) {
+          alert("請完整填寫委託人、金額與截止日期。\n金額不可小於 0。");
+          return;
+        }
+
+        if (payload.status === "完成") payload.completedAt = new Date().toISOString();
+        state.items.push(payload);
+        save();
+        renderList();
+        e.target.reset();
       });
 
-      loadTheme();
-      loadData();
+      document.body.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-action]");
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+        const action = btn.dataset.action;
+        const item = state.items.find((x) => x.id === id);
+        if (!item) return;
+
+        if (action === "cycle-status") {
+          const idx = STATUS_FLOW.indexOf(item.status);
+          item.status = STATUS_FLOW[(idx + 1) % STATUS_FLOW.length];
+          save();
+          renderList();
+        }
+
+        if (action === "complete" && !item.completedAt) {
+          const card = btn.closest(".item");
+          card.classList.add("slide-out");
+          setTimeout(() => {
+            item.completedAt = new Date().toISOString();
+            item.status = "完成";
+            save();
+            renderList();
+            spray("cute", 44); // 完成時自動可愛噴射
+            addSprayCount("cute");
+            setTab("history");
+          }, 350);
+        }
+      });
+
+      el.tabs.forEach((btn) => {
+        btn.addEventListener("click", () => setTab(btn.dataset.tab));
+      });
+
+      el.resetMonthBtn.addEventListener("click", () => {
+        state.manualMonthResetAt = new Date().toISOString();
+        save();
+        updateStats();
+        alert("已手動歸零本月完成統計。\n（不會刪除歷史資料）");
+      });
+
+      el.clearAllBtn.addEventListener("click", () => {
+        const ok = confirm("確定要全部清空嗎？這會清除所有委託與統計。\n（會放煙火）");
+        if (!ok) return;
+
+        state.items = [];
+        state.sprayCounts = { cute: 0, poop: 0, sass: 0 };
+        state.manualMonthResetAt = null;
+        save();
+        renderList();
+        spray("firework", 120);
+      });
+
+      // ===== 啟動 =====
+      load();
+      renderList();
+      setTab(state.currentTab);
+      bindSprayButtons();
     </script>
   </body>
 </html>
