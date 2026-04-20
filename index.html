@@ -3,22 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>第五人格排位降溫日記</title>
+    <title>第五人格排位降溫日記 v0.2</title>
     <style>
-      /*
-        ===== 這份 CSS 主打「小而廢但可愛」 =====
-        - 使用 CSS 變數配合主題切換
-        - 保持結構簡單，方便後續加更多主題/按鈕
-      */
       :root {
-        --bg-1: #ffe2d1;
-        --bg-2: #ffb996;
-        --card: #fff8f4;
-        --text: #582c2c;
-        --line: #f09573;
+        --bg1: #ffe1d0;
+        --bg2: #ff9f78;
+        --card: #fff7f2;
+        --text: #542b2b;
+        --line: #ef8f6a;
         --accent: #ff5f46;
-        --accent-2: #ff8d66;
-        --chip: #ffd8c5;
+        --accent2: #ff936c;
+        --chip: #ffd5c2;
       }
 
       * {
@@ -27,86 +22,113 @@
 
       body {
         margin: 0;
-        min-height: 100vh;
         font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
         color: var(--text);
-        background: radial-gradient(circle at 15% 10%, var(--bg-1), var(--bg-2));
+        min-height: 100vh;
+        background: radial-gradient(circle at 20% 0%, var(--bg1), var(--bg2));
         transition: background 0.35s ease;
       }
 
       .wrap {
-        width: min(920px, 94%);
-        margin: 28px auto;
+        width: min(920px, 95%);
+        margin: 16px auto 24px;
       }
 
-      .diary-card {
-        position: relative;
+      .card {
         background: var(--card);
-        border: 3px solid var(--line);
-        border-radius: 24px;
-        box-shadow: 0 14px 38px rgba(0, 0, 0, 0.14);
-        padding: 20px;
-        overflow: hidden;
+        border: 2px solid var(--line);
+        border-radius: 20px;
+        padding: 14px;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.14);
+      }
+
+      .top {
+        position: sticky;
+        top: 8px;
+        z-index: 30;
+        display: grid;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .top-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .date-box,
+      .status-box {
+        background: #fff;
+        border: 2px dashed var(--line);
+        border-radius: 12px;
+        padding: 8px 10px;
+        font-weight: 700;
+      }
+
+      .status-box {
+        font-size: 0.92rem;
+      }
+
+      #saveStatus {
+        color: var(--accent);
+      }
+
+      #diaryDate {
+        margin-left: 8px;
+        border: 2px solid var(--line);
+        border-radius: 8px;
+        padding: 4px 8px;
+        font-weight: 700;
+      }
+
+      .head {
+        position: relative;
       }
 
       .stickers {
         position: absolute;
-        top: 10px;
-        right: 16px;
-        font-size: 1.4rem;
-        opacity: 0.75;
-        pointer-events: none;
+        right: 4px;
+        top: -2px;
+        opacity: 0.8;
       }
 
-      .top-bar {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 10px;
-        align-items: center;
-      }
-
-      .title {
-        margin: 6px 0 0;
-        font-size: clamp(1.3rem, 2vw + 1rem, 2rem);
+      h1 {
+        margin: 4px 0;
+        font-size: clamp(1.2rem, 1.7vw + 1rem, 1.9rem);
       }
 
       .subtitle {
-        margin: 4px 0 0;
-        opacity: 0.8;
-        font-size: 0.95rem;
-      }
-
-      .date-pill {
-        background: var(--chip);
-        border: 2px dashed var(--line);
-        border-radius: 999px;
-        padding: 8px 12px;
-        font-size: 0.88rem;
-        font-weight: 700;
+        margin: 0;
+        opacity: 0.82;
+        font-size: 0.94rem;
       }
 
       .theme-row {
-        margin-top: 14px;
+        margin-top: 12px;
         display: grid;
-        grid-template-columns: repeat(3, minmax(120px, 1fr));
         gap: 8px;
+        grid-template-columns: repeat(2, 1fr);
       }
 
-      .theme-btn,
-      .action-btn,
-      .clear-btn {
-        border: 2px solid var(--line);
-        border-radius: 14px;
+      button {
         cursor: pointer;
+        border: 2px solid var(--line);
+        border-radius: 12px;
         font-weight: 700;
         padding: 10px;
-        transition: transform 0.15s ease, filter 0.2s ease, background 0.2s ease;
+        color: var(--text);
+        background: #fff;
+        transition: transform 0.14s ease, filter 0.2s ease;
       }
 
-      .theme-btn {
-        background: #fff;
-        color: var(--text);
+      button:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.02);
+      }
+
+      button:active {
+        transform: scale(0.98);
       }
 
       .theme-btn.active {
@@ -115,35 +137,25 @@
         border-color: var(--accent);
       }
 
-      .theme-btn:hover,
-      .action-btn:hover,
-      .clear-btn:hover {
-        transform: translateY(-1px) scale(1.01);
-        filter: brightness(1.03);
+      .section {
+        margin-top: 12px;
+        background: rgba(255, 255, 255, 0.55);
+        border: 2px dotted var(--line);
+        border-radius: 14px;
+        padding: 10px;
       }
 
-      .theme-btn:active,
-      .action-btn:active,
-      .clear-btn:active {
-        transform: scale(0.98);
-      }
-
-      .form-grid {
-        margin-top: 16px;
-        display: grid;
-        gap: 12px;
+      .section h2 {
+        margin: 0 0 8px;
+        font-size: 1rem;
       }
 
       label {
         display: grid;
-        gap: 6px;
+        gap: 5px;
+        margin-bottom: 9px;
         font-weight: 700;
-      }
-
-      .note {
-        font-size: 0.82rem;
-        font-weight: 600;
-        opacity: 0.75;
+        font-size: 0.95rem;
       }
 
       input[type="text"],
@@ -151,50 +163,45 @@
       select {
         width: 100%;
         border: 2px solid var(--line);
-        border-radius: 12px;
-        padding: 10px 12px;
+        border-radius: 10px;
+        padding: 9px 10px;
         font-size: 1rem;
-        background: #fff;
         color: var(--text);
+        background: #fff;
       }
 
       textarea {
-        min-height: 120px;
+        min-height: 118px;
         resize: vertical;
-        line-height: 1.6;
       }
 
-      .row-2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-
-      .mood-list {
+      .mood-wrap {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 7px;
       }
 
       .mood-btn {
-        border: 2px solid var(--line);
-        background: #fff;
         border-radius: 999px;
-        padding: 8px 12px;
-        cursor: pointer;
+        padding: 7px 11px;
       }
 
       .mood-btn.active {
-        background: var(--accent-2);
+        background: var(--accent2);
+        border-color: var(--accent2);
         color: #fff;
-        border-color: var(--accent-2);
+      }
+
+      .grid2 {
+        display: grid;
+        gap: 8px;
       }
 
       .heat-box {
-        background: #fff;
         border: 2px dashed var(--line);
-        border-radius: 14px;
-        padding: 10px;
+        border-radius: 12px;
+        padding: 8px;
+        background: #fff;
       }
 
       #heatValue {
@@ -204,47 +211,45 @@
       .heat-meta {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-        margin-top: 6px;
         font-weight: 700;
+        margin-top: 5px;
       }
 
-      .vent-zone {
-        margin-top: 14px;
-        border: 2px dotted var(--line);
-        border-radius: 16px;
-        padding: 12px;
-        background: rgba(255, 255, 255, 0.5);
-      }
-
-      .vent-buttons {
+      .quick-fill {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
       }
 
-      .action-btn {
+      .quick-btn {
+        font-size: 0.9rem;
+        line-height: 1.3;
         background: var(--chip);
-        font-size: 1rem;
       }
 
-      .counter {
-        margin-top: 8px;
-        font-size: 0.92rem;
+      .vent-grid {
+        display: grid;
+        gap: 8px;
+      }
+
+      .vent-btn {
+        background: var(--chip);
+      }
+
+      .vent-meta {
+        font-size: 0.93rem;
         font-weight: 700;
       }
 
-      .feedback {
-        margin-top: 6px;
-        font-size: 0.9rem;
-        opacity: 0.85;
+      .vent-total {
+        margin-top: 8px;
+        font-size: 0.95rem;
+        font-weight: 800;
       }
 
       .clear-btn {
         width: 100%;
-        margin-top: 12px;
-        background: #fff;
+        margin-top: 10px;
       }
 
       .floating-emoji {
@@ -252,14 +257,14 @@
         left: var(--x);
         top: var(--y);
         font-size: 1.7rem;
-        animation: burst 800ms ease-out forwards;
+        animation: pop 820ms ease-out forwards;
         pointer-events: none;
-        z-index: 999;
+        z-index: 99;
       }
 
-      @keyframes burst {
+      @keyframes pop {
         from {
-          transform: translate(0, 0) scale(0.7) rotate(0deg);
+          transform: translate(0, 0) scale(0.7);
           opacity: 1;
         }
         to {
@@ -268,58 +273,72 @@
         }
       }
 
-      @media (max-width: 760px) {
-        .theme-row,
-        .row-2,
-        .vent-buttons {
-          grid-template-columns: 1fr;
+      @media (min-width: 760px) {
+        .top-row {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .theme-row {
+          grid-template-columns: repeat(4, 1fr);
+        }
+
+        .grid2 {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .quick-fill {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .vent-grid {
+          grid-template-columns: 1fr 1fr;
         }
       }
     </style>
   </head>
   <body>
     <div class="wrap">
-      <main class="diary-card" id="app">
-        <div class="stickers" id="stickers">😡🔥💥</div>
-
-        <section class="top-bar">
-          <div>
-            <h1 class="title" id="mainTitle">本日紅溫紀錄 😡🔥</h1>
-            <p class="subtitle" id="subTitle">今天又被雷到了，先把火噴出來再說。</p>
+      <section class="top">
+        <div class="card top-row">
+          <div class="date-box">
+            今天哪一天：
+            <input id="diaryDate" type="date" />
           </div>
-          <div class="date-pill" id="todayDate">--</div>
+          <div class="status-box">存檔狀態：<span id="saveStatus">未儲存</span></div>
+        </div>
+      </section>
+
+      <main class="card">
+        <header class="head">
+          <div class="stickers" id="stickers">😡🔥💥</div>
+          <h1 id="mainTitle">本日紅溫紀錄 😡🔥</h1>
+          <p class="subtitle" id="subTitle">今天又被雷到了，先把火噴出來。</p>
+        </header>
+
+        <section class="theme-row" id="themeRow"></section>
+
+        <section class="section">
+          <h2>快速填入（一鍵發瘋）</h2>
+          <div class="quick-fill" id="quickFill"></div>
         </section>
 
-        <section class="theme-row">
-          <button class="theme-btn active" data-theme="rage">A：被雷到紅溫了</button>
-          <button class="theme-btn" data-theme="love">B：退坑失敗夢女</button>
-          <button class="theme-btn" data-theme="shame">C：社死懺悔</button>
-        </section>
-
-        <section class="form-grid">
+        <section class="section">
+          <h2>排位降溫日記本體</h2>
           <label>
             先噴一句
             <input id="ventLine" type="text" placeholder="你現在最想罵什麼" />
           </label>
-
           <label>
             今天發生什麼事（主日記區）
             <textarea id="mainDiary" placeholder="今天哪一波最讓你想砸手機"></textarea>
           </label>
 
-          <div class="row-2">
+          <div class="grid2">
             <label>
               我現在心情
-              <div class="mood-list" id="moodList">
-                <button class="mood-btn" type="button" data-mood="崩潰">崩潰</button>
-                <button class="mood-btn" type="button" data-mood="爆氣">爆氣</button>
-                <button class="mood-btn" type="button" data-mood="委屈">委屈</button>
-                <button class="mood-btn" type="button" data-mood="麻了">麻了</button>
-                <button class="mood-btn" type="button" data-mood="勉強活著">勉強活著</button>
-              </div>
-              <div class="note" id="selectedMoodText">目前：未選擇</div>
+              <div class="mood-wrap" id="moodWrap"></div>
+              <small id="selectedMood">目前：未選擇</small>
             </label>
-
             <label>
               紅溫值
               <div class="heat-box">
@@ -332,36 +351,31 @@
             </label>
           </div>
 
-          <div class="row-2">
+          <div class="grid2">
             <label>
               最雷的是誰 / 什麼事
               <input id="worstTarget" type="text" placeholder="今天最雷的是誰 / 哪件事" />
             </label>
-
             <label>
               打完這篇後有比較冷靜嗎？
               <select id="coolingLevel">
                 <option value="有">有，至少不想砸手機了</option>
-                <option value="一點點">一點點，還是氣但能呼吸</option>
-                <option value="沒有">沒有，我還是火山爆發</option>
+                <option value="一點點">一點點，還是有點火</option>
+                <option value="沒有">沒有，我還在噴發</option>
               </select>
             </label>
           </div>
 
           <label>
-            給自己一句話（收尾）
-            <input id="selfTalk" type="text" placeholder="明天的我會更強，今天先活下來就好" />
+            給自己一句話
+            <input id="selfTalk" type="text" placeholder="今天辛苦了，先活下來，明天再戰" />
           </label>
         </section>
 
-        <section class="vent-zone">
-          <strong>發洩按鈕區（廢但有用）</strong>
-          <div class="vent-buttons">
-            <button class="action-btn" id="poopBtn" type="button">💩 大便噴射</button>
-            <button class="action-btn" id="eyeRollBtn" type="button">🙄💅 白眼噴射</button>
-          </div>
-          <div class="counter" id="counterText">今日 💩 0 次｜🙄💅 0 次</div>
-          <div class="feedback" id="feedbackText">今日白眼值穩定中，歡迎繼續發瘋。</div>
+        <section class="section">
+          <h2>發洩按鈕區（模組化 v0.2）</h2>
+          <div class="vent-grid" id="ventGrid"></div>
+          <div class="vent-total" id="ventTotal">今天噴了 0 次</div>
         </section>
 
         <button class="clear-btn" id="clearTodayBtn" type="button">清空今天紀錄</button>
@@ -369,80 +383,10 @@
     </div>
 
     <script>
-      /*
-        ===== MVP 架構說明 =====
-        1) 所有「今天資料」都存在 localStorage，key 用日期切分
-        2) 主題資料集中在 THEMES，未來擴充直接加物件
-        3) 輸入欄位 change/input 即時保存，重整不怕掉資料
-      */
+      // ===== 基本設定 =====
+      const STORAGE_PREFIX = "rankDiary_"; // 需求指定 key 格式
+      const SELECTED_DATE_KEY = "rankDiary_selectedDate";
 
-      const APP_KEY = "idvCoolDiary";
-      const THEME_KEY = "idvCoolDiaryTheme";
-
-      const THEMES = {
-        rage: {
-          title: "本日紅溫紀錄 😡🔥",
-          subtitle: "今天又被雷到了，先把火噴出來再說。",
-          stickers: "😡🔥💥",
-          colors: {
-            bg1: "#ffe1d0",
-            bg2: "#ff9d75",
-            card: "#fff6f2",
-            text: "#572c2b",
-            line: "#f08a66",
-            accent: "#ff5d45",
-            accent2: "#ff8b6c",
-            chip: "#ffd3c0",
-          },
-          placeholders: {
-            ventLine: "你現在最想罵什麼",
-            mainDiary: "今天哪一波最讓你想砸手機",
-            worstTarget: "今天最雷的是誰 / 哪件事",
-          },
-        },
-        love: {
-          title: "退坑失敗日記 😭💕",
-          subtitle: "今天本來想卸載，後來想到我老公還在裡面。",
-          stickers: "😭💔💕",
-          colors: {
-            bg1: "#ffe8f4",
-            bg2: "#ffb4d8",
-            card: "#fff8fc",
-            text: "#663652",
-            line: "#ef89bc",
-            accent: "#f05aa6",
-            accent2: "#ff94c8",
-            chip: "#ffd8ec",
-          },
-          placeholders: {
-            ventLine: "今天又是因為誰沒辦法退坑",
-            mainDiary: "今天發生什麼讓你一邊崩潰一邊繼續留在坑裡",
-            worstTarget: "今天最讓你心碎的是什麼",
-          },
-        },
-        shame: {
-          title: "今日社死懺悔錄 🥹💦",
-          subtitle: "今天這把真的拉了一坨，先誠實面對我自己。",
-          stickers: "🥹💦🫠",
-          colors: {
-            bg1: "#dce8ff",
-            bg2: "#9fb4dd",
-            card: "#f6f9ff",
-            text: "#2f4164",
-            line: "#7f9ac7",
-            accent: "#5f7fc8",
-            accent2: "#86a2df",
-            chip: "#d9e5ff",
-          },
-          placeholders: {
-            ventLine: "你現在最想替自己找什麼藉口",
-            mainDiary: "今天哪一波最值得社死",
-            worstTarget: "今天你最怕別人拿哪件事公審你",
-          },
-        },
-      };
-
-      // 紅溫值對應文字（固定需求）
       const HEAT_LABELS = {
         0: "還行",
         25: "有點煩",
@@ -451,247 +395,409 @@
         100: "我現在就是💩噴射器",
       };
 
-      // ===== DOM 快速抓取 =====
-      const app = document.getElementById("app");
-      const titleEl = document.getElementById("mainTitle");
+      const themes = {
+        rage: {
+          name: "被雷到紅溫了",
+          title: "本日紅溫紀錄 😡🔥",
+          subtitle: "今天又被雷到了，先把火噴出來。",
+          stickers: "😡🔥💥",
+          colors: ["#ffe1d0", "#ff9f78", "#fff7f2", "#542b2b", "#ef8f6a", "#ff5f46", "#ff936c", "#ffd5c2"],
+          placeholders: ["你現在最想罵什麼", "今天哪一波最讓你想砸手機", "今天最雷的是誰 / 哪件事"],
+        },
+        love: {
+          name: "想卸載，但老公還在",
+          title: "退坑失敗日記 😭💕",
+          subtitle: "今天本來想卸載，想到夢角又忍住了。",
+          stickers: "😭💔💕",
+          colors: ["#ffe8f5", "#ffb3d9", "#fff8fc", "#653351", "#ef87bc", "#f05aa6", "#ff95c9", "#ffd8ec"],
+          placeholders: ["今天又是因為誰沒辦法退坑", "今天發生什麼讓你一邊崩潰一邊留在坑裡", "今天最讓你心碎的是什麼"],
+        },
+        shame: {
+          name: "我今天拉了一坨",
+          title: "今日社死懺悔錄 🥹💦",
+          subtitle: "打得爛到怕被匿名公審，先寫下來。",
+          stickers: "🥹💦🫠",
+          colors: ["#dde8ff", "#a2b7df", "#f6f9ff", "#304164", "#819cc9", "#617fc9", "#89a5e1", "#d8e4ff"],
+          placeholders: ["你現在最想替自己找什麼藉口", "今天哪一波最值得社死", "今天你最怕別人拿哪件事公審你"],
+        },
+        boss: {
+          name: "老子才是老大",
+          title: "今天我最大 👑",
+          subtitle: "不爽被問、不爽被催、不爽被情勒。",
+          stickers: "👑🖤🥀",
+          colors: ["#1b1b1b", "#3a0f0f", "#141414", "#f2d58e", "#6e4b1e", "#b8892f", "#7d1e1e", "#2a2a2a"],
+          placeholders: ["先一句：今天誰在那邊問問問", "把你的不爽與邊界一次講完", "今天最不爽被催的事"],
+          shortTemplate:
+            "問問問，你們是守得住秘密的人嗎？大家戴著面具人格相處，不就夠了嗎？愛要不要，免費的東西別催，看我心情。今天老子才是老大。",
+          longTemplate:
+            "...在那問問問🗣️，我們都用自己的面具人格，相處不就完了嗎？就這麼想要我的秘密？你們是守得住秘密的人嗎？一群『人』……\n我也還沒發，發完就徹底算人消失了。也別說我發得慢，愛要不要。免費的東西，別急，看我心情，懂嗎？\n老子才是老大。",
+        },
+      };
+
+      const moods = ["崩潰", "爆氣", "委屈", "麻了", "勉強活著", "老大模式"];
+
+      // 快速填入資料，可擴充
+      const quickFillItems = [
+        {
+          label: "今天被雷到爆氣",
+          apply: (s) => ({ ...s, theme: "rage", mood: "爆氣", worstTarget: "神奇路人隊友", mainDiary: s.mainDiary || "今天又被雷到，心態直接裂開。" }),
+        },
+        {
+          label: "今天想卸載第五人格",
+          apply: (s) => ({ ...s, theme: "rage", heatValue: 75, selfTalk: "先別卸載，先去喝水。" }),
+        },
+        {
+          label: "今天是夢角把我留住",
+          apply: (s) => ({ ...s, theme: "love", mood: "委屈", selfTalk: "算了，我老公還在，我再忍一下。" }),
+        },
+        {
+          label: "今天打得像一坨怕被匿名公審",
+          apply: (s) => ({ ...s, theme: "shame", mood: "崩潰", mainDiary: s.mainDiary || "我今天真的打得很可疑，先懺悔。" }),
+        },
+        {
+          label: "今天只想翻白眼",
+          apply: (s) => ({ ...s, heatValue: 50, mood: "麻了", ventLine: s.ventLine || "🙄 我已經懶得生氣了" }),
+        },
+        {
+          label: "老子才是老大",
+          apply: (s) => ({ ...s, theme: "boss", mood: "老大模式", mainDiary: themes.boss.shortTemplate, selfTalk: "今天我不陪你演，我最大。" }),
+        },
+      ];
+
+      // 發洩按鈕模組設定
+      const ventConfigs = [
+        {
+          key: "poop",
+          emoji: "💩",
+          label: "大便噴射",
+          burst: ["💩"],
+          feedbacks: ["已成功排出情緒廢物", "今天也有努力噴射", "你已經不是普通噴射器了"],
+        },
+        {
+          key: "eyeroll",
+          emoji: "🙄💅",
+          label: "白眼噴射",
+          burst: ["🙄", "💅"],
+          feedbacks: ["白眼值穩定上升中", "你這眼神很有內容", "今天不解釋，直接翻白眼"],
+        },
+      ];
+
+      // ===== DOM =====
+      const diaryDateEl = document.getElementById("diaryDate");
+      const saveStatusEl = document.getElementById("saveStatus");
+      const mainTitleEl = document.getElementById("mainTitle");
       const subTitleEl = document.getElementById("subTitle");
       const stickersEl = document.getElementById("stickers");
-      const todayDateEl = document.getElementById("todayDate");
-      const themeBtns = document.querySelectorAll(".theme-btn");
+      const themeRowEl = document.getElementById("themeRow");
+      const quickFillEl = document.getElementById("quickFill");
+      const moodWrapEl = document.getElementById("moodWrap");
+      const selectedMoodEl = document.getElementById("selectedMood");
 
       const ventLineEl = document.getElementById("ventLine");
       const mainDiaryEl = document.getElementById("mainDiary");
-      const worstTargetEl = document.getElementById("worstTarget");
-      const coolingLevelEl = document.getElementById("coolingLevel");
-      const selfTalkEl = document.getElementById("selfTalk");
-
-      const moodBtns = document.querySelectorAll(".mood-btn");
-      const selectedMoodTextEl = document.getElementById("selectedMoodText");
-
       const heatValueEl = document.getElementById("heatValue");
       const heatNumberEl = document.getElementById("heatNumber");
       const heatLabelEl = document.getElementById("heatLabel");
-
-      const poopBtnEl = document.getElementById("poopBtn");
-      const eyeRollBtnEl = document.getElementById("eyeRollBtn");
-      const counterTextEl = document.getElementById("counterText");
-      const feedbackTextEl = document.getElementById("feedbackText");
+      const worstTargetEl = document.getElementById("worstTarget");
+      const coolingLevelEl = document.getElementById("coolingLevel");
+      const selfTalkEl = document.getElementById("selfTalk");
+      const ventGridEl = document.getElementById("ventGrid");
+      const ventTotalEl = document.getElementById("ventTotal");
       const clearTodayBtnEl = document.getElementById("clearTodayBtn");
 
-      // ===== 日期 key：每天一份資料 =====
-      const today = new Date();
-      const dayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
-        today.getDate()
-      ).padStart(2, "0")}`;
-      const dailyKey = `${APP_KEY}-${dayKey}`;
+      // ===== 狀態 =====
+      let currentDate = getInitialDate();
+      let state = loadRecord(currentDate);
 
-      // 顯示今天日期
-      todayDateEl.textContent = `📅 ${today.toLocaleDateString("zh-TW", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        weekday: "short",
-      })}`;
+      function getTodayDateString() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, "0");
+        const d = String(now.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      }
 
-      // 預設狀態（今日）
-      const defaultState = {
-        theme: localStorage.getItem(THEME_KEY) || "rage",
-        ventLine: "",
-        mainDiary: "",
-        mood: "",
-        heatValue: 50,
-        worstTarget: "",
-        coolingLevel: "有",
-        selfTalk: "",
-        poopCount: 0,
-        eyeRollCount: 0,
-      };
+      function getInitialDate() {
+        return localStorage.getItem(SELECTED_DATE_KEY) || getTodayDateString();
+      }
 
-      let state = loadState();
+      function getStorageKey(date) {
+        return `${STORAGE_PREFIX}${date}`;
+      }
 
-      function loadState() {
-        const raw = localStorage.getItem(dailyKey);
-        if (!raw) return { ...defaultState };
+      function defaultRecord() {
+        const counts = {};
+        ventConfigs.forEach((cfg) => (counts[cfg.key] = 0));
+        return {
+          theme: "rage",
+          ventLine: "",
+          mainDiary: "",
+          mood: "",
+          heatValue: 50,
+          worstTarget: "",
+          coolingLevel: "有",
+          selfTalk: "",
+          ventCounts: counts,
+        };
+      }
+
+      function loadRecord(date) {
+        const raw = localStorage.getItem(getStorageKey(date));
+        if (!raw) {
+          setStatus(`已載入 ${date}（新紀錄）`, "#4e7f3f");
+          return defaultRecord();
+        }
+
         try {
-          return { ...defaultState, ...JSON.parse(raw) };
+          const parsed = JSON.parse(raw);
+          const merged = { ...defaultRecord(), ...parsed };
+          merged.ventCounts = { ...defaultRecord().ventCounts, ...(parsed.ventCounts || {}) };
+          setStatus(`已載入 ${date}`, "#4e7f3f");
+          return merged;
         } catch {
-          return { ...defaultState };
+          setStatus(`${date} 資料壞掉，已重建空白`, "#a52f2f");
+          return defaultRecord();
         }
       }
 
-      function saveState() {
-        localStorage.setItem(dailyKey, JSON.stringify(state));
-        localStorage.setItem(THEME_KEY, state.theme);
+      function saveRecord(message = "已幫你偷偷存起來") {
+        localStorage.setItem(getStorageKey(currentDate), JSON.stringify(state));
+        localStorage.setItem(SELECTED_DATE_KEY, currentDate);
+        setStatus(message, "var(--accent)");
       }
 
-      // 主題套用：背景、標題、emoji、placeholder
-      function applyTheme(themeName) {
-        const theme = THEMES[themeName] || THEMES.rage;
+      function setStatus(text, color = "var(--accent)") {
+        saveStatusEl.textContent = text;
+        saveStatusEl.style.color = color;
+      }
+
+      function markDirty() {
+        setStatus("未儲存", "#9f4f08");
+      }
+
+      function applyTheme(themeKey) {
+        const theme = themes[themeKey] || themes.rage;
+        const [bg1, bg2, card, text, line, accent, accent2, chip] = theme.colors;
         const root = document.documentElement;
+        root.style.setProperty("--bg1", bg1);
+        root.style.setProperty("--bg2", bg2);
+        root.style.setProperty("--card", card);
+        root.style.setProperty("--text", text);
+        root.style.setProperty("--line", line);
+        root.style.setProperty("--accent", accent);
+        root.style.setProperty("--accent2", accent2);
+        root.style.setProperty("--chip", chip);
 
-        root.style.setProperty("--bg-1", theme.colors.bg1);
-        root.style.setProperty("--bg-2", theme.colors.bg2);
-        root.style.setProperty("--card", theme.colors.card);
-        root.style.setProperty("--text", theme.colors.text);
-        root.style.setProperty("--line", theme.colors.line);
-        root.style.setProperty("--accent", theme.colors.accent);
-        root.style.setProperty("--accent-2", theme.colors.accent2);
-        root.style.setProperty("--chip", theme.colors.chip);
-
-        titleEl.textContent = theme.title;
+        mainTitleEl.textContent = theme.title;
         subTitleEl.textContent = theme.subtitle;
         stickersEl.textContent = theme.stickers;
 
-        ventLineEl.placeholder = theme.placeholders.ventLine;
-        mainDiaryEl.placeholder = theme.placeholders.mainDiary;
-        worstTargetEl.placeholder = theme.placeholders.worstTarget;
+        ventLineEl.placeholder = theme.placeholders[0];
+        mainDiaryEl.placeholder = theme.placeholders[1];
+        worstTargetEl.placeholder = theme.placeholders[2];
+      }
 
-        themeBtns.forEach((btn) => {
-          btn.classList.toggle("active", btn.dataset.theme === themeName);
+      function renderThemeButtons() {
+        themeRowEl.innerHTML = "";
+        Object.entries(themes).forEach(([key, theme]) => {
+          const btn = document.createElement("button");
+          btn.className = `theme-btn ${state.theme === key ? "active" : ""}`;
+          btn.textContent = theme.name;
+          btn.type = "button";
+          btn.addEventListener("click", () => {
+            state.theme = key;
+            applyTheme(state.theme);
+            renderThemeButtons();
+            saveRecord();
+          });
+          themeRowEl.appendChild(btn);
         });
       }
 
-      function updateMoodUI() {
-        moodBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.mood === state.mood));
-        selectedMoodTextEl.textContent = state.mood ? `目前：${state.mood}` : "目前：未選擇";
+      function renderQuickFill() {
+        quickFillEl.innerHTML = "";
+        quickFillItems.forEach((item) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "quick-btn";
+          btn.textContent = item.label;
+          btn.addEventListener("click", () => {
+            state = item.apply(state);
+            renderAll();
+            saveRecord(`已套用「${item.label}」`);
+          });
+          quickFillEl.appendChild(btn);
+        });
       }
 
-      function updateHeatUI() {
-        const value = Number(state.heatValue);
-        heatValueEl.value = String(value);
-        heatNumberEl.textContent = `紅溫值 ${value}`;
-        heatLabelEl.textContent = HEAT_LABELS[value] || "微妙";
+      function renderMoodButtons() {
+        moodWrapEl.innerHTML = "";
+        moods.forEach((m) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `mood-btn ${state.mood === m ? "active" : ""}`;
+          btn.textContent = m;
+          btn.addEventListener("click", () => {
+            state.mood = m;
+            renderMoodButtons();
+            selectedMoodEl.textContent = `目前：${state.mood || "未選擇"}`;
+            saveRecord();
+          });
+          moodWrapEl.appendChild(btn);
+        });
 
-        // 紅溫高時，讓 heatLabel 偏紅，低時比較冷靜
-        heatLabelEl.style.color = value >= 75 ? "#d92e2e" : value <= 25 ? "#3f7fc0" : "var(--text)";
+        selectedMoodEl.textContent = `目前：${state.mood || "未選擇"}`;
       }
 
-      function updateCounterUI() {
-        counterTextEl.textContent = `今日 💩 ${state.poopCount} 次｜🙄💅 ${state.eyeRollCount} 次`;
+      function renderHeat() {
+        heatValueEl.value = String(state.heatValue);
+        heatNumberEl.textContent = `紅溫值 ${state.heatValue}`;
+        heatLabelEl.textContent = HEAT_LABELS[state.heatValue] || "微妙";
+        heatLabelEl.style.color = state.heatValue >= 75 ? "#d33131" : state.heatValue <= 25 ? "#3f7fc0" : "var(--text)";
+      }
 
-        const total = state.poopCount + state.eyeRollCount;
-        if (total === 0) {
-          feedbackTextEl.textContent = "今日白眼值穩定中，歡迎繼續發瘋。";
-        } else if (total < 6) {
-          feedbackTextEl.textContent = `你今天已經很有精神地噴了 ${total} 次。`;
-        } else {
-          feedbackTextEl.textContent = `今日白眼值穩定上升中（目前 ${total} 次），辛苦了戰士。`;
+      function spawnBurst(chars) {
+        for (let i = 0; i < 10; i++) {
+          const emoji = chars[Math.floor(Math.random() * chars.length)];
+          const node = document.createElement("div");
+          node.className = "floating-emoji";
+          node.textContent = emoji;
+
+          const x = window.innerWidth * (0.25 + Math.random() * 0.5);
+          const y = window.innerHeight * (0.35 + Math.random() * 0.3);
+
+          node.style.setProperty("--x", `${x}px`);
+          node.style.setProperty("--y", `${y}px`);
+          node.style.setProperty("--dx", `${-130 + Math.random() * 260}px`);
+          node.style.setProperty("--dy", `${-240 + Math.random() * 120}px`);
+          node.style.setProperty("--rot", `${-130 + Math.random() * 260}deg`);
+          document.body.appendChild(node);
+          setTimeout(() => node.remove(), 850);
         }
       }
 
-      function renderAll() {
-        applyTheme(state.theme);
+      // 發洩按鈕模組化：透過設定陣列建立 UI 和行為
+      function renderVentModule() {
+        ventGridEl.innerHTML = "";
+
+        ventConfigs.forEach((cfg) => {
+          const wrap = document.createElement("div");
+          const btn = document.createElement("button");
+          const meta = document.createElement("div");
+
+          btn.type = "button";
+          btn.className = "vent-btn";
+          btn.textContent = `${cfg.emoji} ${cfg.label}`;
+
+          const count = state.ventCounts[cfg.key] || 0;
+          meta.className = "vent-meta";
+          meta.textContent = `今日 ${cfg.label}：${count} 次`;
+
+          btn.addEventListener("click", () => {
+            state.ventCounts[cfg.key] = (state.ventCounts[cfg.key] || 0) + 1;
+            const newCount = state.ventCounts[cfg.key];
+            const randomTxt = cfg.feedbacks[Math.floor(Math.random() * cfg.feedbacks.length)];
+            meta.textContent = `今日 ${cfg.label}：${newCount} 次｜${randomTxt}`;
+            spawnBurst(cfg.burst);
+            updateVentTotal();
+            saveRecord();
+          });
+
+          wrap.appendChild(btn);
+          wrap.appendChild(meta);
+          ventGridEl.appendChild(wrap);
+        });
+
+        updateVentTotal();
+      }
+
+      function updateVentTotal() {
+        const total = Object.values(state.ventCounts).reduce((sum, n) => sum + Number(n || 0), 0);
+        ventTotalEl.textContent = `今天噴了 ${total} 次（💩 ${state.ventCounts.poop || 0}｜🙄💅 ${state.ventCounts.eyeroll || 0}）`;
+      }
+
+      function renderFormFields() {
         ventLineEl.value = state.ventLine;
         mainDiaryEl.value = state.mainDiary;
         worstTargetEl.value = state.worstTarget;
         coolingLevelEl.value = state.coolingLevel;
         selfTalkEl.value = state.selfTalk;
-        updateMoodUI();
-        updateHeatUI();
-        updateCounterUI();
       }
 
-      // Emoji 粒子：簡單但舒壓
-      function spawnBurst(emoji, amount = 9) {
-        for (let i = 0; i < amount; i++) {
-          const node = document.createElement("div");
-          node.className = "floating-emoji";
-          node.textContent = emoji;
-
-          const x = window.innerWidth * (0.3 + Math.random() * 0.4);
-          const y = window.innerHeight * (0.45 + Math.random() * 0.15);
-          const dx = `${-100 + Math.random() * 200}px`;
-          const dy = `${-60 - Math.random() * 200}px`;
-          const rot = `${-120 + Math.random() * 240}deg`;
-
-          node.style.setProperty("--x", `${x}px`);
-          node.style.setProperty("--y", `${y}px`);
-          node.style.setProperty("--dx", dx);
-          node.style.setProperty("--dy", dy);
-          node.style.setProperty("--rot", rot);
-          document.body.appendChild(node);
-
-          setTimeout(() => node.remove(), 820);
-        }
+      function renderAll() {
+        diaryDateEl.value = currentDate;
+        applyTheme(state.theme);
+        renderThemeButtons();
+        renderQuickFill();
+        renderMoodButtons();
+        renderHeat();
+        renderFormFields();
+        renderVentModule();
       }
 
-      // ===== 事件：主題 =====
-      themeBtns.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          state.theme = btn.dataset.theme;
-          applyTheme(state.theme);
-          saveState();
-        });
+      function switchDate(nextDate) {
+        currentDate = nextDate;
+        state = loadRecord(currentDate);
+        renderAll();
+      }
+
+      // ===== 事件：日期切換 =====
+      diaryDateEl.addEventListener("change", () => {
+        if (!diaryDateEl.value) return;
+        switchDate(diaryDateEl.value);
       });
 
-      // ===== 事件：輸入即時保存 =====
+      // ===== 事件：欄位自動存檔 =====
       ventLineEl.addEventListener("input", () => {
+        markDirty();
         state.ventLine = ventLineEl.value;
-        saveState();
+        saveRecord();
       });
+
       mainDiaryEl.addEventListener("input", () => {
+        markDirty();
         state.mainDiary = mainDiaryEl.value;
-        saveState();
+        saveRecord();
       });
+
       worstTargetEl.addEventListener("input", () => {
+        markDirty();
         state.worstTarget = worstTargetEl.value;
-        saveState();
+        saveRecord();
       });
+
       coolingLevelEl.addEventListener("change", () => {
+        markDirty();
         state.coolingLevel = coolingLevelEl.value;
-        saveState();
+        saveRecord();
       });
+
       selfTalkEl.addEventListener("input", () => {
+        markDirty();
         state.selfTalk = selfTalkEl.value;
-        saveState();
+        saveRecord();
       });
 
-      // ===== 事件：心情 =====
-      moodBtns.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          state.mood = btn.dataset.mood;
-          updateMoodUI();
-          saveState();
-        });
-      });
-
-      // ===== 事件：紅溫值 =====
       heatValueEl.addEventListener("input", () => {
+        markDirty();
         state.heatValue = Number(heatValueEl.value);
-        updateHeatUI();
-        saveState();
+        renderHeat();
+        saveRecord();
       });
 
-      // ===== 事件：發洩按鈕 =====
-      poopBtnEl.addEventListener("click", () => {
-        state.poopCount += 1;
-        updateCounterUI();
-        saveState();
-        spawnBurst("💩", 11);
-      });
-
-      eyeRollBtnEl.addEventListener("click", () => {
-        state.eyeRollCount += 1;
-        updateCounterUI();
-        saveState();
-        // 白眼 + 美甲混搭噴射
-        spawnBurst(Math.random() > 0.5 ? "🙄" : "💅", 11);
-      });
-
-      // ===== 事件：清空今日 =====
+      // ===== 清空僅當日 =====
       clearTodayBtnEl.addEventListener("click", () => {
-        const ok = window.confirm("確定要清空今天紀錄嗎？（會清掉今天輸入和兩種噴射次數）");
+        const ok = window.confirm(`確定清空 ${currentDate} 這一天的紀錄嗎？`);
         if (!ok) return;
 
-        state = {
-          ...defaultState,
-          theme: state.theme, // 保留目前主題，避免清空後突然換皮
-        };
-        saveState();
+        const keepTheme = state.theme;
+        state = defaultRecord();
+        state.theme = keepTheme;
+        saveRecord(`已清空 ${currentDate}（僅這一天）`);
         renderAll();
       });
 
-      // 初始渲染
+      // 初始載入
       renderAll();
     </script>
   </body>
