@@ -619,11 +619,11 @@
 
       /*
         ===== 射擊素材設定區（可維護）=====
-        1) 改素材資料夾：改 TARGET_BASE_PATH
+        1) 本機手機最簡單方案：圖片跟 index.html 放同一層
         2) 新增 target_04、target_05：往 targets 陣列 push 物件
         3) 圖片尺寸安全值：改 TARGET_SCALE（避免素材尺寸差太多爆版）
       */
-      const TARGET_BASE_PATH = "./assets/targets/";
+      const TARGET_BASE_PATH = "";
       const TARGET_SCALE = 0.9;
       const targets = [
         { id: "target_01", name: "雷包01", image: "target_01.png" },
@@ -1414,6 +1414,8 @@ ${record.diary || "（空）"}
         targetImageEl.addEventListener("error", () => {
           targetImageEl.classList.add("hidden");
           targetFallbackEl.classList.remove("hidden");
+          const target = targets[shooterState.currentTargetIndex];
+          targetFallbackEl.textContent = `標靶載入失敗：${target?.image || "未知檔名"}`;
         });
       }
 
