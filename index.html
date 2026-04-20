@@ -509,6 +509,19 @@
             <button type="button" id="randomTargetBtn">隨機雷包</button>
           </div>
 
+          <details style="margin-top:10px;">
+            <summary style="cursor:pointer;font-weight:800;">匯入你的標靶原圖（單檔版）</summary>
+            <div style="display:grid;gap:8px;margin-top:8px;">
+              <label>target_01.png<input type="file" id="targetFile01" accept="image/png,image/*" /></label>
+              <label>target_02.png<input type="file" id="targetFile02" accept="image/png,image/*" /></label>
+              <label>target_03.png<input type="file" id="targetFile03" accept="image/png,image/*" /></label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <button type="button" id="applyTargetFilesBtn">套用匯入圖片</button>
+                <button type="button" id="resetTargetFilesBtn">還原預設標靶</button>
+              </div>
+            </div>
+          </details>
+
           <div class="shooter-comment" id="shooterComment">今天很克制，先記你一功。</div>
         </div>
       </section>
@@ -653,9 +666,9 @@
         </svg>`),
       };
       const targets = [
-        { id: "target_01", name: "雷包01", image: "target_01.png", src: EMBEDDED_TARGET_IMAGES.target_01 },
-        { id: "target_02", name: "雷包02", image: "target_02.png", src: EMBEDDED_TARGET_IMAGES.target_02 },
-        { id: "target_03", name: "雷包03", image: "target_03.png", src: EMBEDDED_TARGET_IMAGES.target_03 },
+        { id: "target_01", name: "雷包01", image: "target_01.png" },
+        { id: "target_02", name: "雷包02", image: "target_02.png" },
+        { id: "target_03", name: "雷包03", image: "target_03.png" },
       ];
 
       // DOM
@@ -710,11 +723,17 @@
       const bestShotCountEl = document.getElementById("bestShotCount");
       const shooterCommentEl = document.getElementById("shooterComment");
       const currentTargetNameEl = document.getElementById("currentTargetName");
+      const targetFile01El = document.getElementById("targetFile01");
+      const targetFile02El = document.getElementById("targetFile02");
+      const targetFile03El = document.getElementById("targetFile03");
+      const applyTargetFilesBtnEl = document.getElementById("applyTargetFilesBtn");
+      const resetTargetFilesBtnEl = document.getElementById("resetTargetFilesBtn");
 
       let toastTimer = null;
       let shooterAutoTimer = null;
       let shooterAutoInterval = null;
       const SHOOTER_STORAGE_KEY = "rankDiary_shooter_data";
+      const SHOOTER_TARGETS_STORAGE_KEY = "rankDiary_shooter_target_images";
       let shooterState = {
         currentTargetIndex: 0,
         shots: 0,
@@ -1317,6 +1336,32 @@ ${record.diary || "（空）"}
         }
       }
 
+      function loadCustomTargetImages() {
+        const raw = localStorage.getItem(SHOOTER_TARGETS_STORAGE_KEY);
+        if (!raw) return;
+        try {
+          const data = JSON.parse(raw);
+          ["target_01", "target_02", "target_03"].forEach((key) => {
+            if (typeof data[key] === "string" && data[key].startsWith("data:image/")) {
+              EMBEDDED_TARGET_IMAGES[key] = data[key];
+            }
+          });
+        } catch {
+          // ignore
+        }
+      }
+
+      function saveCustomTargetImages() {
+        localStorage.setItem(
+          SHOOTER_TARGETS_STORAGE_KEY,
+          JSON.stringify({
+            target_01: EMBEDDED_TARGET_IMAGES.target_01,
+            target_02: EMBEDDED_TARGET_IMAGES.target_02,
+            target_03: EMBEDDED_TARGET_IMAGES.target_03,
+          })
+        );
+      }
+
       function updateShooterStats() {
         hitCountEl.textContent = String(shooterState.hits);
         shotCountEl.textContent = String(shooterState.shots);
@@ -1355,9 +1400,18 @@ ${record.diary || "（空）"}
         const target = targets[shooterState.currentTargetIndex];
         targetImageEl.classList.remove("hidden");
         targetFallbackEl.classList.add("hidden");
-        targetImageEl.src = target.src;
+        targetImageEl.src = EMBEDDED_TARGET_IMAGES[target.id] || "";
         targetImageEl.alt = target.name;
         updateShooterStats();
+      }
+
+      function fileToDataURL(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
       }
 
       function fireShot() {
@@ -1443,6 +1497,37 @@ ${record.diary || "（空）"}
           targetFallbackEl.classList.remove("hidden");
           const target = targets[shooterState.currentTargetIndex];
           targetFallbackEl.textContent = `標靶載入失敗：${target?.image || "未知檔名"}（內嵌圖也讀取失敗）`;
+        });
+
+        applyTargetFilesBtnEl.addEventListener("click", async () => {
+          const pairs = [
+            ["target_01", targetFile01El.files?.[0]],
+            ["target_02", targetFile02El.files?.[0]],
+            ["target_03", targetFile03El.files?.[0]],
+          ];
+
+          let changed = false;
+          for (const [key, file] of pairs) {
+            if (!file) continue;
+            const dataUrl = await fileToDataURL(file);
+            if (dataUrl.startsWith("data:image/")) {
+              EMBEDDED_TARGET_IMAGES[key] = dataUrl;
+              changed = true;
+            }
+          }
+
+          if (!changed) {
+            showToast("沒有選到圖片，請先選檔再套用");
+            return;
+          }
+          saveCustomTargetImages();
+          renderShooterGame();
+          showToast("已套用你的標靶原圖（已存進本機）");
+        });
+
+        resetTargetFilesBtnEl.addEventListener("click", () => {
+          localStorage.removeItem(SHOOTER_TARGETS_STORAGE_KEY);
+          location.reload();
         });
       }
 
@@ -1543,6 +1628,7 @@ ${record.diary || "（空）"}
 
       // 初始渲染
       loadShooterData();
+      loadCustomTargetImages();
       bindShooterEvents();
       renderShooterGame();
       renderAll();
