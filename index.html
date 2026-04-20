@@ -7,105 +7,104 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body data-theme="rage">
-    <div class="stickers" aria-hidden="true">
-      <div class="sticker sticker-left" id="themeStickerLeft">😡</div>
-      <div class="sticker sticker-right" id="themeStickerRight">🔥</div>
+    <div class="corner-stickers" aria-hidden="true">
+      <span id="stickerLeft">😡</span>
+      <span id="stickerRight">🔥</span>
     </div>
 
-    <main class="app">
-      <header class="app-header card">
+    <main class="container">
+      <header class="card header-card">
         <div>
-          <p class="date" id="todayDate"></p>
-          <h1 id="mainTitle">本日紅溫紀錄</h1>
-          <p class="tagline" id="themeTagline">先把怒氣倒出來，等等再說誰送分。</p>
+          <p class="small-text">私人發瘋用，不連網不上傳</p>
+          <h1 id="themeTitle">本日紅溫紀錄</h1>
+          <p id="themeSubtitle">先發洩，再冷靜，今天先別怪自己。</p>
         </div>
-        <div class="theme-switcher" id="themeSwitcher"></div>
+        <div id="themeButtons" class="theme-buttons"></div>
       </header>
 
-      <section class="card diary-card">
+      <section class="card">
         <h2>📝 今天排位日記</h2>
-        <div class="temperature-wrap">
-          <label for="rageMeter">今日紅溫值：<span id="rageLabel">50</span>/100</label>
-          <input id="rageMeter" type="range" min="0" max="100" value="50" />
-        </div>
-
-        <div class="field-grid">
+        <div class="grid two-col">
           <label>
-            <span>快速輸入（情緒垃圾桶）</span>
-            <input id="quickInput" type="text" placeholder="先打一行：我現在真的很想尖叫。" />
+            <span>日期</span>
+            <input id="diaryDate" type="date" />
           </label>
-
           <label>
             <span>我現在心情</span>
-            <input id="moodInput" type="text" placeholder="例如：火大、委屈、戀愛腦、想躺平" />
+            <input id="mood" type="text" placeholder="例如：火大、委屈、戀愛腦、社死" />
           </label>
-
           <label>
             <span>今天最雷的是誰 / 什麼事</span>
-            <input id="worstInput" type="text" placeholder="例如：雙救人秒倒、我自己空刀四次" />
+            <input id="worst" type="text" placeholder="例如：雙倒硬救、我自己空刀" />
           </label>
-
           <label>
             <span>打完這篇後有比較冷靜嗎？</span>
-            <select id="calmSelect">
-              <option value="有">有，差點成佛</option>
+            <select id="calmLevel">
+              <option value="有">有，舒服很多</option>
               <option value="一點點">一點點，還在冒煙</option>
-              <option value="沒有">沒有，我是火山</option>
+              <option value="沒有">沒有，我還是火山</option>
             </select>
           </label>
         </div>
 
-        <label class="diary-main-label">
-          <span>今天發生什麼事（可長文怒噴）</span>
-          <textarea id="diaryText" placeholder="把今天所有逆天操作都寫出來，不要客氣。"></textarea>
+        <label>
+          <span>今天發生什麼事（情緒垃圾桶）</span>
+          <textarea id="story" placeholder="想罵就罵、想哭就哭，這格是你的安全區。"></textarea>
         </label>
 
-        <div class="action-row">
-          <button class="btn primary" id="saveDiaryBtn">💾 儲存今天紀錄</button>
-          <button class="btn ghost" id="clearBtn">🧹 清空今天紀錄</button>
-          <p class="calm-status" id="calmStatus">還沒寫，先吐槽一下再說。</p>
+        <div class="meter-wrap">
+          <label for="rageMeter">今日紅溫值：<strong id="rageValue">55</strong>/100</label>
+          <input id="rageMeter" type="range" min="0" max="100" value="55" />
+        </div>
+
+        <div class="row">
+          <button id="saveBtn" class="btn btn-primary">💾 儲存今天紀錄</button>
+          <button id="clearBtn" class="btn btn-soft">🧹 清空今天紀錄</button>
+          <p id="calmHint" class="small-text">先把情緒倒出來，慢慢就會冷。</p>
         </div>
       </section>
 
-      <section class="card vent-card">
+      <section class="card">
         <h2>🔘 發洩按鈕區</h2>
-        <div class="vent-buttons">
-          <button class="btn poop" id="poopBtn">💩 大便噴射</button>
-          <button class="btn eye" id="eyeBtn">🙄💅 噴射白眼</button>
+        <div class="row">
+          <button id="poopBtn" class="btn btn-poop">💩 大便噴射</button>
+          <button id="eyeBtn" class="btn btn-eye">🙄💅 噴射按鈕</button>
         </div>
-        <div class="counter-box">
+        <div class="counter">
           <p>今日 💩：<strong id="poopCount">0</strong> 次</p>
           <p>今日 🙄💅：<strong id="eyeCount">0</strong> 次</p>
         </div>
-        <div class="burst-layer" id="burstLayer" aria-hidden="true"></div>
+        <div id="burstArea" class="burst-area" aria-hidden="true"></div>
       </section>
 
-      <section class="card mini-game-card">
-        <h2>🎯 小遊戲 1：射擊雷包隊友</h2>
-        <div class="game-top-row">
-          <p>剩餘時間：<span id="gameTime">15</span>s</p>
-          <p>分數：<span id="gameScore">0</span></p>
-          <button class="btn tiny" id="startGameBtn">開始射擊</button>
+      <section class="card">
+        <h2>🎯 超小廢舒壓小遊戲：射擊雷包隊友</h2>
+        <div class="row">
+          <p>剩餘：<span id="gameTime">12</span>s</p>
+          <p>命中：<span id="gameScore">0</span></p>
+          <button id="startGameBtn" class="btn">開始發洩</button>
         </div>
-        <div class="shooting-area" id="shootingArea">
-          <button class="target" id="movingTarget" hidden>🤡 雷包</button>
-          <p class="game-tip" id="gameTip">按「開始射擊」，在 15 秒內狂點雷包發洩。</p>
+        <div id="gameArea" class="game-area">
+          <button id="target" class="target" hidden>🤡 雷包</button>
+          <p id="gameMsg" class="small-text">按「開始發洩」後，12 秒內狂點雷包。</p>
         </div>
       </section>
 
-      <section class="card dressup-card">
-        <h2>👗 小遊戲 2：換裝同人遊戲（骨架）</h2>
+      <section class="card">
+        <h2>👗 換裝同人遊戲（骨架版）</h2>
         <div class="dressup-layout">
-          <div class="avatar-stage" id="avatarStage">
+          <div class="avatar" id="avatar">
             <div class="layer base">底圖角色</div>
             <div class="layer hair" id="hairLayer">髮型 A</div>
-            <div class="layer outfit" id="outfitLayer">衣服 A</div>
-            <div class="layer accessory" id="accLayer">配件 A</div>
-            <div class="layer expression" id="faceLayer">表情 A</div>
+            <div class="layer cloth" id="clothLayer">衣服 A</div>
+            <div class="layer acc" id="accLayer">配件 A</div>
+            <div class="layer face" id="faceLayer">表情 A</div>
           </div>
-          <div class="dressup-controls" id="dressupControls"></div>
+          <div id="dressupControls" class="dressup-controls"></div>
         </div>
-        <p class="hint">※ 這裡是 placeholder 圖層，未來可在 script.js 的 DRESSUP_DATA 替換成你自己的素材名稱與圖片路徑。</p>
+        <p class="small-text">
+          註：這是素材 placeholder。之後你可在 <code>script.js</code> 的 <code>DRESSUP_OPTIONS</code> 替換成自己的圖層名稱或圖片路徑。
+        </p>
       </section>
     </main>
 

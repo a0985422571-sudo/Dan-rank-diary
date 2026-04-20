@@ -1,111 +1,138 @@
 /**
- * 第五人格排位降溫日記 MVP
- * - 純前端 + localStorage
- * - 結構設計為可擴充：主題、發洩按鈕、小遊戲都用設定物件管理
+ * 第五人格排位降溫日記（MVP）
+ * 純前端：HTML/CSS/JS + localStorage
+ *
+ * 擴充指南：
+ * 1) 新增主題：在 THEMES 物件新增設定。
+ * 2) 新增發洩按鈕：參考 bindVentButtons 寫法增加設定。
+ * 3) 新增遊戲：以新的 initXXXGame() 函式掛進 init()。
+ * 4) 換裝換素材：調整 DRESSUP_OPTIONS，將文字替換成圖片路徑。
  */
 
-const STORAGE_KEY = "idvCooldownDiary.v1";
+const STORAGE_KEY = "idv_cooldown_diary_v2";
 
 const THEMES = {
   rage: {
-    id: "rage",
-    name: "😡 被雷到紅溫了",
+    key: "rage",
+    label: "😡 紅溫模式",
     title: "本日紅溫紀錄",
-    tagline: "先把怒氣倒出來，等等再說誰送分。",
+    subtitle: "先發洩，再冷靜，今天先別怪自己。",
     stickers: ["😡", "🔥"],
     placeholders: {
-      quick: "先打一行：我現在真的很想尖叫。",
-      diary: "把今天所有逆天操作都寫出來，不要客氣。",
-      mood: "例如：火大、想報警、想摔手機",
-      worst: "例如：隊友硬救雙倒、我自己空刀",
+      mood: "例如：怒火、想摔手機",
+      worst: "例如：開局秒倒、硬救雙倒",
+      story: "把今天所有逆天操作都打出來。",
+    },
+    calmTip: {
+      有: "你有降溫成功，給你一個擁抱 🫂",
+      一點點: "有降一點點，休息一下再排。",
+      沒有: "沒關係，今天先到這裡也可以。",
     },
   },
   dream: {
-    id: "dream",
-    name: "😭💔 退坑失敗日記",
-    title: "都是因為我老公還在",
-    tagline: "一邊崩潰，一邊戀愛腦上頭。",
-    stickers: ["😭", "💕"],
+    key: "dream",
+    label: "😭💔 夢女崩潰",
+    title: "退坑失敗日記",
+    subtitle: "想卸載，但我老公還在裡面。",
+    stickers: ["😭", "💔"],
     placeholders: {
-      quick: "先打一行：我想卸載，但我老公還在裡面。",
-      diary: "寫下你今天的愛恨情仇，戀愛腦也沒關係。",
-      mood: "例如：心碎、戀愛腦、失戀但還想排",
-      worst: "例如：輸了但我老公語音太好聽",
+      mood: "例如：戀愛腦、心碎、暈船",
+      worst: "例如：輸掉了但老公太帥無法退坑",
+      story: "寫下你今天的愛恨情仇與失智戀愛腦。",
+    },
+    calmTip: {
+      有: "你有冷靜一點，愛會過去，分也會回來。",
+      一點點: "還在哭但有比較好，慢慢來。",
+      沒有: "還在崩潰也沒事，先去喝水。",
     },
   },
-  guilt: {
-    id: "guilt",
-    name: "🥹💦 社死懺悔錄",
-    title: "我是不是會被公審",
-    tagline: "今天打得像在濕答答地滑倒。",
-    stickers: ["🥹", "🫠"],
+  gloom: {
+    key: "gloom",
+    label: "🥹💦 社死模式",
+    title: "今日社死懺悔錄",
+    subtitle: "我今天拉了一坨，怕被匿名公審。",
+    stickers: ["🥹", "💦"],
     placeholders: {
-      quick: "先打一行：今天我拉了大坨，先道歉。",
-      diary: "把社死過程完整記錄，讓未來的你笑出來。",
-      mood: "例如：羞恥、害怕、想裝死",
-      worst: "例如：我自己、我的手、我的腦子",
+      mood: "例如：羞恥、想裝死、心虛",
+      worst: "例如：最雷就是我自己",
+      story: "誠實記錄社死過程，未來回看可以笑自己。",
+    },
+    calmTip: {
+      有: "你已經面對社死了，超勇敢。",
+      一點點: "還有點痛，但你正在恢復。",
+      沒有: "先別苛責自己，輸贏都只是一天。",
     },
   },
 };
 
 /**
- * 換裝資料：未來可直接換成圖片 URL。
- * 你可以把 label 改成素材名稱，並在 renderDressup 中改成 <img> 疊圖顯示。
+ * 換裝資料骨架：
+ * 後續可把每個項目改成 { label, image } 形式，並在 renderDressup 讀 image 疊圖。
  */
-const DRESSUP_DATA = {
+const DRESSUP_OPTIONS = {
   hair: ["髮型 A", "髮型 B", "髮型 C"],
-  outfit: ["衣服 A", "衣服 B", "衣服 C"],
-  accessory: ["配件 A", "配件 B", "配件 C"],
+  cloth: ["衣服 A", "衣服 B", "衣服 C"],
+  acc: ["配件 A", "配件 B", "配件 C"],
   face: ["表情 A", "表情 B", "表情 C"],
 };
 
 const state = {
   theme: "rage",
+  diaryDate: "",
+  mood: "",
+  worst: "",
+  story: "",
+  calmLevel: "有",
+  rageMeter: 55,
   poopCount: 0,
   eyeCount: 0,
-  rage: 50,
-  quickInput: "",
-  diaryText: "",
-  moodInput: "",
-  worstInput: "",
-  calmSelect: "有",
-  dressup: { hair: 0, outfit: 0, accessory: 0, face: 0 },
+  dressup: { hair: 0, cloth: 0, acc: 0, face: 0 },
 };
 
 const el = {
-  todayDate: document.getElementById("todayDate"),
-  mainTitle: document.getElementById("mainTitle"),
-  themeTagline: document.getElementById("themeTagline"),
-  themeSwitcher: document.getElementById("themeSwitcher"),
-  stickerLeft: document.getElementById("themeStickerLeft"),
-  stickerRight: document.getElementById("themeStickerRight"),
-  quickInput: document.getElementById("quickInput"),
-  moodInput: document.getElementById("moodInput"),
-  worstInput: document.getElementById("worstInput"),
-  diaryText: document.getElementById("diaryText"),
-  calmSelect: document.getElementById("calmSelect"),
+  themeTitle: document.getElementById("themeTitle"),
+  themeSubtitle: document.getElementById("themeSubtitle"),
+  themeButtons: document.getElementById("themeButtons"),
+  stickerLeft: document.getElementById("stickerLeft"),
+  stickerRight: document.getElementById("stickerRight"),
+
+  diaryDate: document.getElementById("diaryDate"),
+  mood: document.getElementById("mood"),
+  worst: document.getElementById("worst"),
+  story: document.getElementById("story"),
+  calmLevel: document.getElementById("calmLevel"),
   rageMeter: document.getElementById("rageMeter"),
-  rageLabel: document.getElementById("rageLabel"),
-  calmStatus: document.getElementById("calmStatus"),
-  saveDiaryBtn: document.getElementById("saveDiaryBtn"),
+  rageValue: document.getElementById("rageValue"),
+  calmHint: document.getElementById("calmHint"),
+  saveBtn: document.getElementById("saveBtn"),
   clearBtn: document.getElementById("clearBtn"),
+
   poopBtn: document.getElementById("poopBtn"),
   eyeBtn: document.getElementById("eyeBtn"),
   poopCount: document.getElementById("poopCount"),
   eyeCount: document.getElementById("eyeCount"),
-  burstLayer: document.getElementById("burstLayer"),
+  burstArea: document.getElementById("burstArea"),
+
   gameTime: document.getElementById("gameTime"),
   gameScore: document.getElementById("gameScore"),
   startGameBtn: document.getElementById("startGameBtn"),
-  shootingArea: document.getElementById("shootingArea"),
-  movingTarget: document.getElementById("movingTarget"),
-  gameTip: document.getElementById("gameTip"),
-  dressupControls: document.getElementById("dressupControls"),
+  gameArea: document.getElementById("gameArea"),
+  target: document.getElementById("target"),
+  gameMsg: document.getElementById("gameMsg"),
+
   hairLayer: document.getElementById("hairLayer"),
-  outfitLayer: document.getElementById("outfitLayer"),
+  clothLayer: document.getElementById("clothLayer"),
   accLayer: document.getElementById("accLayer"),
   faceLayer: document.getElementById("faceLayer"),
+  dressupControls: document.getElementById("dressupControls"),
 };
+
+function getTodayDateInputValue() {
+  const d = new Date();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${month}-${day}`;
+}
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -113,51 +140,63 @@ function saveState() {
 
 function loadState() {
   try {
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    Object.assign(state, data);
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    Object.assign(state, parsed);
   } catch {
     localStorage.removeItem(STORAGE_KEY);
   }
 }
 
-function getTodayLabel() {
-  const now = new Date();
-  return now.toLocaleDateString("zh-Hant-TW", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    weekday: "short",
-  });
-}
-
-function renderThemeButtons() {
-  el.themeSwitcher.innerHTML = "";
-  Object.values(THEMES).forEach((theme) => {
-    const btn = document.createElement("button");
-    btn.className = "theme-btn";
-    btn.textContent = theme.name;
-    if (theme.id === state.theme) btn.classList.add("active");
-    btn.addEventListener("click", () => {
-      state.theme = theme.id;
-      renderTheme();
-      saveState();
-    });
-    el.themeSwitcher.appendChild(btn);
-  });
-}
-
-function renderTheme() {
+function applyTheme() {
   const theme = THEMES[state.theme] || THEMES.rage;
-  document.body.dataset.theme = theme.id;
-  el.mainTitle.textContent = theme.title;
-  el.themeTagline.textContent = theme.tagline;
+  document.body.dataset.theme = theme.key;
+  el.themeTitle.textContent = theme.title;
+  el.themeSubtitle.textContent = theme.subtitle;
   el.stickerLeft.textContent = theme.stickers[0];
   el.stickerRight.textContent = theme.stickers[1];
-  el.quickInput.placeholder = theme.placeholders.quick;
-  el.diaryText.placeholder = theme.placeholders.diary;
-  el.moodInput.placeholder = theme.placeholders.mood;
-  el.worstInput.placeholder = theme.placeholders.worst;
-  renderThemeButtons();
+  el.mood.placeholder = theme.placeholders.mood;
+  el.worst.placeholder = theme.placeholders.worst;
+  el.story.placeholder = theme.placeholders.story;
+  applyCalmHint();
+
+  [...el.themeButtons.querySelectorAll("button")].forEach((button) => {
+    button.classList.toggle("active", button.dataset.theme === state.theme);
+  });
+}
+
+function buildThemeButtons() {
+  el.themeButtons.innerHTML = "";
+  Object.values(THEMES).forEach((theme) => {
+    const button = document.createElement("button");
+    button.className = "theme-btn";
+    button.dataset.theme = theme.key;
+    button.textContent = theme.label;
+    button.addEventListener("click", () => {
+      state.theme = theme.key;
+      applyTheme();
+      saveState();
+    });
+    el.themeButtons.appendChild(button);
+  });
+}
+
+function applyCalmHint() {
+  const theme = THEMES[state.theme] || THEMES.rage;
+  const hint = theme.calmTip[state.calmLevel] || "先寫下來，呼吸一下。";
+  el.calmHint.textContent = hint;
+}
+
+function renderDiary() {
+  el.diaryDate.value = state.diaryDate || getTodayDateInputValue();
+  el.mood.value = state.mood;
+  el.worst.value = state.worst;
+  el.story.value = state.story;
+  el.calmLevel.value = state.calmLevel;
+  el.rageMeter.value = state.rageMeter;
+  el.rageValue.textContent = String(state.rageMeter);
+  applyCalmHint();
 }
 
 function renderCounters() {
@@ -165,91 +204,71 @@ function renderCounters() {
   el.eyeCount.textContent = String(state.eyeCount);
 }
 
-function renderInputs() {
-  el.quickInput.value = state.quickInput;
-  el.diaryText.value = state.diaryText;
-  el.moodInput.value = state.moodInput;
-  el.worstInput.value = state.worstInput;
-  el.calmSelect.value = state.calmSelect;
-  el.rageMeter.value = state.rage;
-  el.rageLabel.textContent = String(state.rage);
-  updateCalmStatus();
-}
-
-function updateCalmStatus() {
-  const textMap = {
-    有: "你今天有成功降溫，值得一個抱抱 🫂",
-    一點點: "有降一點點，再深呼吸兩次。",
-    沒有: "還在紅溫沒關係，先別開下一把。",
-  };
-  el.calmStatus.textContent = textMap[state.calmSelect] || "先寫點東西讓自己冷靜。";
-}
-
-function bindDiaryInputs() {
+function bindDiaryEvents() {
   const sync = () => {
-    state.quickInput = el.quickInput.value;
-    state.diaryText = el.diaryText.value;
-    state.moodInput = el.moodInput.value;
-    state.worstInput = el.worstInput.value;
+    state.diaryDate = el.diaryDate.value;
+    state.mood = el.mood.value;
+    state.worst = el.worst.value;
+    state.story = el.story.value;
     saveState();
   };
 
-  [el.quickInput, el.diaryText, el.moodInput, el.worstInput].forEach((input) => {
+  [el.diaryDate, el.mood, el.worst, el.story].forEach((input) => {
     input.addEventListener("input", sync);
   });
 
-  el.calmSelect.addEventListener("change", () => {
-    state.calmSelect = el.calmSelect.value;
-    updateCalmStatus();
+  el.calmLevel.addEventListener("change", () => {
+    state.calmLevel = el.calmLevel.value;
+    applyCalmHint();
     saveState();
   });
 
   el.rageMeter.addEventListener("input", () => {
-    state.rage = Number(el.rageMeter.value);
-    el.rageLabel.textContent = String(state.rage);
+    state.rageMeter = Number(el.rageMeter.value);
+    el.rageValue.textContent = String(state.rageMeter);
     saveState();
   });
 
-  el.saveDiaryBtn.addEventListener("click", () => {
+  el.saveBtn.addEventListener("click", () => {
     sync();
-    el.saveDiaryBtn.textContent = "✅ 已儲存";
+    el.saveBtn.textContent = "✅ 已儲存";
     setTimeout(() => {
-      el.saveDiaryBtn.textContent = "💾 儲存今天紀錄";
+      el.saveBtn.textContent = "💾 儲存今天紀錄";
     }, 900);
   });
 
   el.clearBtn.addEventListener("click", () => {
-    state.quickInput = "";
-    state.diaryText = "";
-    state.moodInput = "";
-    state.worstInput = "";
-    state.calmSelect = "有";
-    state.rage = 50;
+    state.diaryDate = getTodayDateInputValue();
+    state.mood = "";
+    state.worst = "";
+    state.story = "";
+    state.calmLevel = "有";
+    state.rageMeter = 55;
     state.poopCount = 0;
     state.eyeCount = 0;
     saveState();
-    renderInputs();
+    renderDiary();
     renderCounters();
   });
 }
 
-function spawnBurst(emojiList) {
-  for (let i = 0; i < 8; i += 1) {
-    const particle = document.createElement("span");
-    particle.className = "burst";
-    particle.textContent = emojiList[i % emojiList.length];
-    particle.style.left = `${20 + Math.random() * 80}%`;
-    particle.style.top = `${30 + Math.random() * 40}px`;
-    particle.style.setProperty("--x", `${(Math.random() - 0.5) * 240}px`);
-    particle.style.setProperty("--y", `${-80 - Math.random() * 80}px`);
-    el.burstLayer.appendChild(particle);
-    setTimeout(() => particle.remove(), 900);
+function spawnBurst(emojiPool) {
+  for (let i = 0; i < 9; i += 1) {
+    const item = document.createElement("span");
+    item.className = "burst";
+    item.textContent = emojiPool[i % emojiPool.length];
+    item.style.left = `${20 + Math.random() * 70}%`;
+    item.style.top = `${26 + Math.random() * 34}px`;
+    item.style.setProperty("--x", `${(Math.random() - 0.5) * 260}px`);
+    item.style.setProperty("--y", `${-75 - Math.random() * 95}px`);
+    el.burstArea.appendChild(item);
+    setTimeout(() => item.remove(), 860);
   }
 
   document.body.classList.add("shake");
-  setTimeout(() => document.body.classList.remove("shake"), 450);
+  setTimeout(() => document.body.classList.remove("shake"), 420);
 
-  // TODO: 若要補音效可在此播放 Audio（目前依需求先省略）
+  // TODO: 如要補音效，可在此用 new Audio('your-sfx.mp3').play();
 }
 
 function bindVentButtons() {
@@ -257,7 +276,7 @@ function bindVentButtons() {
     state.poopCount += 1;
     renderCounters();
     saveState();
-    spawnBurst(["💩", "💥", "🤬"]);
+    spawnBurst(["💩", "🔥", "💥"]);
   });
 
   el.eyeBtn.addEventListener("click", () => {
@@ -268,46 +287,46 @@ function bindVentButtons() {
   });
 }
 
-function bindShootingGame() {
+function initTinyGame() {
   let timer = null;
   let mover = null;
-  let timeLeft = 15;
+  let leftSec = 12;
   let score = 0;
 
   const moveTarget = () => {
-    const maxX = Math.max(0, el.shootingArea.clientWidth - 90);
-    const maxY = Math.max(0, el.shootingArea.clientHeight - 46);
-    el.movingTarget.style.left = `${Math.random() * maxX}px`;
-    el.movingTarget.style.top = `${Math.random() * maxY}px`;
+    const maxX = Math.max(0, el.gameArea.clientWidth - 90);
+    const maxY = Math.max(0, el.gameArea.clientHeight - 45);
+    el.target.style.left = `${Math.random() * maxX}px`;
+    el.target.style.top = `${Math.random() * maxY}px`;
   };
 
-  const stopGame = () => {
+  const stop = () => {
     clearInterval(timer);
     clearInterval(mover);
-    el.movingTarget.hidden = true;
+    el.target.hidden = true;
     el.startGameBtn.disabled = false;
-    el.gameTip.textContent = `你今天成功發洩了 ${score} 次，辛苦了。`;
+    el.gameMsg.textContent = `你今天成功發洩了 ${score} 次，值得鼓掌。`;
   };
 
   el.startGameBtn.addEventListener("click", () => {
-    timeLeft = 15;
+    leftSec = 12;
     score = 0;
-    el.gameTime.textContent = String(timeLeft);
+    el.gameTime.textContent = String(leftSec);
     el.gameScore.textContent = String(score);
+    el.target.hidden = false;
     el.startGameBtn.disabled = true;
-    el.movingTarget.hidden = false;
-    el.gameTip.textContent = "快點它！把雷包點到消失！";
+    el.gameMsg.textContent = "快點雷包！把火氣點掉！";
     moveTarget();
 
     mover = setInterval(moveTarget, 650);
     timer = setInterval(() => {
-      timeLeft -= 1;
-      el.gameTime.textContent = String(timeLeft);
-      if (timeLeft <= 0) stopGame();
+      leftSec -= 1;
+      el.gameTime.textContent = String(leftSec);
+      if (leftSec <= 0) stop();
     }, 1000);
   });
 
-  el.movingTarget.addEventListener("click", () => {
+  el.target.addEventListener("click", () => {
     score += 1;
     el.gameScore.textContent = String(score);
     moveTarget();
@@ -315,22 +334,23 @@ function bindShootingGame() {
 }
 
 function renderDressup() {
-  el.hairLayer.textContent = DRESSUP_DATA.hair[state.dressup.hair];
-  el.outfitLayer.textContent = DRESSUP_DATA.outfit[state.dressup.outfit];
-  el.accLayer.textContent = DRESSUP_DATA.accessory[state.dressup.accessory];
-  el.faceLayer.textContent = DRESSUP_DATA.face[state.dressup.face];
+  el.hairLayer.textContent = DRESSUP_OPTIONS.hair[state.dressup.hair];
+  el.clothLayer.textContent = DRESSUP_OPTIONS.cloth[state.dressup.cloth];
+  el.accLayer.textContent = DRESSUP_OPTIONS.acc[state.dressup.acc];
+  el.faceLayer.textContent = DRESSUP_OPTIONS.face[state.dressup.face];
 }
 
-function buildDressupControls() {
-  const rows = [
+function initDressupControls() {
+  const controls = [
     ["hair", "髮型"],
-    ["outfit", "衣服"],
-    ["accessory", "配件"],
+    ["cloth", "衣服"],
+    ["acc", "配件"],
     ["face", "表情"],
   ];
 
   el.dressupControls.innerHTML = "";
-  rows.forEach(([key, label]) => {
+
+  controls.forEach(([key, label]) => {
     const row = document.createElement("div");
     row.className = "option-row";
 
@@ -343,16 +363,16 @@ function buildDressupControls() {
     const next = document.createElement("button");
     next.textContent = "下一個 ➡";
 
-    const onChange = (delta) => {
-      const list = DRESSUP_DATA[key];
+    const change = (step) => {
+      const list = DRESSUP_OPTIONS[key];
       const len = list.length;
-      state.dressup[key] = (state.dressup[key] + delta + len) % len;
+      state.dressup[key] = (state.dressup[key] + step + len) % len;
       renderDressup();
       saveState();
     };
 
-    prev.addEventListener("click", () => onChange(-1));
-    next.addEventListener("click", () => onChange(1));
+    prev.addEventListener("click", () => change(-1));
+    next.addEventListener("click", () => change(1));
 
     row.append(title, prev, next);
     el.dressupControls.appendChild(row);
@@ -361,15 +381,21 @@ function buildDressupControls() {
 
 function init() {
   loadState();
-  el.todayDate.textContent = getTodayLabel();
-  renderTheme();
+
+  if (!state.diaryDate) {
+    state.diaryDate = getTodayDateInputValue();
+  }
+
+  buildThemeButtons();
+  applyTheme();
+  renderDiary();
   renderCounters();
-  renderInputs();
   renderDressup();
-  buildDressupControls();
-  bindDiaryInputs();
+  initDressupControls();
+
+  bindDiaryEvents();
   bindVentButtons();
-  bindShootingGame();
+  initTinyGame();
 }
 
 init();
