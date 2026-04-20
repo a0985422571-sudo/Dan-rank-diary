@@ -1,0 +1,327 @@
+:root {
+  --bg-main: linear-gradient(135deg, #ff9259, #ff5d68);
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --text-main: #47212b;
+  --accent: #ff4b4b;
+  --accent-soft: #ffd5d5;
+  --line: rgba(255, 255, 255, 0.7);
+  --hover: #ffe3e3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  color: var(--text-main);
+  background: var(--bg-main);
+  transition: background 0.35s ease;
+}
+
+.app {
+  width: min(1024px, 100%);
+  margin: 0 auto;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  background: var(--bg-card);
+  box-shadow: 0 8px 30px rgba(44, 0, 21, 0.15);
+  padding: 16px;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.date {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+h1,
+h2 {
+  margin: 6px 0;
+}
+
+.tagline,
+.hint,
+.game-tip,
+.calm-status {
+  margin: 4px 0;
+  opacity: 0.85;
+}
+
+.theme-switcher {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.theme-btn {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.theme-btn:hover,
+.btn:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.theme-btn.active {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.15) inset;
+}
+
+.temperature-wrap {
+  display: grid;
+  gap: 4px;
+}
+
+#rageMeter {
+  width: 100%;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.95rem;
+}
+
+input,
+textarea,
+select {
+  border: 2px solid #e9d8db;
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 0.98rem;
+  font-family: inherit;
+  background: #fff;
+}
+
+textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.action-row,
+.game-top-row,
+.counter-box,
+.vent-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.94);
+}
+
+.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.ghost {
+  background: var(--accent-soft);
+}
+
+.poop,
+.eye {
+  font-size: 1.05rem;
+}
+
+.tiny {
+  padding: 8px 12px;
+}
+
+.burst-layer {
+  position: relative;
+  min-height: 70px;
+  overflow: hidden;
+}
+
+.burst {
+  position: absolute;
+  font-size: 1.5rem;
+  animation: fly 0.9s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes fly {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--x), var(--y)) scale(1.2) rotate(18deg);
+    opacity: 0;
+  }
+}
+
+.shake {
+  animation: shake 0.25s linear 2;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.shooting-area {
+  position: relative;
+  height: 180px;
+  border: 2px dashed rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.target {
+  position: absolute;
+  border: none;
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 10px;
+  cursor: crosshair;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.dressup-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 12px;
+}
+
+.avatar-stage {
+  position: relative;
+  height: 320px;
+  border-radius: 14px;
+  background: #fff;
+  border: 2px dashed #ddd;
+  overflow: hidden;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  text-shadow: 0 1px 0 #fff;
+}
+
+.base { background: linear-gradient(#f8f8f8, #ececec); }
+.hair { background: rgba(255, 227, 160, 0.6); }
+.outfit { background: rgba(191, 229, 255, 0.6); }
+.accessory { background: rgba(255, 180, 220, 0.45); }
+.expression { background: rgba(204, 255, 204, 0.35); }
+
+.dressup-controls {
+  display: grid;
+  gap: 8px;
+}
+
+.option-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.option-row button {
+  border: none;
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.stickers {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sticker {
+  position: absolute;
+  font-size: 2rem;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.2));
+}
+
+.sticker-left {
+  top: 10px;
+  left: 10px;
+}
+
+.sticker-right {
+  top: 10px;
+  right: 10px;
+}
+
+/* 主題：A 紅溫 */
+body[data-theme="rage"] {
+  --bg-main: radial-gradient(circle at top, #ffbe8d 0%, #ff784b 45%, #ff4b58 100%);
+  --accent: #e63535;
+  --accent-soft: #ffd0d0;
+}
+
+/* 主題：B 夢女崩潰 */
+body[data-theme="dream"] {
+  --bg-main: radial-gradient(circle at top, #ffdff2 0%, #ffbadb 40%, #f2a4d6 100%);
+  --accent: #db3f8d;
+  --accent-soft: #ffd8ee;
+}
+
+/* 主題：C 社死潮濕 */
+body[data-theme="guilt"] {
+  --bg-main: radial-gradient(circle at top, #d8e9ff 0%, #9ec5f3 48%, #83a8d8 100%);
+  --accent: #3b6fb4;
+  --accent-soft: #d7e9ff;
+}
+
+@media (max-width: 820px) {
+  .dressup-layout {
+    grid-template-columns: 1fr;
+  }
+}
