@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dan Dan 日記整理器</title>
+    <title>排位降溫日記</title>
     <style>
       :root {
         --bg: #fff8fc;
@@ -40,20 +40,18 @@
         background-attachment: fixed;
         color: var(--text);
         min-height: 100vh;
-        display: grid;
-        place-items: center;
-        padding: 24px;
+        padding: 16px;
       }
 
       .app {
         position: relative;
         width: min(920px, 100%);
+        margin: 0 auto;
         background: var(--card);
         border: 2px solid var(--line);
-        border-radius: 20px;
+        border-radius: 18px;
         box-shadow: 0 8px 24px var(--shadow);
-        padding: 24px;
-        overflow: hidden;
+        padding: 16px;
       }
 
       .app::before {
@@ -63,217 +61,169 @@
         pointer-events: none;
         background: var(--corner-decor);
         opacity: 0.9;
+        border-radius: 18px;
+      }
+
+      .app-head,
+      .row,
+      .btn-row,
+      .quick-row,
+      .template-row,
+      .counter-row,
+      .history-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
       }
 
       .app-head {
-        display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      .title-wrap {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-
-      .today-date {
-        font-size: 0.92rem;
-        color: var(--muted);
-      }
-
-      .theme-select {
-        border: 2px solid var(--line);
-        border-radius: 999px;
-        padding: 8px 12px;
-        color: var(--text);
-        background: var(--card);
-        font-size: 0.92rem;
       }
 
       h1 {
         margin: 0;
-        font-size: clamp(1.5rem, 2vw + 1rem, 2.1rem);
         color: var(--primary-dark);
+        font-size: clamp(1.4rem, 1.1rem + 1.5vw, 2rem);
+      }
+
+      .subtitle,
+      .hint,
+      .status-line,
+      .label {
+        color: var(--muted);
       }
 
       .subtitle {
-        margin: 8px 0 20px;
-        color: var(--muted);
+        margin: 6px 0 12px;
       }
 
-      textarea,
-      input {
-        width: 100%;
-        min-height: 220px;
-        padding: 14px;
-        border-radius: 14px;
+      .panel {
         border: 2px solid var(--line);
-        resize: vertical;
-        font-size: 1rem;
-        line-height: 1.7;
+        border-radius: 14px;
+        padding: 12px;
         background: var(--card-soft);
-        color: var(--text);
-        caret-color: var(--primary-dark);
-        transition:
-          border-color 0.18s ease,
-          box-shadow 0.18s ease,
-          background-color 0.18s ease;
+        margin-top: 12px;
       }
 
-      input {
-        min-height: auto;
-        line-height: 1.4;
-        resize: none;
-      }
-
-      textarea::placeholder,
-      input::placeholder {
-        color: var(--muted);
-        opacity: 1;
-      }
-
-      textarea:hover,
-      input:hover {
-        border-color: color-mix(in srgb, var(--line) 60%, var(--primary) 40%);
-      }
-
-      textarea:focus,
-      input:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 28%, transparent);
-      }
-
-      .controls {
-        display: flex;
-        gap: 12px;
-        margin-top: 14px;
-        flex-wrap: wrap;
-      }
-
-      .mood-helper {
-        margin-top: 14px;
-      }
-
-      .mood-helper-title {
-        margin: 0 0 8px;
-        color: var(--muted);
+      .label {
+        display: block;
+        margin-bottom: 6px;
         font-size: 0.92rem;
       }
 
-      .mood-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+      input,
+      select,
+      textarea,
+      button {
+        font: inherit;
       }
 
-      .mood-btn {
-        background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
-        font-weight: 600;
-        padding: 8px 12px;
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 2px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: #fff;
+        color: var(--text);
       }
 
-      .mood-btn:hover {
-        background: var(--btn-soft-hover);
+      textarea {
+        min-height: 130px;
+        resize: vertical;
+        line-height: 1.6;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 26%, transparent);
       }
 
       button {
         border: 0;
         border-radius: 999px;
-        padding: 10px 18px;
-        font-size: 0.96rem;
+        padding: 10px 16px;
         font-weight: 700;
         cursor: pointer;
+        min-height: 42px;
       }
 
-      .organize-btn {
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .primary-btn {
         background: var(--primary);
         color: #fff;
       }
 
-      .organize-btn:hover {
+      .primary-btn:hover {
         background: var(--primary-dark);
       }
 
-      .clear-btn {
+      .soft-btn,
+      .tag-btn,
+      .theme-select,
+      .date-input {
         background: var(--btn-soft-bg);
         color: var(--btn-soft-text);
       }
 
-      .clear-btn:hover {
+      .soft-btn:hover,
+      .tag-btn:hover {
         background: var(--btn-soft-hover);
       }
 
-      .copy-all-btn {
+      .grow {
+        flex: 1 1 220px;
+      }
+
+      .status-line {
+        margin-top: 8px;
+        font-size: 0.9rem;
+      }
+
+      .template-row button,
+      .quick-row button,
+      .counter-row button,
+      .history-actions button {
+        padding: 8px 12px;
+        font-size: 0.92rem;
+      }
+
+      .mood-chip {
+        border: 2px solid var(--line);
+        background: #fff;
+        color: var(--text);
+      }
+
+      .mood-chip.active {
         background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
+        border-color: color-mix(in srgb, var(--line) 40%, var(--primary) 60%);
       }
 
-      .copy-all-btn:hover {
-        background: var(--btn-soft-hover);
+      .rage-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 10px;
       }
 
-      .export-btn {
-        background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
-      }
-
-      .export-btn:hover {
-        background: var(--btn-soft-hover);
+      .rage-value {
+        font-weight: 700;
+        color: var(--primary-dark);
       }
 
       .jet-wrap {
         position: relative;
-        margin-top: 10px;
         min-height: 54px;
-        display: flex;
         align-items: center;
-        gap: 10px;
-        overflow: visible;
-      }
-
-      .jet-btn {
-        background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
-        transform: scale(1);
-        transition:
-          transform 0.16s ease,
-          box-shadow 0.16s ease,
-          filter 0.16s ease;
-      }
-
-      .jet-btn:hover {
-        background: var(--btn-soft-hover);
-      }
-
-      .jet-btn:active {
-        transform: scale(0.96);
-      }
-
-      .jet-btn.bursting {
-        animation: jet-btn-burst 180ms ease;
-      }
-
-      @keyframes jet-btn-burst {
-        0% {
-          transform: scale(1);
-          box-shadow: 0 0 0 rgba(255, 126, 182, 0);
-          filter: brightness(1);
-        }
-        40% {
-          transform: scale(0.95);
-          box-shadow: 0 0 0 0 rgba(255, 126, 182, 0);
-          filter: brightness(1.08);
-        }
-        100% {
-          transform: scale(1);
-          box-shadow: 0 0 0 10px rgba(255, 126, 182, 0);
-          filter: brightness(1);
-        }
       }
 
       .jet-output {
@@ -295,168 +245,116 @@
       @keyframes jet-rise {
         0% {
           opacity: 0;
-          transform: translate(0, 0) scale(0.85);
+          transform: translate(0, 0) scale(0.86);
         }
         12% {
           opacity: 1;
-          transform: translate(-1px, -7px) scale(1.06);
+          transform: translate(-1px, -7px) scale(1.04);
         }
         100% {
           opacity: 0;
-          transform: translate(var(--drift-x, 0px), -52px) scale(1.24);
+          transform: translate(var(--drift-x, 0px), -52px) scale(1.2);
         }
       }
 
-      .tomorrow-wrap {
+      .history {
         margin-top: 14px;
       }
 
-      .tomorrow-wrap label {
-        display: block;
-        margin-bottom: 8px;
+      .history-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 8px;
+      }
+
+      .history-item {
+        border: 2px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+        padding: 10px;
+      }
+
+      .history-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .history-summary {
+        margin: 8px 0;
         color: var(--muted);
         font-size: 0.92rem;
       }
 
-      #tomorrowNoteInput {
-        min-height: 100px;
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 14px;
-        margin-top: 22px;
-      }
-
-      .card {
-        border: 2px solid var(--line);
-        border-radius: 16px;
-        padding: 14px;
-        background: var(--card-soft);
-      }
-
-      .card-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-bottom: 8px;
-      }
-
-      .card h2 {
-        margin: 0;
-        font-size: 1rem;
-        color: var(--primary-dark);
-      }
-
-      .copy-btn {
-        background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
-        font-size: 0.85rem;
-        padding: 6px 12px;
-      }
-
-      .copy-btn:hover {
-        background: var(--btn-soft-hover);
-      }
-
-      .output {
-        margin: 0;
+      .history-full {
         white-space: pre-wrap;
-        line-height: 1.7;
-        min-height: 64px;
+        line-height: 1.58;
+        border-top: 1px dashed var(--line);
+        margin-top: 8px;
+        padding-top: 8px;
+        display: none;
       }
 
-      .hint {
-        margin-top: 14px;
-        color: var(--muted);
-        font-size: 0.9rem;
+      .history-item.open .history-full {
+        display: block;
       }
 
-      .encouragement {
-        margin-top: 12px;
-        padding: 10px 14px;
-        border: 2px dashed var(--line);
-        border-radius: 12px;
-        background: var(--card-soft);
-        color: var(--muted);
-        font-size: 0.93rem;
+      .toast-wrap {
+        position: fixed;
+        left: 50%;
+        bottom: 14px;
+        transform: translateX(-50%);
+        z-index: 30;
+        width: min(90vw, 480px);
+        pointer-events: none;
       }
 
-      .history {
-        margin-top: 24px;
-        border-top: 2px dashed var(--line);
-        padding-top: 18px;
-      }
-
-      .history h2 {
-        margin: 0 0 10px;
-        color: var(--primary-dark);
-        font-size: 1.05rem;
-      }
-
-      .history-empty {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-
-      .history details {
-        position: relative;
+      .toast {
+        background: color-mix(in srgb, var(--card) 82%, var(--primary) 18%);
         border: 2px solid var(--line);
-        background: var(--card-soft);
+        color: var(--text);
         border-radius: 12px;
         padding: 10px 12px;
-        margin-top: 10px;
+        text-align: center;
+        box-shadow: 0 6px 18px var(--shadow);
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
       }
 
-      .history summary {
-        cursor: pointer;
-        font-weight: 700;
-        color: var(--text);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
       }
 
-      .history-summary-text {
-        flex: 1;
-        min-width: 0;
-      }
+      @media (min-width: 720px) {
+        body {
+          padding: 24px;
+        }
 
-      .history-delete-btn {
-        border: 2px solid var(--line);
-        border-radius: 999px;
-        background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
-        font-size: 0.78rem;
-        font-weight: 700;
-        padding: 4px 10px;
-      }
+        .app {
+          padding: 24px;
+        }
 
-      .history-delete-btn:hover {
-        background: var(--btn-soft-hover);
-      }
-
-      .history-item-content {
-        margin-top: 10px;
-        line-height: 1.6;
-        white-space: pre-wrap;
-        font-size: 0.94rem;
+        .two-col {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
       }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
   </head>
   <body>
     <main class="app">
       <div class="app-head">
-        <div class="title-wrap">
-          <h1>✨ Dan Dan 日記整理器</h1>
-          <span class="today-date" id="todayDate">今日日期：----</span>
+        <div>
+          <h1>🔥 排位降溫日記</h1>
+          <p class="subtitle">紅溫先記下來，再決定要不要繼續排。</p>
         </div>
-        <label>
-          <span style="font-size: 0.9rem; color: var(--muted); margin-right: 6px">主題</span>
+        <div class="grow">
+          <label class="label" for="themeSelect">主題模式</label>
           <select id="themeSelect" class="theme-select">
             <option value="pink">粉紅膠囊</option>
             <option value="starry">星空色</option>
@@ -466,301 +364,219 @@
             <option value="starCookie">星餅乾宇宙</option>
             <option value="mintSoda">薄荷汽水</option>
           </select>
-        </label>
-      </div>
-      <p class="subtitle">把今天的想法貼進來，一鍵整理成可愛好讀的小回報。</p>
-
-      <textarea id="diaryInput" placeholder="例：今天早上開會有點緊張，但下午完成了重要提案，心情變超好！"></textarea>
-      <div class="controls">
-        <button class="organize-btn" id="organizeBtn">整理日記</button>
-        <button class="clear-btn" id="clearBtn">清空全部</button>
-        <button class="copy-all-btn" id="copyAllBtn">一鍵複製全部</button>
-        <button class="export-btn" id="exportTxtBtn">匯出 txt</button>
-      </div>
-      <div class="jet-wrap">
-        <button class="jet-btn" id="jetBtn">今日噴射</button>
-        <span class="jet-output" id="jetOutput" aria-live="polite"></span>
+        </div>
       </div>
 
-      <section class="mood-helper">
-        <p class="mood-helper-title">今日情緒快捷鍵（懶得打字版）</p>
-        <div class="mood-buttons">
-          <button class="mood-btn" data-mood="開心、被愛、有活力">🥺❤️ 開心</button>
-          <button class="mood-btn" data-mood="混亂、卡住、腦袋打結">😵‍💫 混亂</button>
-          <button class="mood-btn" data-mood="感動、被治癒、想抱抱">🥹 感動</button>
-          <button class="mood-btn" data-mood="吐槽、無言、但還是撐住">🙄🤌 吐槽</button>
-          <button class="mood-btn" data-mood="累、想躺平、需要充電">😴 累</button>
+      <section class="panel" id="diaryCard">
+        <div class="row">
+          <div class="grow">
+            <label class="label" for="entryDate">日期</label>
+            <input id="entryDate" class="date-input" type="date" />
+          </div>
+          <div class="grow">
+            <label class="label" for="openerInput">先噴一句</label>
+            <input id="openerInput" placeholder="例：🙄 我已經懶得生氣了" />
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 10px">
+          <span class="label">主日記模板（和快速填入分開）</span>
+          <div class="template-row" id="templateButtons"></div>
+        </div>
+
+        <div class="panel" style="margin-top: 10px">
+          <span class="label">快速填入（一鍵發瘋）</span>
+          <div class="quick-row" id="quickFillButtons"></div>
+        </div>
+
+        <label class="label" for="diaryInput" style="margin-top: 12px">主日記</label>
+        <textarea id="diaryInput" placeholder="把剛剛那場到底發生什麼事，直接丟進來。"></textarea>
+
+        <div class="two-col" style="margin-top: 10px">
+          <div>
+            <label class="label" for="closingInput">收尾句</label>
+            <input id="closingInput" placeholder="例：今天先活下來就好" />
+          </div>
+          <div>
+            <label class="label">紅溫值</label>
+            <div class="rage-row">
+              <input id="rageInput" type="range" min="0" max="100" value="50" />
+              <span id="rageValue" class="rage-value">50</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 12px">
+          <span class="label">心情標籤</span>
+          <div class="quick-row" id="moodChips"></div>
+        </div>
+
+        <div class="panel" style="margin-top: 12px">
+          <div class="row" style="justify-content: space-between; align-items: center">
+            <span class="label" style="margin: 0">噴射計數</span>
+            <span class="hint" id="jetStats">💩 0 次 ｜ 🙄💅 0 次</span>
+          </div>
+          <div class="counter-row" style="margin-top: 8px">
+            <button class="soft-btn" id="poopBtn" type="button">💩 +1</button>
+            <button class="soft-btn" id="eyeRollBtn" type="button">🙄💅 +1</button>
+            <button class="soft-btn" id="resetJetBtn" type="button">重置噴射</button>
+          </div>
+          <div class="jet-wrap row" style="margin-top: 8px">
+            <button class="soft-btn" id="jetBtn" type="button">今日噴射</button>
+            <div class="jet-output" id="jetOutput" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <p class="status-line" id="draftStatus">草稿狀態：尚未載入</p>
+
+        <div class="btn-row" style="margin-top: 10px">
+          <button class="primary-btn" id="saveRecordBtn" type="button">存成今天紀錄</button>
+          <button class="soft-btn" id="exportBtn" type="button">匯出文字</button>
+          <button class="soft-btn" id="copyExportBtn" type="button">一鍵複製文字</button>
+          <button class="soft-btn" id="screenshotBtn" type="button">截圖分享</button>
+          <button class="soft-btn" id="clearDraftBtn" type="button">清空此日草稿</button>
         </div>
       </section>
 
-      <div class="tomorrow-wrap">
-        <label for="tomorrowNoteInput">明天要記得</label>
-        <textarea id="tomorrowNoteInput" placeholder="例：早上 9:00 前寄出會議簡報、記得買牛奶。"></textarea>
-      </div>
-
-      <section class="grid">
-        <article class="card">
-          <div class="card-head">
-            <h2>今日日記</h2>
-            <button class="copy-btn" data-copy="fullDiary">一鍵複製</button>
+      <section class="panel history" id="historySection">
+        <div class="history-top">
+          <h2 style="margin: 0; color: var(--primary-dark); font-size: 1.06rem">🗂️ 歷史紀錄</h2>
+          <div class="history-actions">
+            <button class="soft-btn" id="clearHistoryBtn" type="button">清空全部歷史</button>
           </div>
-          <p class="output" id="fullDiary">（整理後會顯示在這裡）</p>
-        </article>
-
-        <article class="card">
-          <div class="card-head">
-            <h2>小蝦蝦版短版回報</h2>
-            <button class="copy-btn" data-copy="shortReport">一鍵複製</button>
-          </div>
-          <p class="output" id="shortReport">（整理後會顯示在這裡）</p>
-        </article>
-
-        <article class="card">
-          <div class="card-head">
-            <h2>今日金句</h2>
-            <button class="copy-btn" data-copy="quote">一鍵複製</button>
-          </div>
-          <p class="output" id="quote">（整理後會顯示在這裡）</p>
-        </article>
-
-        <article class="card">
-          <div class="card-head">
-            <h2>今日情緒關鍵字</h2>
-            <button class="copy-btn" data-copy="mood">一鍵複製</button>
-          </div>
-          <p class="output" id="mood">（整理後會顯示在這裡）</p>
-        </article>
+        </div>
+        <p class="hint" id="historyEmpty">目前還沒有正式存檔，先存一筆吧。</p>
+        <div class="history-list" id="historyList"></div>
       </section>
-
-      <p class="encouragement" id="encouragement">（整理完會跳出一句小鼓勵）</p>
-
-      <section class="history" id="historySection">
-        <h2>🗂️ 歷史紀錄（最近 7 篇）</h2>
-        <p class="history-empty" id="historyEmpty">目前還沒有歷史紀錄，先整理一篇看看吧～</p>
-        <div id="historyList"></div>
-      </section>
-
-      <p class="hint">小提醒：這是前端離線小工具，內容不會被上傳。</p>
     </main>
 
+    <div class="toast-wrap" aria-live="polite" aria-atomic="true">
+      <div class="toast" id="toast"></div>
+    </div>
+
     <script>
-      const input = document.getElementById("diaryInput");
-      const organizeBtn = document.getElementById("organizeBtn");
-      const clearBtn = document.getElementById("clearBtn");
-      const copyAllBtn = document.getElementById("copyAllBtn");
-      const exportTxtBtn = document.getElementById("exportTxtBtn");
+      // ===== 基礎 DOM 參照 =====
+      const entryDate = document.getElementById("entryDate");
       const themeSelect = document.getElementById("themeSelect");
-      const jetBtn = document.getElementById("jetBtn");
+      const openerInput = document.getElementById("openerInput");
+      const diaryInput = document.getElementById("diaryInput");
+      const closingInput = document.getElementById("closingInput");
+      const rageInput = document.getElementById("rageInput");
+      const rageValue = document.getElementById("rageValue");
+      const moodChips = document.getElementById("moodChips");
+      const templateButtons = document.getElementById("templateButtons");
+      const quickFillButtons = document.getElementById("quickFillButtons");
+      const draftStatus = document.getElementById("draftStatus");
+      const jetStats = document.getElementById("jetStats");
       const jetOutput = document.getElementById("jetOutput");
-      const todayDate = document.getElementById("todayDate");
-      const tomorrowNoteInput = document.getElementById("tomorrowNoteInput");
       const historyList = document.getElementById("historyList");
       const historyEmpty = document.getElementById("historyEmpty");
-      const outputs = {
-        fullDiary: document.getElementById("fullDiary"),
-        shortReport: document.getElementById("shortReport"),
-        quote: document.getElementById("quote"),
-        mood: document.getElementById("mood"),
-      };
-      const storageKey = "danDanDiaryData";
-      const themeStorageKey = "danDanDiaryTheme";
-      const historyStorageKey = "danDanDiaryHistory";
-      const encouragementEl = document.getElementById("encouragement");
+      const toast = document.getElementById("toast");
 
-      const encouragements = [
-        "你已經很努力了，今天先給自己一個小愛心。",
-        "慢慢來也沒關係，你不是在比賽啦。",
-        "有做到一點點，就值得被誇一點點。",
-        "今天辛苦了，明天的你會接住現在的你。",
-        "卡住不等於失敗，只是腦袋在整理檔案。",
-        "先喝口水，再往前一步，這樣就很棒。",
-        "你不是沒進步，只是進步得很低調。",
-        "累了就休息，休息不是偷懶是續命。",
-        "今天的你有撐住，真的很可以。",
-        "不用完美，能誠實記錄就已經超讚。",
+      // ===== 按鈕 =====
+      const saveRecordBtn = document.getElementById("saveRecordBtn");
+      const exportBtn = document.getElementById("exportBtn");
+      const copyExportBtn = document.getElementById("copyExportBtn");
+      const screenshotBtn = document.getElementById("screenshotBtn");
+      const clearDraftBtn = document.getElementById("clearDraftBtn");
+      const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+      const jetBtn = document.getElementById("jetBtn");
+      const poopBtn = document.getElementById("poopBtn");
+      const eyeRollBtn = document.getElementById("eyeRollBtn");
+      const resetJetBtn = document.getElementById("resetJetBtn");
+
+      // ===== localStorage keys（清楚命名） =====
+      const KEY_THEME = "rankCooler_theme";
+      const KEY_DRAFTS_BY_DATE = "rankCooler_draftsByDate";
+      const KEY_HISTORY = "rankCooler_historyRecords";
+
+      // ===== 資料來源 =====
+      const moodOptions = ["崩潰", "爆氣", "委屈", "心累", "想掛機", "想開擺", "還是想贏"];
+      const quickFillOptions = [
+        "我真的快不行了，這把隊友操作像在玩心理戰。",
+        "我不是在打排位，我是在做情緒管理測驗。",
+        "我今天心態碎到像餅乾，還要硬撐下一把。",
       ];
-
-      const defaultOutputs = {
-        fullDiary: "（整理後會顯示在這裡）",
-        shortReport: "（整理後會顯示在這裡）",
-        quote: "（整理後會顯示在這裡）",
-        mood: "（整理後會顯示在這裡）",
-      };
-
-      const defaultEncouragement = "（整理完會跳出一句小鼓勵）";
+      const templates = [
+        {
+          name: "被雷到爆氣",
+          text: "今天又被雷到紅溫，整個人快爆開。明明可以好好打，結果硬是被搞到心態炸裂。我現在真的很想噴人。",
+        },
+        {
+          name: "想卸載第五人格",
+          text: "今天真的玩到很想卸載第五人格，但想到我老公（夢角）還在裡面，我又卸不下去。愛與痛苦同時存在。",
+        },
+        {
+          name: "怕被匿名公審",
+          text: "我今天打得像一坨，現在很怕被匿名公審。明知道大家不一定會記得，但我現在就是很介意，很想找洞鑽。",
+        },
+        {
+          name: "老子才是老大",
+          text: "...在那問問問，我們都用自己的面具人格，相處不就完了嗎？就這麼想要我的秘密，你們是守得住秘密的人嗎？一群『人』。我也還沒發，發完就徹底算人消失了。別說我發得慢，免費的東西別催，看我心情，懂嗎？老子才是老大。",
+        },
+      ];
       const jetEmojis = ["🥺🫳❤️", "🙄🤌", "👀✨", "🍬✨", "bonk", "😼🌽", "🐹💥", "🫳🍓❤️"];
 
-      const moodMap = [
-        { key: "開心", words: ["開心", "快樂", "興奮", "滿足"] },
-        { key: "緊張", words: ["緊張", "焦慮", "壓力", "不安"] },
-        { key: "感恩", words: ["感謝", "感恩", "幸運", "珍惜"] },
-        { key: "疲憊", words: ["累", "疲憊", "睏", "沒力"] },
-        { key: "平靜", words: ["平靜", "放鬆", "穩定", "安心"] },
-      ];
-
-      const themes = {
-        pink: {
-          bg: "#fff8fc",
-          bgAccent: "#ffeaf5",
-          bgDecor1:
-            "radial-gradient(circle at 8% 18%, rgba(255, 141, 191, 0.16) 0, rgba(255, 141, 191, 0.16) 9px, transparent 10px), radial-gradient(circle at 11% 22%, rgba(255, 255, 255, 0.72) 0, rgba(255, 255, 255, 0.72) 3px, transparent 4px), radial-gradient(circle at 14% 18%, rgba(255, 177, 215, 0.22) 0, rgba(255, 177, 215, 0.22) 5px, transparent 6px)",
-          bgDecor2:
-            "radial-gradient(circle at 88% 84%, rgba(255, 255, 255, 0.62) 0, rgba(255, 255, 255, 0.62) 6px, transparent 7px), radial-gradient(circle at 84% 81%, rgba(255, 186, 221, 0.18) 0, rgba(255, 186, 221, 0.18) 8px, transparent 9px)",
-          bgDecor3:
-            "radial-gradient(circle at 78% 16%, rgba(255, 197, 227, 0.2) 0, rgba(255, 197, 227, 0.2) 10px, transparent 11px), radial-gradient(circle at 74% 12%, rgba(255, 255, 255, 0.7) 0, rgba(255, 255, 255, 0.7) 4px, transparent 5px)",
-          cornerDecor:
-            "radial-gradient(circle at top right, rgba(255, 171, 211, 0.22), transparent 56%), radial-gradient(circle at bottom left, rgba(255, 221, 238, 0.3), transparent 52%)",
-          card: "#ffffff",
-          cardSoft: "#fffcfe",
-          primary: "#ff7eb6",
-          primaryDark: "#ff5da6",
-          text: "#4b3e4d",
-          muted: "#8f7b8f",
-          line: "#f7d5e7",
-          shadow: "rgba(255, 126, 182, 0.14)",
-          btnSoftBg: "#ffe2f0",
-          btnSoftText: "#9e3e71",
-          btnSoftHover: "#ffd0e6",
-        },
-        starry: {
-          bg: "#0f1226",
-          bgAccent: "#1a2148",
-          bgDecor1:
-            "radial-gradient(circle at 9% 18%, rgba(255, 243, 197, 0.25) 0, rgba(255, 243, 197, 0.25) 2px, transparent 3px), radial-gradient(circle at 13% 26%, rgba(165, 186, 255, 0.33) 0, rgba(165, 186, 255, 0.33) 1.8px, transparent 2.8px)",
-          bgDecor2:
-            "radial-gradient(circle at 88% 82%, rgba(252, 237, 172, 0.24) 0, rgba(252, 237, 172, 0.24) 3px, transparent 4px), radial-gradient(circle at 83% 78%, rgba(133, 152, 227, 0.28) 0, rgba(133, 152, 227, 0.28) 8px, transparent 9px)",
-          bgDecor3:
-            "radial-gradient(circle at 80% 14%, rgba(132, 158, 255, 0.22) 0, rgba(132, 158, 255, 0.22) 12px, transparent 13px), radial-gradient(circle at 78% 13%, rgba(255, 248, 212, 0.27) 0, rgba(255, 248, 212, 0.27) 4px, transparent 5px)",
-          cornerDecor:
-            "radial-gradient(circle at top right, rgba(80, 106, 194, 0.28), transparent 54%), radial-gradient(circle at bottom left, rgba(64, 84, 156, 0.2), transparent 58%)",
-          card: "#1b2345",
-          cardSoft: "#212b52",
-          primary: "#7fa8ff",
-          primaryDark: "#a6beff",
-          text: "#e5ebff",
-          muted: "#b6c0eb",
-          line: "#3b467e",
-          shadow: "rgba(8, 12, 30, 0.45)",
-          btnSoftBg: "#2f3d72",
-          btnSoftText: "#d8e0ff",
-          btnSoftHover: "#3b4a84",
-        },
-        matcha: {
-          bg: "#f5f7ed",
-          bgAccent: "#e5efdb",
-          bgDecor1:
-            "radial-gradient(circle at 8% 20%, rgba(150, 187, 129, 0.17) 0, rgba(150, 187, 129, 0.17) 9px, transparent 10px), radial-gradient(circle at 11% 24%, rgba(236, 247, 220, 0.78) 0, rgba(236, 247, 220, 0.78) 4px, transparent 5px)",
-          bgDecor2:
-            "radial-gradient(circle at 87% 82%, rgba(222, 199, 161, 0.18) 0, rgba(222, 199, 161, 0.18) 11px, transparent 12px), radial-gradient(circle at 82% 78%, rgba(171, 203, 149, 0.18) 0, rgba(171, 203, 149, 0.18) 7px, transparent 8px)",
-          bgDecor3:
-            "radial-gradient(circle at 80% 15%, rgba(173, 205, 148, 0.2) 0, rgba(173, 205, 148, 0.2) 12px, transparent 13px), radial-gradient(circle at 76% 12%, rgba(250, 253, 239, 0.74) 0, rgba(250, 253, 239, 0.74) 4px, transparent 5px)",
-          cornerDecor:
-            "radial-gradient(circle at top right, rgba(176, 205, 150, 0.22), transparent 56%), radial-gradient(circle at bottom left, rgba(239, 229, 205, 0.28), transparent 50%)",
-          card: "#ffffff",
-          cardSoft: "#f8fbf2",
-          primary: "#7da869",
-          primaryDark: "#5f8550",
-          text: "#394635",
-          muted: "#6f7d67",
-          line: "#d6e3c6",
-          shadow: "rgba(94, 127, 85, 0.14)",
-          btnSoftBg: "#e8f1da",
-          btnSoftText: "#4f6647",
-          btnSoftHover: "#dce9c9",
-        },
-        sunset: {
-          bg: "#fff4e9",
-          bgAccent: "#ffe2cb",
-          bgDecor1:
-            "radial-gradient(circle at 10% 18%, rgba(245, 164, 104, 0.2) 0, rgba(245, 164, 104, 0.2) 10px, transparent 11px), radial-gradient(circle at 12% 22%, rgba(255, 236, 205, 0.82) 0, rgba(255, 236, 205, 0.82) 5px, transparent 6px)",
-          bgDecor2:
-            "radial-gradient(circle at 88% 83%, rgba(255, 210, 143, 0.22) 0, rgba(255, 210, 143, 0.22) 12px, transparent 13px), radial-gradient(circle at 84% 79%, rgba(255, 244, 222, 0.64) 0, rgba(255, 244, 222, 0.64) 7px, transparent 8px)",
-          bgDecor3:
-            "radial-gradient(circle at 80% 16%, rgba(255, 176, 116, 0.2) 0, rgba(255, 176, 116, 0.2) 14px, transparent 15px), radial-gradient(circle at 76% 13%, rgba(255, 227, 193, 0.68) 0, rgba(255, 227, 193, 0.68) 6px, transparent 7px)",
-          cornerDecor:
-            "radial-gradient(circle at top right, rgba(244, 162, 102, 0.26), transparent 56%), radial-gradient(circle at bottom left, rgba(255, 218, 177, 0.3), transparent 50%)",
-          card: "#ffffff",
-          cardSoft: "#fffaf4",
-          primary: "#f08a4b",
-          primaryDark: "#d86d2f",
-          text: "#573f33",
-          muted: "#8c6b5a",
-          line: "#f3ceb3",
-          shadow: "rgba(200, 116, 56, 0.18)",
-          btnSoftBg: "#ffe4cf",
-          btnSoftText: "#8a512f",
-          btnSoftHover: "#ffd4b3",
-        },
-        falconWatch: {
-          bg: "#f4efe6",
-          bgAccent: "#e4d7bf",
-          bgDecor1:
-            "radial-gradient(circle at 10% 20%, rgba(139, 107, 63, 0.12) 0, rgba(139, 107, 63, 0.12) 10px, transparent 11px)",
-          bgDecor2:
-            "radial-gradient(circle at 88% 82%, rgba(255, 250, 242, 0.7) 0, rgba(255, 250, 242, 0.7) 8px, transparent 9px)",
-          bgDecor3:
-            "radial-gradient(circle at 80% 15%, rgba(216, 199, 170, 0.36) 0, rgba(216, 199, 170, 0.36) 12px, transparent 13px)",
-          cornerDecor:
-            "radial-gradient(circle at top right, rgba(139, 107, 63, 0.18), transparent 56%)",
-          card: "#fffaf2",
-          cardSoft: "#f8f1e5",
-          primary: "#8b6b3f",
-          primaryDark: "#6f5430",
-          text: "#4b3e2d",
-          muted: "#7b6d58",
-          line: "#d8c7aa",
-          shadow: "rgba(139, 107, 63, 0.14)",
-          btnSoftBg: "#ece0cb",
-          btnSoftText: "#6f5430",
-          btnSoftHover: "#e4d7bf",
-        },
-        starCookie: {
-          bg: "#0f1226",
-          bgAccent: "#1a2148",
-          bgDecor1:
-            "radial-gradient(circle at 9% 18%, rgba(247, 168, 255, 0.24) 0, rgba(247, 168, 255, 0.24) 2px, transparent 3px)",
-          bgDecor2:
-            "radial-gradient(circle at 88% 82%, rgba(166, 190, 255, 0.24) 0, rgba(166, 190, 255, 0.24) 8px, transparent 9px)",
-          bgDecor3:
-            "radial-gradient(circle at 80% 14%, rgba(247, 168, 255, 0.14) 0, rgba(247, 168, 255, 0.14) 12px, transparent 13px)",
-          cornerDecor:
-            "radial-gradient(circle at top right, rgba(166, 190, 255, 0.2), transparent 54%)",
-          card: "#1b2345",
-          cardSoft: "#212b52",
-          primary: "#f7a8ff",
-          primaryDark: "#a6beff",
-          text: "#e5ebff",
-          muted: "#b8c2ef",
-          line: "#44508c",
-          shadow: "rgba(166, 190, 255, 0.18)",
-          btnSoftBg: "#2d3870",
-          btnSoftText: "#e5ebff",
-          btnSoftHover: "#394782",
-        },
-        mintSoda: {
-          bg: "#e9fbf6",
-          bgAccent: "#d4f5ed",
-          bgDecor1:
-            "radial-gradient(circle at 8% 18%, rgba(66, 191, 162, 0.14) 0, rgba(66, 191, 162, 0.14) 9px, transparent 10px)",
-          bgDecor2:
-            "radial-gradient(circle at 88% 83%, rgba(255, 255, 255, 0.78) 0, rgba(255, 255, 255, 0.78) 7px, transparent 8px)",
-          bgDecor3:
-            "radial-gradient(circle at 80% 16%, rgba(189, 231, 221, 0.34) 0, rgba(189, 231, 221, 0.34) 12px, transparent 13px)",
-          cornerDecor:
-            "radial-gradient(circle at top right, rgba(66, 191, 162, 0.14), transparent 56%)",
-          card: "#ffffff",
-          cardSoft: "#f3fffb",
-          primary: "#42bfa2",
-          primaryDark: "#21937d",
-          text: "#2f4b45",
-          muted: "#5d7d76",
-          line: "#bde7dd",
-          shadow: "rgba(66, 191, 162, 0.14)",
-          btnSoftBg: "#d9f4ec",
-          btnSoftText: "#2d7668",
-          btnSoftHover: "#c5eee3",
-        },
+      // ===== 目前畫面狀態 =====
+      const currentState = {
+        moods: [],
+        poopCount: 0,
+        eyeRollCount: 0,
       };
+
+      // ===== 主題（沿用原本風格色盤） =====
+      const themes = {
+        pink: { bg: "#fff8fc", bgAccent: "#ffeaf5", bgDecor1: "radial-gradient(circle at 8% 18%, rgba(255, 141, 191, 0.16) 0, rgba(255, 141, 191, 0.16) 9px, transparent 10px)", bgDecor2: "radial-gradient(circle at 88% 84%, rgba(255, 255, 255, 0.62) 0, rgba(255, 255, 255, 0.62) 6px, transparent 7px)", bgDecor3: "radial-gradient(circle at 78% 16%, rgba(255, 197, 227, 0.2) 0, rgba(255, 197, 227, 0.2) 10px, transparent 11px)", cornerDecor: "radial-gradient(circle at top right, rgba(255, 171, 211, 0.22), transparent 56%)", card: "#ffffff", cardSoft: "#fffcfe", primary: "#ff7eb6", primaryDark: "#ff5da6", text: "#4b3e4d", muted: "#8f7b8f", line: "#f7d5e7", shadow: "rgba(255, 126, 182, 0.14)", btnSoftBg: "#ffe2f0", btnSoftText: "#9e3e71", btnSoftHover: "#ffd0e6" },
+        starry: { bg: "#0f1226", bgAccent: "#1a2148", bgDecor1: "radial-gradient(circle at 9% 18%, rgba(255, 243, 197, 0.25) 0, rgba(255, 243, 197, 0.25) 2px, transparent 3px)", bgDecor2: "radial-gradient(circle at 88% 82%, rgba(252, 237, 172, 0.24) 0, rgba(252, 237, 172, 0.24) 3px, transparent 4px)", bgDecor3: "radial-gradient(circle at 80% 14%, rgba(132, 158, 255, 0.22) 0, rgba(132, 158, 255, 0.22) 12px, transparent 13px)", cornerDecor: "radial-gradient(circle at top right, rgba(80, 106, 194, 0.28), transparent 54%)", card: "#1b2345", cardSoft: "#212b52", primary: "#7fa8ff", primaryDark: "#a6beff", text: "#e5ebff", muted: "#b6c0eb", line: "#3b467e", shadow: "rgba(8, 12, 30, 0.45)", btnSoftBg: "#2f3d72", btnSoftText: "#d8e0ff", btnSoftHover: "#3b4a84" },
+        matcha: { bg: "#f5f7ed", bgAccent: "#e5efdb", bgDecor1: "radial-gradient(circle at 8% 20%, rgba(150, 187, 129, 0.17) 0, rgba(150, 187, 129, 0.17) 9px, transparent 10px)", bgDecor2: "radial-gradient(circle at 87% 82%, rgba(222, 199, 161, 0.18) 0, rgba(222, 199, 161, 0.18) 11px, transparent 12px)", bgDecor3: "radial-gradient(circle at 80% 15%, rgba(173, 205, 148, 0.2) 0, rgba(173, 205, 148, 0.2) 12px, transparent 13px)", cornerDecor: "radial-gradient(circle at top right, rgba(176, 205, 150, 0.22), transparent 56%)", card: "#ffffff", cardSoft: "#f8fbf2", primary: "#7da869", primaryDark: "#5f8550", text: "#394635", muted: "#6f7d67", line: "#d6e3c6", shadow: "rgba(94, 127, 85, 0.14)", btnSoftBg: "#e8f1da", btnSoftText: "#4f6647", btnSoftHover: "#dce9c9" },
+        sunset: { bg: "#fff4e9", bgAccent: "#ffe0cb", bgDecor1: "radial-gradient(circle at 10% 18%, rgba(255, 169, 120, 0.2) 0, rgba(255, 169, 120, 0.2) 9px, transparent 10px)", bgDecor2: "radial-gradient(circle at 90% 86%, rgba(255, 219, 168, 0.26) 0, rgba(255, 219, 168, 0.26) 10px, transparent 11px)", bgDecor3: "radial-gradient(circle at 82% 15%, rgba(255, 146, 120, 0.16) 0, rgba(255, 146, 120, 0.16) 11px, transparent 12px)", cornerDecor: "radial-gradient(circle at top right, rgba(255, 171, 140, 0.24), transparent 56%)", card: "#fffaf5", cardSoft: "#fff5ea", primary: "#f58a57", primaryDark: "#dc6e40", text: "#5a3d31", muted: "#9a7061", line: "#f2ccb6", shadow: "rgba(228, 133, 88, 0.18)", btnSoftBg: "#ffe7d8", btnSoftText: "#91563f", btnSoftHover: "#ffd9c2" },
+        falconWatch: { bg: "#f6f8ff", bgAccent: "#e3ebff", bgDecor1: "radial-gradient(circle at 9% 18%, rgba(117, 147, 224, 0.16) 0, rgba(117, 147, 224, 0.16) 8px, transparent 9px)", bgDecor2: "radial-gradient(circle at 88% 84%, rgba(181, 204, 255, 0.2) 0, rgba(181, 204, 255, 0.2) 10px, transparent 11px)", bgDecor3: "radial-gradient(circle at 79% 15%, rgba(143, 177, 255, 0.19) 0, rgba(143, 177, 255, 0.19) 10px, transparent 11px)", cornerDecor: "radial-gradient(circle at top right, rgba(139, 168, 238, 0.22), transparent 56%)", card: "#ffffff", cardSoft: "#f3f7ff", primary: "#5f84db", primaryDark: "#4369c4", text: "#2f3f63", muted: "#62729a", line: "#cfdbf4", shadow: "rgba(88, 114, 191, 0.16)", btnSoftBg: "#e5eeff", btnSoftText: "#3f5ea9", btnSoftHover: "#d5e4ff" },
+        starCookie: { bg: "#fffaf0", bgAccent: "#fce8c6", bgDecor1: "radial-gradient(circle at 8% 18%, rgba(255, 198, 113, 0.2) 0, rgba(255, 198, 113, 0.2) 8px, transparent 9px)", bgDecor2: "radial-gradient(circle at 90% 83%, rgba(255, 231, 164, 0.26) 0, rgba(255, 231, 164, 0.26) 10px, transparent 11px)", bgDecor3: "radial-gradient(circle at 80% 14%, rgba(255, 188, 87, 0.2) 0, rgba(255, 188, 87, 0.2) 11px, transparent 12px)", cornerDecor: "radial-gradient(circle at top right, rgba(255, 205, 128, 0.24), transparent 56%)", card: "#fffef9", cardSoft: "#fff9ed", primary: "#d79134", primaryDark: "#bb7521", text: "#5f4b2d", muted: "#90754f", line: "#f1d9af", shadow: "rgba(211, 159, 73, 0.18)", btnSoftBg: "#ffefcf", btnSoftText: "#8c6028", btnSoftHover: "#ffe4b4" },
+        mintSoda: { bg: "#effffc", bgAccent: "#d8f8f1", bgDecor1: "radial-gradient(circle at 9% 18%, rgba(102, 210, 195, 0.17) 0, rgba(102, 210, 195, 0.17) 8px, transparent 9px)", bgDecor2: "radial-gradient(circle at 90% 84%, rgba(150, 233, 221, 0.22) 0, rgba(150, 233, 221, 0.22) 10px, transparent 11px)", bgDecor3: "radial-gradient(circle at 82% 15%, rgba(100, 201, 218, 0.18) 0, rgba(100, 201, 218, 0.18) 10px, transparent 11px)", cornerDecor: "radial-gradient(circle at top right, rgba(126, 224, 211, 0.24), transparent 56%)", card: "#ffffff", cardSoft: "#f4fffd", primary: "#36b8a8", primaryDark: "#20998b", text: "#2e4e4a", muted: "#5f847f", line: "#c8ece5", shadow: "rgba(56, 177, 162, 0.16)", btnSoftBg: "#dcf8f3", btnSoftText: "#2c7f75", btnSoftHover: "#c7f1e9" },
+      };
+
+      let draftToastTimer = null;
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(draftToastTimer);
+        draftToastTimer = setTimeout(() => toast.classList.remove("show"), 2000);
+      }
+
+      function getTodayISO() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      }
+
+      function formatDateSlash(isoDate) {
+        if (!isoDate) return "----/--/--";
+        const [y, m, d] = isoDate.split("-");
+        return `${y}/${m}/${d}`;
+      }
+
+      function formatSavedAt(date = new Date()) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const d = String(date.getDate()).padStart(2, "0");
+        const hh = String(date.getHours()).padStart(2, "0");
+        const mm = String(date.getMinutes()).padStart(2, "0");
+        const ss = String(date.getSeconds()).padStart(2, "0");
+        return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+      }
+
+      function loadJSON(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch {
+          return fallback;
+        }
+      }
+
+      function saveJSON(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
 
       function applyTheme(themeName) {
         const theme = themes[themeName] || themes.pink;
@@ -784,293 +600,265 @@
         root.style.setProperty("--btn-soft-hover", theme.btnSoftHover);
       }
 
-      function formatDate(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        return `${year}/${month}/${day}`;
-      }
-
-      function renderTodayDate() {
-        todayDate.textContent = `今日日期：${formatDate(new Date())}`;
-      }
-
-      function loadTheme() {
-        const savedTheme = localStorage.getItem(themeStorageKey);
-        const themeName = themes[savedTheme] ? savedTheme : "pink";
-        themeSelect.value = themeName;
-        applyTheme(themeName);
-      }
-
-      function splitSentences(text) {
-        return text
-          .split(/[。！？!?.\n]/)
-          .map((s) => s.trim())
-          .filter(Boolean);
-      }
-
-      function getMoodKeywords(text) {
-        const found = moodMap
-          .filter((item) => item.words.some((word) => text.includes(word)))
-          .map((item) => item.key);
-
-        if (found.length) return found.join("、");
-        return "平穩、努力、前進";
-      }
-
-      function organizeDiary(rawText) {
-        const text = rawText.trim();
-        if (!text) {
-          return {
-            fullDiary: "請先輸入今天的日記內容喔～",
-            shortReport: "尚未有內容可整理。",
-            quote: "今天也值得一句溫柔的鼓勵。",
-            mood: "待補充",
-          };
-        }
-
-        const sentences = splitSentences(text);
-        const opening = sentences[0] || "今天努力地過了一天";
-        const ending = sentences[sentences.length - 1] || opening;
-
-        const shortReport = `今天重點：${opening}。\n目前進度：${ending}。\n整體來說，有在穩穩前進！`;
-        const quote = `「${ending.replace(/[，,]$/, "")}，我做得到。」`;
-
+      // 將表單組成草稿資料（綁日期）
+      function collectDraft() {
         return {
-          fullDiary: text,
-          shortReport,
-          quote,
-          mood: getMoodKeywords(text),
+          opener: openerInput.value.trim(),
+          diary: diaryInput.value.trim(),
+          closing: closingInput.value.trim(),
+          rageValue: Number(rageInput.value),
+          moods: [...currentState.moods],
+          poopCount: currentState.poopCount,
+          eyeRollCount: currentState.eyeRollCount,
+          theme: themeSelect.value,
         };
       }
 
-      function getRandomEncouragement() {
-        const index = Math.floor(Math.random() * encouragements.length);
-        return encouragements[index];
+      function applyDraft(draft) {
+        openerInput.value = draft?.opener || "";
+        diaryInput.value = draft?.diary || "";
+        closingInput.value = draft?.closing || "";
+        rageInput.value = String(draft?.rageValue ?? 50);
+        rageValue.textContent = rageInput.value;
+        currentState.moods = Array.isArray(draft?.moods) ? draft.moods : [];
+        currentState.poopCount = Number(draft?.poopCount || 0);
+        currentState.eyeRollCount = Number(draft?.eyeRollCount || 0);
+        renderMoodChips();
+        renderJetStats();
       }
 
-      function applyOutputs(data) {
-        Object.entries(outputs).forEach(([key, el]) => {
-          el.textContent = data[key] || defaultOutputs[key];
-        });
+      function getDraftsByDate() {
+        return loadJSON(KEY_DRAFTS_BY_DATE, {});
       }
 
-      function saveData() {
-        const payload = {
-          input: input.value,
-          tomorrowNote: tomorrowNoteInput.value,
-          encouragement: encouragementEl.textContent,
-          outputs: Object.fromEntries(
-            Object.entries(outputs).map(([key, el]) => [key, el.textContent])
-          ),
-        };
-        localStorage.setItem(storageKey, JSON.stringify(payload));
+      function saveDraftForCurrentDate(showStatusToast = false) {
+        const dateKey = entryDate.value;
+        if (!dateKey) return;
+        const draftsByDate = getDraftsByDate();
+        draftsByDate[dateKey] = collectDraft();
+        saveJSON(KEY_DRAFTS_BY_DATE, draftsByDate);
+        draftStatus.textContent = `草稿狀態：${formatDateSlash(dateKey)} 草稿已自動儲存`;
+        if (showStatusToast) showToast("已自動儲存草稿");
       }
 
-      function getCurrentThemeLabel() {
-        return themeSelect.options[themeSelect.selectedIndex]?.text || "粉紅膠囊";
-      }
-
-      function buildCurrentEntry() {
-        return {
-          date: formatDate(new Date()),
-          input: input.value.trim(),
-          fullDiary: outputs.fullDiary.textContent,
-          shortReport: outputs.shortReport.textContent,
-          quote: outputs.quote.textContent,
-          mood: outputs.mood.textContent,
-          tomorrowNote: tomorrowNoteInput.value.trim() || "（尚未填寫）",
-          theme: getCurrentThemeLabel(),
-        };
-      }
-
-      function loadHistory() {
-        const stored = localStorage.getItem(historyStorageKey);
-        if (!stored) return [];
-        try {
-          const data = JSON.parse(stored);
-          return Array.isArray(data) ? data : [];
-        } catch {
-          localStorage.removeItem(historyStorageKey);
-          return [];
+      function loadDraftByDate(dateKey, toastIt = true) {
+        const draftsByDate = getDraftsByDate();
+        const draft = draftsByDate[dateKey];
+        if (draft) {
+          applyDraft(draft);
+          draftStatus.textContent = `草稿狀態：已載入 ${formatDateSlash(dateKey)} 的草稿`;
+          if (draft.theme && themes[draft.theme]) {
+            themeSelect.value = draft.theme;
+            applyTheme(draft.theme);
+            localStorage.setItem(KEY_THEME, draft.theme);
+          }
+          if (toastIt) showToast(`已載入 ${formatDateSlash(dateKey)} 的草稿`);
+        } else {
+          applyDraft(null);
+          draftStatus.textContent = `草稿狀態：${formatDateSlash(dateKey)} 目前沒有草稿`;
         }
       }
 
-      function saveHistory(history) {
-        localStorage.setItem(historyStorageKey, JSON.stringify(history));
+      function getThemeLabel() {
+        return themeSelect.options[themeSelect.selectedIndex]?.text || themeSelect.value;
       }
 
-      function deleteHistoryEntry(index) {
-        const history = loadHistory();
-        history.splice(index, 1);
-        saveHistory(history);
+      function generateExportText(source) {
+        return [
+          `日期：${formatDateSlash(source.date)}`,
+          `主題：${source.themeLabel}`,
+          `紅溫值：${source.rageValue}`,
+          `先噴一句：${source.opener || "（未填寫）"}`,
+          "主日記：",
+          source.diary || "（未填寫）",
+          "心情：",
+          source.moods.length ? source.moods.join("、") : "（未選擇）",
+          `💩噴射：${source.poopCount} 次`,
+          `🙄💅噴射：${source.eyeRollCount} 次`,
+          "收尾：",
+          source.closing || "（未填寫）",
+        ].join("\n");
+      }
+
+      function currentExportSource() {
+        return {
+          date: entryDate.value,
+          theme: themeSelect.value,
+          themeLabel: getThemeLabel(),
+          rageValue: Number(rageInput.value),
+          opener: openerInput.value.trim(),
+          diary: diaryInput.value.trim(),
+          moods: [...currentState.moods],
+          poopCount: currentState.poopCount,
+          eyeRollCount: currentState.eyeRollCount,
+          closing: closingInput.value.trim(),
+        };
+      }
+
+      function getHistory() {
+        return loadJSON(KEY_HISTORY, []);
+      }
+
+      function saveHistory(records) {
+        saveJSON(KEY_HISTORY, records);
+      }
+
+      function saveRecord() {
+        const source = currentExportSource();
+        const newRecord = {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          date: source.date,
+          savedAt: formatSavedAt(),
+          theme: source.theme,
+          themeLabel: source.themeLabel,
+          rageValue: source.rageValue,
+          opener: source.opener,
+          diary: source.diary,
+          moods: source.moods,
+          poopCount: source.poopCount,
+          eyeRollCount: source.eyeRollCount,
+          closing: source.closing,
+        };
+
+        const records = getHistory();
+        records.unshift(newRecord);
+        saveHistory(records);
         renderHistory();
+        showToast("存檔成功，已加入歷史紀錄");
       }
 
       function renderHistory() {
-        const history = loadHistory();
+        const records = getHistory();
         historyList.innerHTML = "";
-        historyEmpty.style.display = history.length ? "none" : "block";
+        historyEmpty.style.display = records.length ? "none" : "block";
 
-        history.forEach((item, index) => {
-          const details = document.createElement("details");
-          const summary = document.createElement("summary");
+        records.forEach((record) => {
+          const item = document.createElement("article");
+          item.className = "history-item";
 
-          const summaryText = document.createElement("span");
-          summaryText.className = "history-summary-text";
-          summaryText.textContent = `${item.date || "未記錄日期"}｜${item.theme || "未記錄主題"}`;
+          const title = `${formatDateSlash(record.date)} ｜ ${record.savedAt}`;
+          const summary = (record.diary || "（無日記內容）").slice(0, 48);
 
-          const deleteBtn = document.createElement("button");
-          deleteBtn.type = "button";
-          deleteBtn.className = "history-delete-btn";
-          deleteBtn.textContent = "刪除此篇";
-          deleteBtn.addEventListener("click", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            deleteHistoryEntry(index);
+          item.innerHTML = `
+            <div class="history-top">
+              <strong>${title}</strong>
+              <span class="hint">${record.themeLabel || record.theme}</span>
+            </div>
+            <p class="history-summary">${summary}${(record.diary || "").length > 48 ? "..." : ""}</p>
+            <div class="quick-row">
+              <button class="soft-btn" data-action="toggle">展開內容</button>
+              <button class="soft-btn" data-action="load">載入這筆</button>
+              <button class="soft-btn" data-action="delete">刪除</button>
+            </div>
+            <div class="history-full">${generateExportText({
+              date: record.date,
+              themeLabel: record.themeLabel || record.theme,
+              rageValue: record.rageValue,
+              opener: record.opener,
+              diary: record.diary,
+              moods: record.moods || [],
+              poopCount: record.poopCount || 0,
+              eyeRollCount: record.eyeRollCount || 0,
+              closing: record.closing,
+            })}</div>
+          `;
+
+          item.querySelector('[data-action="toggle"]').addEventListener("click", () => {
+            const isOpen = item.classList.toggle("open");
+            item.querySelector('[data-action="toggle"]').textContent = isOpen ? "收起內容" : "展開內容";
           });
 
-          const content = document.createElement("div");
-          content.className = "history-item-content";
-          content.textContent = [
-            `【原始輸入內容】\n${item.input || "（空白）"}`,
-            `【今日日記】\n${item.fullDiary || "（空白）"}`,
-            `【小蝦蝦版短版回報】\n${item.shortReport || "（空白）"}`,
-            `【今日金句】\n${item.quote || "（空白）"}`,
-            `【今日情緒關鍵字】\n${item.mood || "（空白）"}`,
-            `【明天要記得】\n${item.tomorrowNote || "（尚未填寫）"}`,
-          ].join("\n\n");
+          item.querySelector('[data-action="load"]').addEventListener("click", () => {
+            entryDate.value = record.date;
+            openerInput.value = record.opener || "";
+            diaryInput.value = record.diary || "";
+            closingInput.value = record.closing || "";
+            rageInput.value = String(record.rageValue ?? 50);
+            rageValue.textContent = rageInput.value;
+            currentState.moods = Array.isArray(record.moods) ? [...record.moods] : [];
+            currentState.poopCount = Number(record.poopCount || 0);
+            currentState.eyeRollCount = Number(record.eyeRollCount || 0);
+            renderMoodChips();
+            renderJetStats();
+            if (record.theme && themes[record.theme]) {
+              themeSelect.value = record.theme;
+              applyTheme(record.theme);
+              localStorage.setItem(KEY_THEME, record.theme);
+            }
+            saveDraftForCurrentDate(false);
+            showToast("已載入這筆紀錄到表單");
+          });
 
-          summary.appendChild(summaryText);
-          summary.appendChild(deleteBtn);
+          item.querySelector('[data-action="delete"]').addEventListener("click", () => {
+            const recordsNow = getHistory().filter((x) => x.id !== record.id);
+            saveHistory(recordsNow);
+            renderHistory();
+            showToast("已刪除這筆紀錄");
+          });
 
-          details.appendChild(summary);
-          details.appendChild(content);
-          historyList.appendChild(details);
+          historyList.appendChild(item);
         });
       }
 
-      function addHistoryEntry(entry) {
-        const history = loadHistory();
-        history.unshift(entry);
-        const trimmed = history.slice(0, 7);
-        saveHistory(trimmed);
-        renderHistory();
-      }
-
-      function buildExportText() {
-        return [
-          `日期：${formatDate(new Date())}`,
-          `主題：${getCurrentThemeLabel()}`,
-          "",
-          `【今日日記】\n${outputs.fullDiary.textContent}`,
-          "",
-          `【小蝦蝦版短版回報】\n${outputs.shortReport.textContent}`,
-          "",
-          `【今日金句】\n${outputs.quote.textContent}`,
-          "",
-          `【今日情緒關鍵字】\n${outputs.mood.textContent}`,
-          "",
-          `【明天要記得】\n${tomorrowNoteInput.value.trim() || "（尚未填寫）"}`,
-        ].join("\n");
-      }
-
-      function exportTxtFile() {
-        const text = buildExportText();
-        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.href = url;
-        link.download = `dan-dan-${formatDate(new Date()).replaceAll("/", "-")}.txt`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
-
-      function loadData() {
-        const stored = localStorage.getItem(storageKey);
-        if (!stored) return;
-
-        try {
-          const data = JSON.parse(stored);
-          input.value = data.input || "";
-          tomorrowNoteInput.value = data.tomorrowNote || "";
-          encouragementEl.textContent = data.encouragement || defaultEncouragement;
-          applyOutputs(data.outputs || {});
-        } catch {
-          localStorage.removeItem(storageKey);
-        }
-      }
-
-      organizeBtn.addEventListener("click", () => {
-        const result = organizeDiary(input.value);
-        applyOutputs(result);
-        encouragementEl.textContent = getRandomEncouragement();
-        saveData();
-
-        if (input.value.trim()) {
-          addHistoryEntry(buildCurrentEntry());
-        }
-      });
-
-      exportTxtBtn.addEventListener("click", () => {
-        exportTxtFile();
-      });
-
-      document.querySelectorAll(".mood-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const moodText = btn.dataset.mood || "";
-          outputs.mood.textContent = moodText;
-          saveData();
+      function renderMoodChips() {
+        moodChips.innerHTML = "";
+        moodOptions.forEach((mood) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `tag-btn mood-chip${currentState.moods.includes(mood) ? " active" : ""}`;
+          btn.textContent = mood;
+          btn.addEventListener("click", () => {
+            if (currentState.moods.includes(mood)) {
+              currentState.moods = currentState.moods.filter((m) => m !== mood);
+            } else {
+              currentState.moods.push(mood);
+            }
+            renderMoodChips();
+            saveDraftForCurrentDate();
+          });
+          moodChips.appendChild(btn);
         });
-      });
+      }
 
-      input.addEventListener("input", saveData);
-      tomorrowNoteInput.addEventListener("input", saveData);
+      function renderTemplateButtons() {
+        templateButtons.innerHTML = "";
+        templates.forEach((tpl) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "soft-btn";
+          btn.textContent = tpl.name;
+          btn.addEventListener("click", () => {
+            const hasText = diaryInput.value.trim().length > 0;
+            if (hasText && !window.confirm("主日記已有內容，要覆蓋成模板嗎？")) return;
+            diaryInput.value = tpl.text;
+            saveDraftForCurrentDate();
+            showToast(`已套用模板：${tpl.name}`);
+          });
+          templateButtons.appendChild(btn);
+        });
+      }
 
-      clearBtn.addEventListener("click", () => {
-        input.value = "";
-        tomorrowNoteInput.value = "";
-        applyOutputs(defaultOutputs);
-        encouragementEl.textContent = defaultEncouragement;
-        localStorage.removeItem(storageKey);
-      });
+      function renderQuickFillButtons() {
+        quickFillButtons.innerHTML = "";
+        quickFillOptions.forEach((text, idx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "soft-btn";
+          btn.textContent = `一鍵發瘋 ${idx + 1}`;
+          btn.addEventListener("click", () => {
+            diaryInput.value = text;
+            saveDraftForCurrentDate();
+            showToast("已快速填入主日記");
+          });
+          quickFillButtons.appendChild(btn);
+        });
+      }
 
-      copyAllBtn.addEventListener("click", async () => {
-        const message = [
-          `📅 日期：${formatDate(new Date())}`,
-          "",
-          `【今日日記】\n${outputs.fullDiary.textContent}`,
-          "",
-          `【小蝦蝦版短版回報】\n${outputs.shortReport.textContent}`,
-          "",
-          `【今日金句】\n${outputs.quote.textContent}`,
-          "",
-          `【今日情緒關鍵字】\n${outputs.mood.textContent}`,
-          "",
-          `【明天要記得】\n${tomorrowNoteInput.value.trim() || "（尚未填寫）"}`,
-        ].join("\n");
+      function renderJetStats() {
+        jetStats.textContent = `💩 ${currentState.poopCount} 次 ｜ 🙄💅 ${currentState.eyeRollCount} 次`;
+      }
 
-        try {
-          await navigator.clipboard.writeText(message);
-          const oldText = copyAllBtn.textContent;
-          copyAllBtn.textContent = "全部已複製！";
-          setTimeout(() => {
-            copyAllBtn.textContent = oldText;
-          }, 1200);
-        } catch {
-          alert("複製失敗，請手動複製文字。\n\n" + message);
-        }
-      });
-
-      themeSelect.addEventListener("change", () => {
-        const selected = themeSelect.value;
-        applyTheme(selected);
-        localStorage.setItem(themeStorageKey, selected);
-      });
-
-      jetBtn.addEventListener("click", () => {
+      function emitJetEmoji() {
         const randomEmoji = jetEmojis[Math.floor(Math.random() * jetEmojis.length)];
         const burst = document.createElement("span");
         const duration = 1200 + Math.random() * 600;
@@ -1084,37 +872,156 @@
         burst.style.setProperty("--start-y", `${offsetY}px`);
         burst.style.setProperty("--drift-x", `${driftX}px`);
         burst.style.setProperty("--duration", `${duration}ms`);
-
         jetOutput.appendChild(burst);
         setTimeout(() => burst.remove(), duration + 120);
+      }
 
-        jetBtn.classList.remove("bursting");
-        requestAnimationFrame(() => {
-          jetBtn.classList.add("bursting");
+      async function copyExportText() {
+        const text = generateExportText(currentExportSource());
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast("匯出成功，已複製到剪貼簿");
+        } catch {
+          showToast("複製失敗，請改用下載 txt");
+        }
+      }
+
+      function downloadExportText() {
+        const source = currentExportSource();
+        const text = generateExportText(source);
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const fileName = `排位降溫日記_${source.date || "未命名"}.txt`;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("匯出成功（txt 已下載）");
+      }
+
+      async function screenshotShare() {
+        const card = document.getElementById("diaryCard");
+        if (!window.html2canvas) {
+          showToast("截圖套件尚未載入，請稍後再試");
+          return;
+        }
+
+        const canvas = await window.html2canvas(card, {
+          scale: Math.min(window.devicePixelRatio || 1.5, 2),
+          backgroundColor: null,
+          useCORS: true,
         });
-      });
 
-      document.querySelectorAll(".copy-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const key = btn.dataset.copy;
-          const text = outputs[key].textContent;
+        const pngBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+        if (!pngBlob) {
+          showToast("截圖失敗，請重試");
+          return;
+        }
+
+        const file = new File([pngBlob], "排位降溫日記.png", { type: "image/png" });
+        const canShareFile = navigator.share && navigator.canShare && navigator.canShare({ files: [file] });
+
+        if (canShareFile) {
           try {
-            await navigator.clipboard.writeText(text);
-            const oldText = btn.textContent;
-            btn.textContent = "已複製！";
-            setTimeout(() => {
-              btn.textContent = oldText;
-            }, 1000);
+            await navigator.share({
+              title: "排位降溫日記",
+              text: "我先降溫，再決定要不要繼續排。",
+              files: [file],
+            });
+            showToast("分享成功");
+            return;
           } catch {
-            alert("複製失敗，請手動複製文字。");
+            // 使用者取消也會進來，改走下載 fallback
           }
+        }
+
+        const url = URL.createObjectURL(pngBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "排位降溫日記.png";
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("已下載 PNG（可直接分享）");
+      }
+
+      function clearCurrentDateDraft() {
+        const dateKey = entryDate.value;
+        if (!dateKey) return;
+        const draftsByDate = getDraftsByDate();
+        delete draftsByDate[dateKey];
+        saveJSON(KEY_DRAFTS_BY_DATE, draftsByDate);
+        applyDraft(null);
+        draftStatus.textContent = `草稿狀態：${formatDateSlash(dateKey)} 草稿已清空`;
+        showToast("已清空此日草稿");
+      }
+
+      // ===== 事件綁定 =====
+      themeSelect.addEventListener("change", () => {
+        applyTheme(themeSelect.value);
+        localStorage.setItem(KEY_THEME, themeSelect.value);
+        saveDraftForCurrentDate();
+      });
+
+      entryDate.addEventListener("change", () => loadDraftByDate(entryDate.value));
+      [openerInput, diaryInput, closingInput, rageInput].forEach((el) => {
+        el.addEventListener("input", () => {
+          rageValue.textContent = rageInput.value;
+          saveDraftForCurrentDate();
         });
       });
 
-      renderTodayDate();
-      loadTheme();
-      loadData();
-      renderHistory();
+      poopBtn.addEventListener("click", () => {
+        currentState.poopCount += 1;
+        renderJetStats();
+        saveDraftForCurrentDate();
+      });
+
+      eyeRollBtn.addEventListener("click", () => {
+        currentState.eyeRollCount += 1;
+        renderJetStats();
+        saveDraftForCurrentDate();
+      });
+
+      resetJetBtn.addEventListener("click", () => {
+        currentState.poopCount = 0;
+        currentState.eyeRollCount = 0;
+        renderJetStats();
+        saveDraftForCurrentDate();
+        showToast("噴射計數已重置");
+      });
+
+      jetBtn.addEventListener("click", emitJetEmoji);
+      saveRecordBtn.addEventListener("click", saveRecord);
+      exportBtn.addEventListener("click", downloadExportText);
+      copyExportBtn.addEventListener("click", copyExportText);
+      screenshotBtn.addEventListener("click", screenshotShare);
+      clearDraftBtn.addEventListener("click", clearCurrentDateDraft);
+
+      clearHistoryBtn.addEventListener("click", () => {
+        if (!window.confirm("確定要清空全部歷史紀錄嗎？此動作無法復原。")) return;
+        saveHistory([]);
+        renderHistory();
+        showToast("全部歷史紀錄已清空");
+      });
+
+      // ===== 初始化 =====
+      function init() {
+        renderTemplateButtons();
+        renderQuickFillButtons();
+        renderMoodChips();
+        renderJetStats();
+
+        const savedTheme = localStorage.getItem(KEY_THEME);
+        themeSelect.value = themes[savedTheme] ? savedTheme : "pink";
+        applyTheme(themeSelect.value);
+
+        entryDate.value = getTodayISO();
+        loadDraftByDate(entryDate.value, false);
+        renderHistory();
+      }
+
+      init();
     </script>
   </body>
 </html>
