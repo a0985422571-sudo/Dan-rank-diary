@@ -240,13 +240,130 @@
         margin-top: 8px;
       }
 
+      .hidden { display: none !important; }
+
+      /* ===== 雷包射擊場 ===== */
+      .shooter-wrap { margin-top: 14px; }
+      .shooter-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .shooter-title { margin: 0; color: var(--title-color); }
+      .shooter-stage {
+        margin-top: 10px;
+        background: rgba(255,255,255,0.55);
+        border: 2px dashed var(--line);
+        border-radius: 14px;
+        padding: 10px;
+      }
+      .target-view {
+        position: relative;
+        width: min(100%, 420px);
+        aspect-ratio: 1 / 1;
+        margin: 0 auto;
+        border: 2px solid var(--line);
+        border-radius: 16px;
+        background: #000;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+      }
+      .target-view img {
+        width: calc(100% * var(--target-scale, 0.9));
+        height: calc(100% * var(--target-scale, 0.9));
+        object-fit: contain;
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+      .target-fallback {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        color: #ffe0cf;
+        background: #2a1d1d;
+        text-align: center;
+        padding: 10px;
+      }
+      .hit-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .hit-fx {
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        color: #fff;
+        font-weight: 900;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.65);
+        animation: hitPop 700ms ease-out forwards;
+      }
+      @keyframes hitPop {
+        from { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+        to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.15); opacity: 0; }
+      }
+      .target-hit {
+        animation: targetHit 180ms ease;
+      }
+      @keyframes targetHit {
+        0% { transform: scale(1) rotate(0deg); }
+        35% { transform: scale(0.95) rotate(-1.2deg); }
+        75% { transform: scale(1.03) rotate(1deg); }
+        100% { transform: scale(1) rotate(0deg); }
+      }
+      .shooter-stats {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .stat-chip {
+        background: #fff;
+        border: 2px solid var(--line);
+        border-radius: 10px;
+        padding: 8px;
+        font-weight: 700;
+        font-size: 0.93rem;
+      }
+      .shooter-actions, .target-switch {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .fire-btn {
+        grid-column: 1 / -1;
+        font-size: 1.1rem;
+        padding: 14px;
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .shooter-comment {
+        margin-top: 10px;
+        border: 2px dotted var(--line);
+        background: rgba(255,255,255,0.65);
+        border-radius: 12px;
+        padding: 10px;
+        font-weight: 700;
+        color: var(--muted-text);
+      }
+
       @media (min-width: 760px) {
         .top-row { grid-template-columns: 1fr 1fr; }
         .theme-row { grid-template-columns: repeat(4, 1fr); }
         .grid2 { grid-template-columns: 1fr 1fr; }
         .quick-fill, .template-fill { grid-template-columns: repeat(3, 1fr); }
         .vent-grid { grid-template-columns: 1fr 1fr; }
-        .action-row { grid-template-columns: repeat(4, 1fr); }
+        .action-row { grid-template-columns: repeat(5, 1fr); }
+        .shooter-actions { grid-template-columns: repeat(4, 1fr); }
+        .fire-btn { grid-column: auto; }
       }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
@@ -346,6 +463,7 @@
             <button id="copyExportBtn" class="action-btn" type="button">匯出文字（複製）</button>
             <button id="downloadExportBtn" class="action-btn" type="button">匯出文字（下載）</button>
             <button id="shareShotBtn" class="action-btn" type="button">截圖分享</button>
+            <button id="openShooterBtn" class="action-btn" type="button">進入雷包射擊場</button>
           </div>
         </section>
 
@@ -358,6 +476,41 @@
           <button id="clearHistoryBtn" type="button" class="danger">清空全部歷史</button>
         </div>
         <div class="history-list" id="historyList"></div>
+      </section>
+
+      <section class="card shooter-wrap hidden" id="shooterView">
+        <div class="shooter-head">
+          <h2 class="shooter-title">雷包射擊場</h2>
+          <button type="button" id="backDiaryBtn">← 返回日記</button>
+        </div>
+
+        <div class="shooter-stage">
+          <div class="target-view" id="targetView">
+            <img id="targetImage" alt="雷包標靶" />
+            <div class="target-fallback hidden" id="targetFallback">標靶載入失敗</div>
+            <div class="hit-layer" id="hitLayer"></div>
+          </div>
+
+          <div class="target-switch">
+            <button type="button" id="prevTargetBtn">上一個標靶</button>
+            <button type="button" id="nextTargetBtn">下一個標靶</button>
+          </div>
+
+          <div class="shooter-stats">
+            <div class="stat-chip">命中次數：<span id="hitCount">0</span></div>
+            <div class="stat-chip">本輪射擊：<span id="shotCount">0</span></div>
+            <div class="stat-chip">最高紀錄：<span id="bestShotCount">0</span></div>
+            <div class="stat-chip">目前標靶：<span id="currentTargetName">雷包01</span></div>
+          </div>
+
+          <div class="shooter-actions">
+            <button type="button" class="fire-btn" id="fireBtn">發射</button>
+            <button type="button" id="resetRoundBtn">重置本輪</button>
+            <button type="button" id="randomTargetBtn">隨機雷包</button>
+          </div>
+
+          <div class="shooter-comment" id="shooterComment">今天很克制，先記你一功。</div>
+        </div>
       </section>
     </div>
 
@@ -464,6 +617,20 @@
         { key: "eyeRoll", emoji: "🙄💅", label: "白眼噴射", burst: ["🙄", "💅"], feedbacks: ["白眼值穩定上升中", "你這眼神很有內容", "今天不解釋，直接翻白眼"] },
       ];
 
+      /*
+        ===== 射擊素材設定區（可維護）=====
+        1) 改素材資料夾：改 TARGET_BASE_PATH
+        2) 新增 target_04、target_05：往 targets 陣列 push 物件
+        3) 圖片尺寸安全值：改 TARGET_SCALE（避免素材尺寸差太多爆版）
+      */
+      const TARGET_BASE_PATH = "./assets/targets/";
+      const TARGET_SCALE = 0.9;
+      const targets = [
+        { id: "target_01", name: "雷包01", image: "target_01.png" },
+        { id: "target_02", name: "雷包02", image: "target_02.png" },
+        { id: "target_03", name: "雷包03", image: "target_03.png" },
+      ];
+
       // DOM
       const diaryDateEl = document.getElementById("diaryDate");
       const saveStatusEl = document.getElementById("saveStatus");
@@ -499,8 +666,34 @@
       const manualCopyTextEl = document.getElementById("manualCopyText");
       const manualSelectBtnEl = document.getElementById("manualSelectBtn");
       const manualCloseBtnEl = document.getElementById("manualCloseBtn");
+      const openShooterBtnEl = document.getElementById("openShooterBtn");
+      const shooterViewEl = document.getElementById("shooterView");
+      const backDiaryBtnEl = document.getElementById("backDiaryBtn");
+      const targetViewEl = document.getElementById("targetView");
+      const targetImageEl = document.getElementById("targetImage");
+      const targetFallbackEl = document.getElementById("targetFallback");
+      const hitLayerEl = document.getElementById("hitLayer");
+      const prevTargetBtnEl = document.getElementById("prevTargetBtn");
+      const nextTargetBtnEl = document.getElementById("nextTargetBtn");
+      const randomTargetBtnEl = document.getElementById("randomTargetBtn");
+      const fireBtnEl = document.getElementById("fireBtn");
+      const resetRoundBtnEl = document.getElementById("resetRoundBtn");
+      const hitCountEl = document.getElementById("hitCount");
+      const shotCountEl = document.getElementById("shotCount");
+      const bestShotCountEl = document.getElementById("bestShotCount");
+      const shooterCommentEl = document.getElementById("shooterComment");
+      const currentTargetNameEl = document.getElementById("currentTargetName");
 
       let toastTimer = null;
+      let shooterAutoTimer = null;
+      let shooterAutoInterval = null;
+      const SHOOTER_STORAGE_KEY = "rankDiary_shooter_data";
+      let shooterState = {
+        currentTargetIndex: 0,
+        shots: 0,
+        hits: 0,
+        bestShots: 0,
+      };
 
       // 全域資料
       let draftsByDate = readJSON(STORAGE_KEYS.draftsByDate, {});
@@ -1064,6 +1257,166 @@ ${record.diary || "（空）"}
         }, "image/png");
       }
 
+      function getShooterComment(count) {
+        if (count <= 5) return "今天很克制，先記你一功。";
+        if (count <= 15) return "有在發洩，但還沒進入暴走狀態。";
+        if (count <= 30) return "看來今天真的被雷到了。";
+        if (count <= 60) return "你今天不是普通噴射器，是戰術轟炸機。";
+        return "雷包已被宇宙送走。";
+      }
+
+      function saveShooterData() {
+        localStorage.setItem(
+          SHOOTER_STORAGE_KEY,
+          JSON.stringify({
+            bestShots: shooterState.bestShots,
+            currentTargetIndex: shooterState.currentTargetIndex,
+          })
+        );
+      }
+
+      function loadShooterData() {
+        const raw = localStorage.getItem(SHOOTER_STORAGE_KEY);
+        if (!raw) return;
+        try {
+          const data = JSON.parse(raw);
+          shooterState.bestShots = Number(data.bestShots || 0);
+          shooterState.currentTargetIndex = Math.max(
+            0,
+            Math.min(targets.length - 1, Number(data.currentTargetIndex || 0))
+          );
+        } catch {
+          // ignore bad data
+        }
+      }
+
+      function updateShooterStats() {
+        hitCountEl.textContent = String(shooterState.hits);
+        shotCountEl.textContent = String(shooterState.shots);
+        bestShotCountEl.textContent = String(shooterState.bestShots);
+        shooterCommentEl.textContent = getShooterComment(shooterState.shots);
+        currentTargetNameEl.textContent = targets[shooterState.currentTargetIndex]?.name || "雷包";
+      }
+
+      function clearHitEffects() {
+        hitLayerEl.innerHTML = "";
+      }
+
+      function spawnHitText() {
+        const words = ["砰！", "中！", "雷爆！", "命中！"];
+        const fx = document.createElement("span");
+        fx.className = "hit-fx";
+        fx.textContent = words[Math.floor(Math.random() * words.length)];
+        fx.style.setProperty("--x", `${30 + Math.random() * 40}%`);
+        fx.style.setProperty("--y", `${35 + Math.random() * 35}%`);
+        fx.style.setProperty("--dx", `${-20 + Math.random() * 40}px`);
+        fx.style.setProperty("--dy", `${-40 - Math.random() * 40}px`);
+        hitLayerEl.appendChild(fx);
+        fx.addEventListener("animationend", () => fx.remove(), { once: true });
+      }
+
+      function switchTarget(index) {
+        const safeIndex = (index + targets.length) % targets.length;
+        shooterState.currentTargetIndex = safeIndex;
+        saveShooterData();
+        clearHitEffects();
+        renderShooterGame();
+      }
+
+      function renderShooterGame() {
+        document.documentElement.style.setProperty("--target-scale", TARGET_SCALE);
+        const target = targets[shooterState.currentTargetIndex];
+        targetImageEl.classList.remove("hidden");
+        targetFallbackEl.classList.add("hidden");
+        targetImageEl.src = `${TARGET_BASE_PATH}${target.image}`;
+        targetImageEl.alt = target.name;
+        updateShooterStats();
+      }
+
+      function fireShot() {
+        shooterState.shots += 1;
+        shooterState.hits += 1;
+        shooterState.bestShots = Math.max(shooterState.bestShots, shooterState.shots);
+        saveShooterData();
+        updateShooterStats();
+        targetImageEl.classList.remove("target-hit");
+        void targetImageEl.offsetWidth;
+        targetImageEl.classList.add("target-hit");
+        spawnHitText();
+      }
+
+      /*
+        長按連發速度在這裡調：
+        - 長按啟動延遲：250ms
+        - 連發間隔：140ms（可改 120~180ms）
+      */
+      function startAutoFire() {
+        stopAutoFire();
+        shooterAutoTimer = setTimeout(() => {
+          fireShot();
+          shooterAutoInterval = setInterval(fireShot, 140);
+        }, 250);
+      }
+
+      function stopAutoFire() {
+        if (shooterAutoTimer) clearTimeout(shooterAutoTimer);
+        if (shooterAutoInterval) clearInterval(shooterAutoInterval);
+        shooterAutoTimer = null;
+        shooterAutoInterval = null;
+      }
+
+      function bindShooterEvents() {
+        openShooterBtnEl.addEventListener("click", () => {
+          document.getElementById("diaryCard").classList.add("hidden");
+          document.querySelector(".history-wrap").classList.add("hidden");
+          shooterViewEl.classList.remove("hidden");
+          renderShooterGame();
+        });
+
+        backDiaryBtnEl.addEventListener("click", () => {
+          shooterViewEl.classList.add("hidden");
+          document.getElementById("diaryCard").classList.remove("hidden");
+          document.querySelector(".history-wrap").classList.remove("hidden");
+          stopAutoFire();
+        });
+
+        prevTargetBtnEl.addEventListener("click", () => switchTarget(shooterState.currentTargetIndex - 1));
+        nextTargetBtnEl.addEventListener("click", () => switchTarget(shooterState.currentTargetIndex + 1));
+        randomTargetBtnEl.addEventListener("click", () => {
+          switchTarget(Math.floor(Math.random() * targets.length));
+        });
+        resetRoundBtnEl.addEventListener("click", () => {
+          shooterState.shots = 0;
+          shooterState.hits = 0;
+          updateShooterStats();
+          clearHitEffects();
+        });
+
+        const fireDown = (evt) => {
+          evt.preventDefault();
+          startAutoFire();
+        };
+        const fireUp = () => {
+          if (!shooterAutoInterval && shooterAutoTimer) {
+            // 短按：尚未進入連發時，放開補一發
+            fireShot();
+          }
+          stopAutoFire();
+        };
+
+        fireBtnEl.addEventListener("mousedown", fireDown);
+        fireBtnEl.addEventListener("mouseup", fireUp);
+        fireBtnEl.addEventListener("mouseleave", fireUp);
+        fireBtnEl.addEventListener("touchstart", fireDown, { passive: false });
+        fireBtnEl.addEventListener("touchend", fireUp, { passive: true });
+        fireBtnEl.addEventListener("touchcancel", fireUp, { passive: true });
+
+        targetImageEl.addEventListener("error", () => {
+          targetImageEl.classList.add("hidden");
+          targetFallbackEl.classList.remove("hidden");
+        });
+      }
+
       function renderAll() {
         diaryDateEl.value = currentDate;
         applyTheme(state.theme);
@@ -1160,6 +1513,9 @@ ${record.diary || "（空）"}
       });
 
       // 初始渲染
+      loadShooterData();
+      bindShooterEvents();
+      renderShooterGame();
       renderAll();
     </script>
   </body>
