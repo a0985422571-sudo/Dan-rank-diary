@@ -127,17 +127,24 @@
       .action-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
       .action-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-      .vent-grid { display: grid; gap: 8px; }
+      .vent-grid { display: grid; gap: 8px; overflow: visible; }
+      .vent-item { position: relative; overflow: visible; }
       .vent-meta { font-size: 0.93rem; font-weight: 700; }
       .vent-total { margin-top: 8px; font-size: 0.95rem; font-weight: 800; }
       .vent-level { margin-top: 4px; font-size: 0.88rem; color: var(--muted-text); font-weight: 700; }
 
-      .spray-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
+      .vent-spray-zone {
+        position: absolute;
+        inset: -80px -28px -30px -28px;
+        overflow: visible;
+        pointer-events: none;
+        z-index: 9;
+      }
       .spray-emoji {
         position: absolute;
         left: var(--x);
         top: var(--y);
-        font-size: 1.7rem;
+        font-size: 1.55rem;
         animation: sprayFloat var(--life, 900ms) ease-out forwards;
         will-change: transform, opacity;
       }
@@ -151,6 +158,7 @@
         filter: brightness(0.92);
         transform: scale(0.96);
       }
+      .vent-btn { touch-action: manipulation; }
 
       .history-wrap { margin-top: 14px; }
       .history-list { display: grid; gap: 8px; }
@@ -256,7 +264,6 @@
       </section>
 
       <main class="card" id="diaryCard">
-        <div class="spray-layer" id="sprayLayer"></div>
         <header class="head">
           <div class="stickers" id="stickers">😡🔥💥</div>
           <h1 id="mainTitle">本日紅溫紀錄 😡🔥</h1>
@@ -479,7 +486,6 @@
       const ventGridEl = document.getElementById("ventGrid");
       const ventTotalEl = document.getElementById("ventTotal");
       const ventLevelEl = document.getElementById("ventLevel");
-      const sprayLayerEl = document.getElementById("sprayLayer");
       const saveRecordBtnEl = document.getElementById("saveRecordBtn");
       const copyExportBtnEl = document.getElementById("copyExportBtn");
       const downloadExportBtnEl = document.getElementById("downloadExportBtn");
@@ -495,7 +501,6 @@
       const manualCloseBtnEl = document.getElementById("manualCloseBtn");
 
       let toastTimer = null;
-      let sprays = [];
 
       // 全域資料
       let draftsByDate = readJSON(STORAGE_KEYS.draftsByDate, {});
@@ -701,42 +706,35 @@
         heatLabelEl.style.color = state.heatValue >= 75 ? "#d33131" : state.heatValue <= 25 ? "#3f7fc0" : "var(--text)";
       }
 
-      function renderSprays() {
-        sprayLayerEl.innerHTML = "";
-        sprays.forEach((spray) => {
+      // 以「按鈕容器」為基準產生局部噴射，避免噴到畫面角落
+      function emitLocalSpray(zoneEl, emojiList, origin) {
+        const rect = zoneEl.getBoundingClientRect();
+        const burstCount = 3 + Math.floor(Math.random() * 4); // 3~6
+        const baseX = origin?.x ?? rect.width / 2;
+        const baseY = origin?.y ?? rect.height * 0.62;
+
+        for (let i = 0; i < burstCount; i++) {
           const node = document.createElement("span");
           node.className = "spray-emoji";
-          node.textContent = spray.emoji;
-          node.style.setProperty("--x", spray.x);
-          node.style.setProperty("--y", spray.y);
-          node.style.setProperty("--dx", spray.dx);
-          node.style.setProperty("--dy", spray.dy);
-          node.style.setProperty("--rot", spray.rot);
-          node.style.setProperty("--life", spray.life);
-          sprayLayerEl.appendChild(node);
-        });
-      }
+          node.textContent = emojiList[Math.floor(Math.random() * emojiList.length)];
+          const spreadX = -22 + Math.random() * 44; // 手機上保持按鈕附近
+          const spreadY = -8 + Math.random() * 22;
+          const dx = -70 + Math.random() * 140;
+          const dy = -110 - Math.random() * 90;
+          const rot = -90 + Math.random() * 180;
+          const lifeMs = 700 + Math.floor(Math.random() * 500);
+          const scale = (0.9 + Math.random() * 0.35).toFixed(2);
 
-      function addSprays(chars, amount = 5) {
-        for (let i = 0; i < amount; i++) {
-          const id = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${i}`;
-          const spray = {
-            id,
-            emoji: chars[Math.floor(Math.random() * chars.length)],
-            x: `${10 + Math.random() * 75}%`,
-            y: `${35 + Math.random() * 45}%`,
-            dx: `${-120 + Math.random() * 240}px`,
-            dy: `${-220 + Math.random() * 150}px`,
-            rot: `${-130 + Math.random() * 260}deg`,
-            life: `${700 + Math.floor(Math.random() * 500)}ms`,
-          };
-          sprays.push(spray);
-          renderSprays();
+          node.style.setProperty("--x", `${baseX + spreadX}px`);
+          node.style.setProperty("--y", `${baseY + spreadY}px`);
+          node.style.setProperty("--dx", `${dx}px`);
+          node.style.setProperty("--dy", `${dy}px`);
+          node.style.setProperty("--rot", `${rot}deg`);
+          node.style.setProperty("--life", `${lifeMs}ms`);
+          node.style.transform = `scale(${scale})`;
 
-          setTimeout(() => {
-            sprays = sprays.filter((item) => item.id !== id);
-            renderSprays();
-          }, parseInt(spray.life, 10) + 30);
+          zoneEl.appendChild(node);
+          node.addEventListener("animationend", () => node.remove(), { once: true });
         }
       }
 
@@ -752,27 +750,87 @@
         ventGridEl.innerHTML = "";
         ventConfigs.forEach((cfg) => {
           const wrap = document.createElement("div");
+          wrap.className = "vent-item";
           const btn = document.createElement("button");
           const meta = document.createElement("div");
+          const sprayZone = document.createElement("div");
           const count = Number(state.ventCounts[cfg.key] || 0);
           btn.type = "button";
           btn.className = "vent-btn";
           btn.textContent = VENT_LABELS[cfg.key] || `${cfg.emoji} ${cfg.label}`;
           meta.className = "vent-meta";
           meta.textContent = `今日 ${cfg.label}：${count} 次`;
-          btn.addEventListener("click", () => {
+
+          sprayZone.className = "vent-spray-zone";
+          sprayZone.setAttribute("aria-hidden", "true");
+
+          const applySingleSpray = (evt) => {
             state.ventCounts[cfg.key] = (state.ventCounts[cfg.key] || 0) + 1;
             const newCount = state.ventCounts[cfg.key];
             const randomTxt = cfg.feedbacks[Math.floor(Math.random() * cfg.feedbacks.length)];
             meta.textContent = `今日 ${cfg.label}：${newCount} 次｜${randomTxt}`;
-            addSprays(cfg.burst, 6);
+            const rect = sprayZone.getBoundingClientRect();
+            const hasPoint = evt && typeof evt.clientX === "number" && typeof evt.clientY === "number";
+            const origin = hasPoint
+              ? {
+                  x: Math.min(Math.max(20, evt.clientX - rect.left), rect.width - 20),
+                  y: Math.min(Math.max(20, evt.clientY - rect.top), rect.height - 20),
+                }
+              : { x: rect.width / 2, y: rect.height * 0.62 };
+            emitLocalSpray(sprayZone, cfg.burst, origin);
             btn.classList.remove("press-pop");
             void btn.offsetWidth;
             btn.classList.add("press-pop");
             setTimeout(() => btn.classList.remove("press-pop"), 130);
             updateVentTotal();
             saveDraft();
+          };
+
+          // Pointer 事件：短按 1 次；長壓 250ms 後每 100ms 連續噴射
+          let holdDelayTimer = null;
+          let holdInterval = null;
+          let isHolding = false;
+          let longPressMode = false;
+
+          const clearHoldTimers = () => {
+            if (holdDelayTimer) clearTimeout(holdDelayTimer);
+            if (holdInterval) clearInterval(holdInterval);
+            holdDelayTimer = null;
+            holdInterval = null;
+            isHolding = false;
+          };
+
+          btn.addEventListener("pointerdown", (evt) => {
+            if (evt.pointerType === "mouse" && evt.button !== 0) return;
+            evt.preventDefault();
+            isHolding = true;
+            longPressMode = false;
+            holdDelayTimer = setTimeout(() => {
+              if (!isHolding) return;
+              longPressMode = true;
+              applySingleSpray();
+              holdInterval = setInterval(() => applySingleSpray(), 100);
+            }, 250);
           });
+
+          const stopHold = (evt) => {
+            if (!isHolding) return;
+            const wasLong = longPressMode;
+            clearHoldTimers();
+            // 未進入長壓才算短按單次，避免重複計數
+            if (!wasLong) applySingleSpray(evt);
+          };
+
+          btn.addEventListener("pointerup", stopHold);
+          btn.addEventListener("pointercancel", stopHold);
+          btn.addEventListener("pointerleave", stopHold);
+          btn.addEventListener("lostpointercapture", stopHold);
+
+          // 某些行動瀏覽器保底事件
+          btn.addEventListener("touchend", stopHold, { passive: true });
+          btn.addEventListener("touchcancel", stopHold, { passive: true });
+
+          wrap.appendChild(sprayZone);
           wrap.appendChild(btn);
           wrap.appendChild(meta);
           ventGridEl.appendChild(wrap);
