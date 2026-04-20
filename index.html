@@ -10,6 +10,9 @@
         --bg2: #ff9f78;
         --card: #fff7f2;
         --text: #542b2b;
+        --title-color: var(--text);
+        --muted-text: color-mix(in srgb, var(--text) 78%, #ffffff 22%);
+        --highlight-text: var(--text);
         --line: #ef8f6a;
         --accent: #ff5f46;
         --accent2: #ff936c;
@@ -62,8 +65,8 @@
       .head { position: relative; }
       .stickers { position: absolute; right: 4px; top: -2px; opacity: 0.8; }
 
-      h1 { margin: 4px 0; font-size: clamp(1.2rem, 1.7vw + 1rem, 1.9rem); }
-      .subtitle { margin: 0; opacity: 0.82; font-size: 0.94rem; }
+      h1 { margin: 4px 0; font-size: clamp(1.2rem, 1.7vw + 1rem, 1.9rem); color: var(--title-color); }
+      .subtitle { margin: 0; opacity: 0.82; font-size: 0.94rem; color: var(--muted-text); }
 
       .theme-row { margin-top: 12px; display: grid; gap: 8px; grid-template-columns: repeat(2, 1fr); }
 
@@ -119,6 +122,7 @@
       .quick-fill, .template-fill { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
       .quick-btn, .template-btn, .action-btn, .vent-btn { background: var(--chip); }
       .quick-btn, .template-btn { font-size: 0.9rem; line-height: 1.3; }
+      .quick-btn, .template-btn, .history-summary { color: var(--muted-text); }
 
       .action-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
       .action-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -126,6 +130,27 @@
       .vent-grid { display: grid; gap: 8px; }
       .vent-meta { font-size: 0.93rem; font-weight: 700; }
       .vent-total { margin-top: 8px; font-size: 0.95rem; font-weight: 800; }
+      .vent-level { margin-top: 4px; font-size: 0.88rem; color: var(--muted-text); font-weight: 700; }
+
+      .spray-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
+      .spray-emoji {
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        font-size: 1.7rem;
+        animation: sprayFloat var(--life, 900ms) ease-out forwards;
+        will-change: transform, opacity;
+      }
+
+      @keyframes sprayFloat {
+        from { transform: translate(0, 0) scale(0.75) rotate(0deg); opacity: 1; }
+        to { transform: translate(var(--dx), var(--dy)) scale(1.2) rotate(var(--rot)); opacity: 0; }
+      }
+
+      .vent-btn.press-pop {
+        filter: brightness(0.92);
+        transform: scale(0.96);
+      }
 
       .history-wrap { margin-top: 14px; }
       .history-list { display: grid; gap: 8px; }
@@ -175,21 +200,6 @@
       }
       .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-      .floating-emoji {
-        position: fixed;
-        left: var(--x);
-        top: var(--y);
-        font-size: 1.7rem;
-        animation: pop 820ms ease-out forwards;
-        pointer-events: none;
-        z-index: 99;
-      }
-
-      @keyframes pop {
-        from { transform: translate(0, 0) scale(0.7); opacity: 1; }
-        to { transform: translate(var(--dx), var(--dy)) scale(1.2) rotate(var(--rot)); opacity: 0; }
-      }
-
       @media (min-width: 760px) {
         .top-row { grid-template-columns: 1fr 1fr; }
         .theme-row { grid-template-columns: repeat(4, 1fr); }
@@ -214,6 +224,7 @@
       </section>
 
       <main class="card" id="diaryCard">
+        <div class="spray-layer" id="sprayLayer"></div>
         <header class="head">
           <div class="stickers" id="stickers">😡🔥💥</div>
           <h1 id="mainTitle">本日紅溫紀錄 😡🔥</h1>
@@ -286,6 +297,7 @@
           <h2>發洩按鈕區（可連續噴射）</h2>
           <div class="vent-grid" id="ventGrid"></div>
           <div class="vent-total" id="ventTotal">今天噴了 0 次</div>
+          <div class="vent-level" id="ventLevel">還沒開噴，先深呼吸。</div>
         </section>
 
         <section class="section">
@@ -356,7 +368,8 @@
           title: "今天我最大 👑",
           subtitle: "不爽被問、不爽被催、不爽被情勒。",
           stickers: "👑🖤🥀",
-          colors: ["#1b1b1b", "#3a0f0f", "#141414", "#f2d58e", "#6e4b1e", "#b8892f", "#7d1e1e", "#2a2a2a"],
+          colors: ["#181818", "#311111", "#151515", "#b7a077", "#5f4822", "#9b7a35", "#6f2424", "#262220"],
+          textLayers: { title: "#d2bc88", body: "#b7a077", muted: "#9f9275", highlight: "#c6af7f" },
           placeholders: ["先一句：今天誰在那邊問問問", "把你的不爽與邊界一次講完", "今天最不爽被催的事"],
         },
       };
@@ -418,6 +431,8 @@
       const selfTalkEl = document.getElementById("selfTalk");
       const ventGridEl = document.getElementById("ventGrid");
       const ventTotalEl = document.getElementById("ventTotal");
+      const ventLevelEl = document.getElementById("ventLevel");
+      const sprayLayerEl = document.getElementById("sprayLayer");
       const saveRecordBtnEl = document.getElementById("saveRecordBtn");
       const copyExportBtnEl = document.getElementById("copyExportBtn");
       const downloadExportBtnEl = document.getElementById("downloadExportBtn");
@@ -429,6 +444,7 @@
       const diaryCardEl = document.getElementById("diaryCard");
 
       let toastTimer = null;
+      let sprays = [];
 
       // 全域資料
       let draftsByDate = readJSON(STORAGE_KEYS.draftsByDate, {});
@@ -532,6 +548,9 @@
         root.style.setProperty("--accent", accent);
         root.style.setProperty("--accent2", accent2);
         root.style.setProperty("--chip", chip);
+        root.style.setProperty("--title-color", theme.textLayers?.title || text);
+        root.style.setProperty("--muted-text", theme.textLayers?.muted || text);
+        root.style.setProperty("--highlight-text", theme.textLayers?.highlight || text);
         mainTitleEl.textContent = theme.title;
         subTitleEl.textContent = theme.subtitle;
         stickersEl.textContent = theme.stickers;
@@ -623,20 +642,51 @@
         heatLabelEl.style.color = state.heatValue >= 75 ? "#d33131" : state.heatValue <= 25 ? "#3f7fc0" : "var(--text)";
       }
 
-      function spawnBurst(chars) {
-        for (let i = 0; i < 10; i++) {
-          const emoji = chars[Math.floor(Math.random() * chars.length)];
-          const node = document.createElement("div");
-          node.className = "floating-emoji";
-          node.textContent = emoji;
-          node.style.setProperty("--x", `${window.innerWidth * (0.25 + Math.random() * 0.5)}px`);
-          node.style.setProperty("--y", `${window.innerHeight * (0.35 + Math.random() * 0.3)}px`);
-          node.style.setProperty("--dx", `${-130 + Math.random() * 260}px`);
-          node.style.setProperty("--dy", `${-240 + Math.random() * 120}px`);
-          node.style.setProperty("--rot", `${-130 + Math.random() * 260}deg`);
-          document.body.appendChild(node);
-          setTimeout(() => node.remove(), 850);
+      function renderSprays() {
+        sprayLayerEl.innerHTML = "";
+        sprays.forEach((spray) => {
+          const node = document.createElement("span");
+          node.className = "spray-emoji";
+          node.textContent = spray.emoji;
+          node.style.setProperty("--x", spray.x);
+          node.style.setProperty("--y", spray.y);
+          node.style.setProperty("--dx", spray.dx);
+          node.style.setProperty("--dy", spray.dy);
+          node.style.setProperty("--rot", spray.rot);
+          node.style.setProperty("--life", spray.life);
+          sprayLayerEl.appendChild(node);
+        });
+      }
+
+      function addSprays(chars, amount = 5) {
+        for (let i = 0; i < amount; i++) {
+          const id = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${i}`;
+          const spray = {
+            id,
+            emoji: chars[Math.floor(Math.random() * chars.length)],
+            x: `${10 + Math.random() * 75}%`,
+            y: `${35 + Math.random() * 45}%`,
+            dx: `${-120 + Math.random() * 240}px`,
+            dy: `${-220 + Math.random() * 150}px`,
+            rot: `${-130 + Math.random() * 260}deg`,
+            life: `${700 + Math.floor(Math.random() * 500)}ms`,
+          };
+          sprays.push(spray);
+          renderSprays();
+
+          setTimeout(() => {
+            sprays = sprays.filter((item) => item.id !== id);
+            renderSprays();
+          }, parseInt(spray.life, 10) + 30);
         }
+      }
+
+      function ventLevelText(total) {
+        if (total <= 0) return "還沒開噴，先深呼吸。";
+        if (total <= 5) return "普通發洩中：還算克制（大概）。";
+        if (total <= 15) return "進入噴射模式：手感開始來了。";
+        if (total <= 30) return "今天火力很足：你真的很努力在降溫。";
+        return "今日紅溫戰神：噴射器已進入神話級。";
       }
 
       function renderVentModule() {
@@ -656,7 +706,11 @@
             const newCount = state.ventCounts[cfg.key];
             const randomTxt = cfg.feedbacks[Math.floor(Math.random() * cfg.feedbacks.length)];
             meta.textContent = `今日 ${cfg.label}：${newCount} 次｜${randomTxt}`;
-            spawnBurst(cfg.burst);
+            addSprays(cfg.burst, 6);
+            btn.classList.remove("press-pop");
+            void btn.offsetWidth;
+            btn.classList.add("press-pop");
+            setTimeout(() => btn.classList.remove("press-pop"), 130);
             updateVentTotal();
             saveDraft();
           });
@@ -670,6 +724,7 @@
       function updateVentTotal() {
         const total = Object.values(state.ventCounts).reduce((sum, n) => sum + Number(n || 0), 0);
         ventTotalEl.textContent = `今天噴了 ${total} 次（💩 ${state.ventCounts.poop || 0}｜🙄💅 ${state.ventCounts.eyeroll || 0}）`;
+        ventLevelEl.textContent = ventLevelText(total);
       }
 
       function renderFormFields() {
@@ -688,6 +743,7 @@
           theme: themes[state.theme]?.name || state.theme,
           themeKey: state.theme,
           rageValue: state.heatValue,
+          totalSprays: (state.ventCounts.poop || 0) + (state.ventCounts.eyeroll || 0),
           opener: state.ventLine,
           diary: state.mainDiary,
           moods: [...state.moods],
@@ -711,13 +767,16 @@
         sorted.forEach((record) => {
           const item = document.createElement("article");
           item.className = "history-item";
-          const summary = (record.diary || "（無內容）").slice(0, 50);
+          const diaryText = record.diary || "";
+          const summary = (diaryText || "（無內容）").slice(0, 50);
+          const totalSprays = record.totalSprays ?? ((record.poopCount || 0) + (record.eyeRollCount || 0));
           item.innerHTML = `
             <div class="history-head">
               <span>${formatDate(record.date)}</span>
               <span>${record.savedAt.split(" ")[1]}</span>
             </div>
-            <div class="history-summary">主題：${record.theme}｜摘要：${summary}${record.diary.length > 50 ? "..." : ""}</div>
+            <div class="history-summary">主題：${record.theme}｜摘要：${summary}${diaryText.length > 50 ? "..." : ""}</div>
+            <div class="history-summary">今天噴了 ${totalSprays} 次（💩 ${record.poopCount || 0}｜🙄💅 ${record.eyeRollCount || 0}）</div>
             <div class="history-actions">
               <button type="button" data-action="toggle">展開 / 收合</button>
               <button type="button" data-action="load">載入這筆</button>
@@ -734,6 +793,7 @@
 冷靜度：${record.coolingLevel || "（空）"}
 💩噴射：${record.poopCount} 次
 🙄💅噴射：${record.eyeRollCount} 次
+今日噴射總數：${totalSprays} 次
 主日記：
 ${record.diary || "（空）"}
 收尾：${record.closing || "（空）"}
