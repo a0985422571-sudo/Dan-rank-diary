@@ -200,6 +200,38 @@
       }
       .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+      .copy-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: grid;
+        place-items: center;
+        z-index: 120;
+        padding: 16px;
+      }
+      .copy-modal[hidden] { display: none; }
+      .copy-modal-card {
+        width: min(680px, 96vw);
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+      }
+      .copy-modal textarea {
+        width: 100%;
+        min-height: 180px;
+        border: 2px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 0.95rem;
+      }
+      .copy-modal-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
       @media (min-width: 760px) {
         .top-row { grid-template-columns: 1fr 1fr; }
         .theme-row { grid-template-columns: repeat(4, 1fr); }
@@ -323,6 +355,17 @@
     </div>
 
     <div id="toast" class="toast">已存成今天紀錄</div>
+    <div id="copyModal" class="copy-modal" hidden>
+      <div class="copy-modal-card">
+        <strong>系統複製失敗，已開啟手動複製框</strong>
+        <p style="margin:6px 0 8px;font-size:0.9rem;opacity:0.85;">請長按/全選下面文字後複製。</p>
+        <textarea id="manualCopyText" readonly></textarea>
+        <div class="copy-modal-actions">
+          <button type="button" id="manualSelectBtn">全選文字</button>
+          <button type="button" id="manualCloseBtn">關閉</button>
+        </div>
+      </div>
+    </div>
 
     <script>
       // =============================
@@ -337,6 +380,10 @@
       };
 
       const HEAT_LABELS = { 0: "還行", 25: "有點煩", 50: "想翻白眼", 75: "想卸載", 100: "我現在就是💩噴射器" };
+      const VENT_LABELS = {
+        poop: "💩 大便噴射",
+        eyeRoll: "🙄💅 白眼噴射",
+      };
 
       const themes = {
         rage: {
@@ -407,7 +454,7 @@
 
       const ventConfigs = [
         { key: "poop", emoji: "💩", label: "大便噴射", burst: ["💩"], feedbacks: ["已成功排出情緒廢物", "今天也有努力噴射", "你已經不是普通噴射器了"] },
-        { key: "eyeroll", emoji: "🙄💅", label: "白眼噴射", burst: ["🙄", "💅"], feedbacks: ["白眼值穩定上升中", "你這眼神很有內容", "今天不解釋，直接翻白眼"] },
+        { key: "eyeRoll", emoji: "🙄💅", label: "白眼噴射", burst: ["🙄", "💅"], feedbacks: ["白眼值穩定上升中", "你這眼神很有內容", "今天不解釋，直接翻白眼"] },
       ];
 
       // DOM
@@ -442,6 +489,10 @@
       const historyListEl = document.getElementById("historyList");
       const toastEl = document.getElementById("toast");
       const diaryCardEl = document.getElementById("diaryCard");
+      const copyModalEl = document.getElementById("copyModal");
+      const manualCopyTextEl = document.getElementById("manualCopyText");
+      const manualSelectBtnEl = document.getElementById("manualSelectBtn");
+      const manualCloseBtnEl = document.getElementById("manualCloseBtn");
 
       let toastTimer = null;
       let sprays = [];
@@ -490,12 +541,13 @@
       }
 
       function getDefaultDraft() {
-        const counts = {};
-        ventConfigs.forEach((cfg) => (counts[cfg.key] = 0));
+        const counts = { poop: 0, eyeRoll: 0 };
         return {
           theme: "rage",
           ventLine: "",
           mainDiary: "",
+          lastQuickTemplate: "",
+          lastMainTemplate: "",
           moods: [],
           heatValue: 50,
           worstTarget: "",
@@ -512,7 +564,12 @@
           return getDefaultDraft();
         }
         const merged = { ...getDefaultDraft(), ...draft };
-        merged.ventCounts = { ...getDefaultDraft().ventCounts, ...(draft.ventCounts || {}) };
+        const oldCounts = draft.ventCounts || {};
+        merged.ventCounts = {
+          ...getDefaultDraft().ventCounts,
+          ...oldCounts,
+          eyeRoll: oldCounts.eyeRoll ?? oldCounts.eyeroll ?? 0, // 向後相容舊 key
+        };
         merged.moods = Array.isArray(draft.moods) ? draft.moods : draft.mood ? [draft.mood] : [];
         setDraftStatus(`已載入 ${formatDate(date)} 的草稿`);
         return merged;
@@ -585,6 +642,7 @@
           btn.textContent = item.label;
           btn.addEventListener("click", () => {
             state = item.apply(state);
+            state.lastQuickTemplate = item.label;
             renderAll();
             saveDraft(`已套用「${item.label}」草稿`);
             showToast(`已套用：${item.label}`);
@@ -607,6 +665,7 @@
             }
             state.mainDiary = tpl.content;
             mainDiaryEl.value = tpl.content;
+            state.lastMainTemplate = tpl.label;
             saveDraft(`已套用模板：${tpl.label}`);
             showToast("模板已帶入主日記");
           });
@@ -695,10 +754,10 @@
           const wrap = document.createElement("div");
           const btn = document.createElement("button");
           const meta = document.createElement("div");
-          const count = state.ventCounts[cfg.key] || 0;
+          const count = Number(state.ventCounts[cfg.key] || 0);
           btn.type = "button";
           btn.className = "vent-btn";
-          btn.textContent = `${cfg.emoji} ${cfg.label}`;
+          btn.textContent = VENT_LABELS[cfg.key] || `${cfg.emoji} ${cfg.label}`;
           meta.className = "vent-meta";
           meta.textContent = `今日 ${cfg.label}：${count} 次`;
           btn.addEventListener("click", () => {
@@ -723,7 +782,7 @@
 
       function updateVentTotal() {
         const total = Object.values(state.ventCounts).reduce((sum, n) => sum + Number(n || 0), 0);
-        ventTotalEl.textContent = `今天噴了 ${total} 次（💩 ${state.ventCounts.poop || 0}｜🙄💅 ${state.ventCounts.eyeroll || 0}）`;
+        ventTotalEl.textContent = `今天噴了 ${total} 次（💩 ${state.ventCounts.poop || 0}｜🙄💅 ${state.ventCounts.eyeRoll || 0}）`;
         ventLevelEl.textContent = ventLevelText(total);
       }
 
@@ -743,12 +802,14 @@
           theme: themes[state.theme]?.name || state.theme,
           themeKey: state.theme,
           rageValue: state.heatValue,
-          totalSprays: (state.ventCounts.poop || 0) + (state.ventCounts.eyeroll || 0),
+          totalSprays: (state.ventCounts.poop || 0) + (state.ventCounts.eyeRoll || 0),
+          quickTemplate: state.lastQuickTemplate || "",
+          mainTemplate: state.lastMainTemplate || "",
           opener: state.ventLine,
           diary: state.mainDiary,
           moods: [...state.moods],
           poopCount: state.ventCounts.poop || 0,
-          eyeRollCount: state.ventCounts.eyeroll || 0,
+          eyeRollCount: state.ventCounts.eyeRoll || 0,
           worstTarget: state.worstTarget,
           coolingLevel: state.coolingLevel,
           closing: state.selfTalk,
@@ -812,12 +873,14 @@ ${record.diary || "（空）"}
               theme: record.themeKey || "rage",
               ventLine: record.opener || "",
               mainDiary: record.diary || "",
+              lastQuickTemplate: record.quickTemplate || "",
+              lastMainTemplate: record.mainTemplate || "",
               moods: record.moods || [],
               heatValue: record.rageValue ?? 50,
               worstTarget: record.worstTarget || "",
               coolingLevel: record.coolingLevel || "有",
               selfTalk: record.closing || "",
-              ventCounts: { poop: record.poopCount || 0, eyeroll: record.eyeRollCount || 0 },
+              ventCounts: { poop: record.poopCount || 0, eyeRoll: record.eyeRollCount || 0 },
             };
             saveDraft("已載入歷史紀錄到草稿");
             renderAll();
@@ -837,23 +900,69 @@ ${record.diary || "（空）"}
         });
       }
 
-      function createExportText(recordLike) {
+      // 共用匯出文字產生器，複製與下載都走同一份格式
+      function buildExportText(recordLike) {
+        const poopCount = Number(recordLike.ventCounts?.poop || recordLike.poopCount || 0);
+        const eyeRollCount = Number(recordLike.ventCounts?.eyeRoll || recordLike.ventCounts?.eyeroll || recordLike.eyeRollCount || 0);
+        const total = poopCount + eyeRollCount;
         const moodsText = (recordLike.moods || []).join("、") || "（未選）";
-        return `日期：${formatDate(currentDate)}\n主題：${themes[recordLike.theme]?.name || themes[state.theme]?.name || "未設定"}\n紅溫值：${recordLike.heatValue}\n先噴一句：${recordLike.ventLine || "（空）"}\n主日記：\n${recordLike.mainDiary || "（空）"}\n心情：\n${moodsText}\n💩噴射：${recordLike.ventCounts.poop || 0} 次\n🙄💅噴射：${recordLike.ventCounts.eyeroll || 0} 次\n收尾：\n${recordLike.selfTalk || "（空）"}`;
+        const themeName = themes[recordLike.theme]?.name || themes[state.theme]?.name || "未設定";
+        const quickTemplate = recordLike.lastQuickTemplate || recordLike.quickTemplate || "（未套用）";
+        const mainTemplate = recordLike.lastMainTemplate || recordLike.mainTemplate || "（未套用）";
+        const rageValue = recordLike.heatValue ?? recordLike.rageValue ?? 50;
+        const opener = recordLike.ventLine ?? recordLike.opener ?? "（空）";
+        const diary = recordLike.mainDiary ?? recordLike.diary ?? "（空）";
+        const closing = recordLike.selfTalk ?? recordLike.closing ?? "（空）";
+
+        return `日期：${formatDate(currentDate)}\n主題：${themeName}\n快速填入：${quickTemplate}\n主日記模板：${mainTemplate}\n紅溫值：${rageValue}\n先噴一句：${opener}\n主日記：\n${diary}\n心情：\n${moodsText}\n💩噴射：${poopCount} 次\n🙄💅噴射：${eyeRollCount} 次\n總噴射：${total} 次\n給自己一句話：\n${closing}`;
+      }
+
+      function openManualCopyModal(text) {
+        manualCopyTextEl.value = text;
+        copyModalEl.hidden = false;
+        manualCopyTextEl.focus();
+        manualCopyTextEl.select();
+      }
+
+      function fallbackCopyText(text) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        ta.style.top = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, ta.value.length);
+        let ok = false;
+        try {
+          ok = document.execCommand("copy");
+        } catch {
+          ok = false;
+        }
+        ta.remove();
+        return ok;
       }
 
       async function copyExportText() {
-        const text = createExportText(state);
+        const text = buildExportText(state);
         try {
           await navigator.clipboard.writeText(text);
-          showToast("匯出成功（已複製）");
+          showToast("已複製文字，可直接貼給朋友或存備份");
         } catch {
-          showToast("複製失敗，請改用下載");
+          const fallbackOk = fallbackCopyText(text);
+          if (fallbackOk) {
+            showToast("已改用備援複製，文字已複製");
+            return;
+          }
+          openManualCopyModal(text);
+          showToast("系統複製失敗，已開啟手動複製框");
         }
       }
 
       function downloadExportText() {
-        const text = createExportText(state);
+        const text = buildExportText(state);
         const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -958,6 +1067,17 @@ ${record.diary || "（空）"}
       copyExportBtnEl.addEventListener("click", copyExportText);
       downloadExportBtnEl.addEventListener("click", downloadExportText);
       shareShotBtnEl.addEventListener("click", shareScreenshot);
+      manualSelectBtnEl.addEventListener("click", () => {
+        manualCopyTextEl.focus();
+        manualCopyTextEl.select();
+        manualCopyTextEl.setSelectionRange(0, manualCopyTextEl.value.length);
+      });
+      manualCloseBtnEl.addEventListener("click", () => {
+        copyModalEl.hidden = true;
+      });
+      copyModalEl.addEventListener("click", (event) => {
+        if (event.target === copyModalEl) copyModalEl.hidden = true;
+      });
 
       // 清空目前日期草稿
       clearTodayBtnEl.addEventListener("click", () => {
