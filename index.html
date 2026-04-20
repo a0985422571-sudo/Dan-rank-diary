@@ -3,22 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dan Dan 日記整理器</title>
+    <title>第五人格排位降溫日記</title>
     <style>
+      /*
+        ===== 這份 CSS 主打「小而廢但可愛」 =====
+        - 使用 CSS 變數配合主題切換
+        - 保持結構簡單，方便後續加更多主題/按鈕
+      */
       :root {
-        --bg: #fff8fc;
-        --bg-accent: #ffeaf5;
-        --card: #ffffff;
-        --card-soft: #fffcfe;
-        --primary: #ff7eb6;
-        --primary-dark: #ff5da6;
-        --text: #4b3e4d;
-        --muted: #8f7b8f;
-        --line: #f7d5e7;
-        --shadow: rgba(255, 126, 182, 0.14);
-        --btn-soft-bg: #ffe2f0;
-        --btn-soft-text: #9e3e71;
-        --btn-soft-hover: #ffd0e6;
+        --bg-1: #ffe2d1;
+        --bg-2: #ffb996;
+        --card: #fff8f4;
+        --text: #582c2c;
+        --line: #f09573;
+        --accent: #ff5f46;
+        --accent-2: #ff8d66;
+        --chip: #ffd8c5;
       }
 
       * {
@@ -27,435 +27,672 @@
 
       body {
         margin: 0;
-        font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-        background: radial-gradient(circle at top, var(--bg-accent), var(--bg));
-        color: var(--text);
         min-height: 100vh;
-        display: grid;
-        place-items: center;
-        padding: 24px;
-      }
-
-      .app {
-        width: min(920px, 100%);
-        background: var(--card);
-        border: 2px solid var(--line);
-        border-radius: 20px;
-        box-shadow: 0 8px 24px var(--shadow);
-        padding: 24px;
-      }
-
-      .app-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      .theme-select {
-        border: 2px solid var(--line);
-        border-radius: 999px;
-        padding: 8px 12px;
+        font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
         color: var(--text);
-        background: var(--card);
-        font-size: 0.92rem;
+        background: radial-gradient(circle at 15% 10%, var(--bg-1), var(--bg-2));
+        transition: background 0.35s ease;
       }
 
-      h1 {
-        margin: 0;
-        font-size: clamp(1.5rem, 2vw + 1rem, 2.1rem);
-        color: var(--primary-dark);
+      .wrap {
+        width: min(920px, 94%);
+        margin: 28px auto;
+      }
+
+      .diary-card {
+        position: relative;
+        background: var(--card);
+        border: 3px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 14px 38px rgba(0, 0, 0, 0.14);
+        padding: 20px;
+        overflow: hidden;
+      }
+
+      .stickers {
+        position: absolute;
+        top: 10px;
+        right: 16px;
+        font-size: 1.4rem;
+        opacity: 0.75;
+        pointer-events: none;
+      }
+
+      .top-bar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .title {
+        margin: 6px 0 0;
+        font-size: clamp(1.3rem, 2vw + 1rem, 2rem);
       }
 
       .subtitle {
-        margin: 8px 0 20px;
-        color: var(--muted);
+        margin: 4px 0 0;
+        opacity: 0.8;
+        font-size: 0.95rem;
       }
 
-      textarea {
-        width: 100%;
-        min-height: 220px;
-        padding: 14px;
-        border-radius: 14px;
+      .date-pill {
+        background: var(--chip);
+        border: 2px dashed var(--line);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 0.88rem;
+        font-weight: 700;
+      }
+
+      .theme-row {
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(120px, 1fr));
+        gap: 8px;
+      }
+
+      .theme-btn,
+      .action-btn,
+      .clear-btn {
         border: 2px solid var(--line);
-        resize: vertical;
-        font-size: 1rem;
-        line-height: 1.7;
+        border-radius: 14px;
+        cursor: pointer;
+        font-weight: 700;
+        padding: 10px;
+        transition: transform 0.15s ease, filter 0.2s ease, background 0.2s ease;
+      }
+
+      .theme-btn {
+        background: #fff;
         color: var(--text);
       }
 
-      .controls {
-        display: flex;
-        gap: 12px;
-        margin-top: 14px;
+      .theme-btn.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
       }
 
-      button {
-        border: 0;
-        border-radius: 999px;
-        padding: 10px 18px;
-        font-size: 0.96rem;
+      .theme-btn:hover,
+      .action-btn:hover,
+      .clear-btn:hover {
+        transform: translateY(-1px) scale(1.01);
+        filter: brightness(1.03);
+      }
+
+      .theme-btn:active,
+      .action-btn:active,
+      .clear-btn:active {
+        transform: scale(0.98);
+      }
+
+      .form-grid {
+        margin-top: 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
         font-weight: 700;
+      }
+
+      .note {
+        font-size: 0.82rem;
+        font-weight: 600;
+        opacity: 0.75;
+      }
+
+      input[type="text"],
+      textarea,
+      select {
+        width: 100%;
+        border: 2px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 1rem;
+        background: #fff;
+        color: var(--text);
+      }
+
+      textarea {
+        min-height: 120px;
+        resize: vertical;
+        line-height: 1.6;
+      }
+
+      .row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .mood-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .mood-btn {
+        border: 2px solid var(--line);
+        background: #fff;
+        border-radius: 999px;
+        padding: 8px 12px;
         cursor: pointer;
       }
 
-      .organize-btn {
-        background: var(--primary);
+      .mood-btn.active {
+        background: var(--accent-2);
         color: #fff;
+        border-color: var(--accent-2);
       }
 
-      .organize-btn:hover {
-        background: var(--primary-dark);
+      .heat-box {
+        background: #fff;
+        border: 2px dashed var(--line);
+        border-radius: 14px;
+        padding: 10px;
+      }
+
+      #heatValue {
+        width: 100%;
+      }
+
+      .heat-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-top: 6px;
+        font-weight: 700;
+      }
+
+      .vent-zone {
+        margin-top: 14px;
+        border: 2px dotted var(--line);
+        border-radius: 16px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .vent-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .action-btn {
+        background: var(--chip);
+        font-size: 1rem;
+      }
+
+      .counter {
+        margin-top: 8px;
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      .feedback {
+        margin-top: 6px;
+        font-size: 0.9rem;
+        opacity: 0.85;
       }
 
       .clear-btn {
-        background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
+        width: 100%;
+        margin-top: 12px;
+        background: #fff;
       }
 
-      .clear-btn:hover {
-        background: var(--btn-soft-hover);
+      .floating-emoji {
+        position: fixed;
+        left: var(--x);
+        top: var(--y);
+        font-size: 1.7rem;
+        animation: burst 800ms ease-out forwards;
+        pointer-events: none;
+        z-index: 999;
       }
 
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 14px;
-        margin-top: 22px;
+      @keyframes burst {
+        from {
+          transform: translate(0, 0) scale(0.7) rotate(0deg);
+          opacity: 1;
+        }
+        to {
+          transform: translate(var(--dx), var(--dy)) scale(1.2) rotate(var(--rot));
+          opacity: 0;
+        }
       }
 
-      .card {
-        border: 2px solid var(--line);
-        border-radius: 16px;
-        padding: 14px;
-        background: var(--card-soft);
-      }
-
-      .card-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-bottom: 8px;
-      }
-
-      .card h2 {
-        margin: 0;
-        font-size: 1rem;
-        color: var(--primary-dark);
-      }
-
-      .copy-btn {
-        background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
-        font-size: 0.85rem;
-        padding: 6px 12px;
-      }
-
-      .copy-btn:hover {
-        background: var(--btn-soft-hover);
-      }
-
-      .output {
-        margin: 0;
-        white-space: pre-wrap;
-        line-height: 1.7;
-        min-height: 64px;
-      }
-
-      .hint {
-        margin-top: 14px;
-        color: var(--muted);
-        font-size: 0.9rem;
+      @media (max-width: 760px) {
+        .theme-row,
+        .row-2,
+        .vent-buttons {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <main class="app">
-      <div class="app-head">
-        <h1>✨ Dan Dan 日記整理器</h1>
-        <label>
-          <span style="font-size: 0.9rem; color: var(--muted); margin-right: 6px">主題</span>
-          <select id="themeSelect" class="theme-select">
-            <option value="pink">粉紅膠囊</option>
-            <option value="starry">星空色</option>
-            <option value="matcha">抹茶拿鐵</option>
-            <option value="sunset">夕陽橘</option>
-          </select>
-        </label>
-      </div>
-      <p class="subtitle">把今天的想法貼進來，一鍵整理成可愛好讀的小回報。</p>
+    <div class="wrap">
+      <main class="diary-card" id="app">
+        <div class="stickers" id="stickers">😡🔥💥</div>
 
-      <textarea id="diaryInput" placeholder="例：今天早上開會有點緊張，但下午完成了重要提案，心情變超好！"></textarea>
-      <div class="controls">
-        <button class="organize-btn" id="organizeBtn">整理日記</button>
-        <button class="clear-btn" id="clearBtn">清空全部</button>
-      </div>
-
-      <section class="grid">
-        <article class="card">
-          <div class="card-head">
-            <h2>今日日記</h2>
-            <button class="copy-btn" data-copy="fullDiary">一鍵複製</button>
+        <section class="top-bar">
+          <div>
+            <h1 class="title" id="mainTitle">本日紅溫紀錄 😡🔥</h1>
+            <p class="subtitle" id="subTitle">今天又被雷到了，先把火噴出來再說。</p>
           </div>
-          <p class="output" id="fullDiary">（整理後會顯示在這裡）</p>
-        </article>
+          <div class="date-pill" id="todayDate">--</div>
+        </section>
 
-        <article class="card">
-          <div class="card-head">
-            <h2>小蝦蝦版短版回報</h2>
-            <button class="copy-btn" data-copy="shortReport">一鍵複製</button>
+        <section class="theme-row">
+          <button class="theme-btn active" data-theme="rage">A：被雷到紅溫了</button>
+          <button class="theme-btn" data-theme="love">B：退坑失敗夢女</button>
+          <button class="theme-btn" data-theme="shame">C：社死懺悔</button>
+        </section>
+
+        <section class="form-grid">
+          <label>
+            先噴一句
+            <input id="ventLine" type="text" placeholder="你現在最想罵什麼" />
+          </label>
+
+          <label>
+            今天發生什麼事（主日記區）
+            <textarea id="mainDiary" placeholder="今天哪一波最讓你想砸手機"></textarea>
+          </label>
+
+          <div class="row-2">
+            <label>
+              我現在心情
+              <div class="mood-list" id="moodList">
+                <button class="mood-btn" type="button" data-mood="崩潰">崩潰</button>
+                <button class="mood-btn" type="button" data-mood="爆氣">爆氣</button>
+                <button class="mood-btn" type="button" data-mood="委屈">委屈</button>
+                <button class="mood-btn" type="button" data-mood="麻了">麻了</button>
+                <button class="mood-btn" type="button" data-mood="勉強活著">勉強活著</button>
+              </div>
+              <div class="note" id="selectedMoodText">目前：未選擇</div>
+            </label>
+
+            <label>
+              紅溫值
+              <div class="heat-box">
+                <input id="heatValue" type="range" min="0" max="100" step="25" value="50" />
+                <div class="heat-meta">
+                  <span id="heatNumber">50</span>
+                  <span id="heatLabel">想翻白眼</span>
+                </div>
+              </div>
+            </label>
           </div>
-          <p class="output" id="shortReport">（整理後會顯示在這裡）</p>
-        </article>
 
-        <article class="card">
-          <div class="card-head">
-            <h2>今日金句</h2>
-            <button class="copy-btn" data-copy="quote">一鍵複製</button>
+          <div class="row-2">
+            <label>
+              最雷的是誰 / 什麼事
+              <input id="worstTarget" type="text" placeholder="今天最雷的是誰 / 哪件事" />
+            </label>
+
+            <label>
+              打完這篇後有比較冷靜嗎？
+              <select id="coolingLevel">
+                <option value="有">有，至少不想砸手機了</option>
+                <option value="一點點">一點點，還是氣但能呼吸</option>
+                <option value="沒有">沒有，我還是火山爆發</option>
+              </select>
+            </label>
           </div>
-          <p class="output" id="quote">（整理後會顯示在這裡）</p>
-        </article>
 
-        <article class="card">
-          <div class="card-head">
-            <h2>今日情緒關鍵字</h2>
-            <button class="copy-btn" data-copy="mood">一鍵複製</button>
+          <label>
+            給自己一句話（收尾）
+            <input id="selfTalk" type="text" placeholder="明天的我會更強，今天先活下來就好" />
+          </label>
+        </section>
+
+        <section class="vent-zone">
+          <strong>發洩按鈕區（廢但有用）</strong>
+          <div class="vent-buttons">
+            <button class="action-btn" id="poopBtn" type="button">💩 大便噴射</button>
+            <button class="action-btn" id="eyeRollBtn" type="button">🙄💅 白眼噴射</button>
           </div>
-          <p class="output" id="mood">（整理後會顯示在這裡）</p>
-        </article>
-      </section>
+          <div class="counter" id="counterText">今日 💩 0 次｜🙄💅 0 次</div>
+          <div class="feedback" id="feedbackText">今日白眼值穩定中，歡迎繼續發瘋。</div>
+        </section>
 
-      <p class="hint">小提醒：這是前端離線小工具，內容不會被上傳。</p>
-    </main>
+        <button class="clear-btn" id="clearTodayBtn" type="button">清空今天紀錄</button>
+      </main>
+    </div>
 
     <script>
-      const input = document.getElementById("diaryInput");
-      const organizeBtn = document.getElementById("organizeBtn");
-      const clearBtn = document.getElementById("clearBtn");
-      const themeSelect = document.getElementById("themeSelect");
-      const outputs = {
-        fullDiary: document.getElementById("fullDiary"),
-        shortReport: document.getElementById("shortReport"),
-        quote: document.getElementById("quote"),
-        mood: document.getElementById("mood"),
-      };
-      const storageKey = "danDanDiaryData";
-      const themeStorageKey = "danDanDiaryTheme";
-      const defaultOutputs = {
-        fullDiary: "（整理後會顯示在這裡）",
-        shortReport: "（整理後會顯示在這裡）",
-        quote: "（整理後會顯示在這裡）",
-        mood: "（整理後會顯示在這裡）",
-      };
+      /*
+        ===== MVP 架構說明 =====
+        1) 所有「今天資料」都存在 localStorage，key 用日期切分
+        2) 主題資料集中在 THEMES，未來擴充直接加物件
+        3) 輸入欄位 change/input 即時保存，重整不怕掉資料
+      */
 
-      const moodMap = [
-        { key: "開心", words: ["開心", "快樂", "興奮", "滿足"] },
-        { key: "緊張", words: ["緊張", "焦慮", "壓力", "不安"] },
-        { key: "感恩", words: ["感謝", "感恩", "幸運", "珍惜"] },
-        { key: "疲憊", words: ["累", "疲憊", "睏", "沒力"] },
-        { key: "平靜", words: ["平靜", "放鬆", "穩定", "安心"] },
-      ];
+      const APP_KEY = "idvCoolDiary";
+      const THEME_KEY = "idvCoolDiaryTheme";
 
-      const themes = {
-        pink: {
-          bg: "#fff8fc",
-          bgAccent: "#ffeaf5",
-          card: "#ffffff",
-          cardSoft: "#fffcfe",
-          primary: "#ff7eb6",
-          primaryDark: "#ff5da6",
-          text: "#4b3e4d",
-          muted: "#8f7b8f",
-          line: "#f7d5e7",
-          shadow: "rgba(255, 126, 182, 0.14)",
-          btnSoftBg: "#ffe2f0",
-          btnSoftText: "#9e3e71",
-          btnSoftHover: "#ffd0e6",
+      const THEMES = {
+        rage: {
+          title: "本日紅溫紀錄 😡🔥",
+          subtitle: "今天又被雷到了，先把火噴出來再說。",
+          stickers: "😡🔥💥",
+          colors: {
+            bg1: "#ffe1d0",
+            bg2: "#ff9d75",
+            card: "#fff6f2",
+            text: "#572c2b",
+            line: "#f08a66",
+            accent: "#ff5d45",
+            accent2: "#ff8b6c",
+            chip: "#ffd3c0",
+          },
+          placeholders: {
+            ventLine: "你現在最想罵什麼",
+            mainDiary: "今天哪一波最讓你想砸手機",
+            worstTarget: "今天最雷的是誰 / 哪件事",
+          },
         },
-        starry: {
-          bg: "#0f1226",
-          bgAccent: "#1a2148",
-          card: "#1b2345",
-          cardSoft: "#212b52",
-          primary: "#7fa8ff",
-          primaryDark: "#a6beff",
-          text: "#e5ebff",
-          muted: "#b6c0eb",
-          line: "#3b467e",
-          shadow: "rgba(8, 12, 30, 0.45)",
-          btnSoftBg: "#2f3d72",
-          btnSoftText: "#d8e0ff",
-          btnSoftHover: "#3b4a84",
+        love: {
+          title: "退坑失敗日記 😭💕",
+          subtitle: "今天本來想卸載，後來想到我老公還在裡面。",
+          stickers: "😭💔💕",
+          colors: {
+            bg1: "#ffe8f4",
+            bg2: "#ffb4d8",
+            card: "#fff8fc",
+            text: "#663652",
+            line: "#ef89bc",
+            accent: "#f05aa6",
+            accent2: "#ff94c8",
+            chip: "#ffd8ec",
+          },
+          placeholders: {
+            ventLine: "今天又是因為誰沒辦法退坑",
+            mainDiary: "今天發生什麼讓你一邊崩潰一邊繼續留在坑裡",
+            worstTarget: "今天最讓你心碎的是什麼",
+          },
         },
-        matcha: {
-          bg: "#f5f7ed",
-          bgAccent: "#e5efdb",
-          card: "#ffffff",
-          cardSoft: "#f8fbf2",
-          primary: "#7da869",
-          primaryDark: "#5f8550",
-          text: "#394635",
-          muted: "#6f7d67",
-          line: "#d6e3c6",
-          shadow: "rgba(94, 127, 85, 0.14)",
-          btnSoftBg: "#e8f1da",
-          btnSoftText: "#4f6647",
-          btnSoftHover: "#dce9c9",
-        },
-        sunset: {
-          bg: "#fff4e9",
-          bgAccent: "#ffe2cb",
-          card: "#ffffff",
-          cardSoft: "#fffaf4",
-          primary: "#f08a4b",
-          primaryDark: "#d86d2f",
-          text: "#573f33",
-          muted: "#8c6b5a",
-          line: "#f3ceb3",
-          shadow: "rgba(200, 116, 56, 0.18)",
-          btnSoftBg: "#ffe4cf",
-          btnSoftText: "#8a512f",
-          btnSoftHover: "#ffd4b3",
+        shame: {
+          title: "今日社死懺悔錄 🥹💦",
+          subtitle: "今天這把真的拉了一坨，先誠實面對我自己。",
+          stickers: "🥹💦🫠",
+          colors: {
+            bg1: "#dce8ff",
+            bg2: "#9fb4dd",
+            card: "#f6f9ff",
+            text: "#2f4164",
+            line: "#7f9ac7",
+            accent: "#5f7fc8",
+            accent2: "#86a2df",
+            chip: "#d9e5ff",
+          },
+          placeholders: {
+            ventLine: "你現在最想替自己找什麼藉口",
+            mainDiary: "今天哪一波最值得社死",
+            worstTarget: "今天你最怕別人拿哪件事公審你",
+          },
         },
       };
 
-      function applyTheme(themeName) {
-        const theme = themes[themeName] || themes.pink;
-        const root = document.documentElement;
-        root.style.setProperty("--bg", theme.bg);
-        root.style.setProperty("--bg-accent", theme.bgAccent);
-        root.style.setProperty("--card", theme.card);
-        root.style.setProperty("--card-soft", theme.cardSoft);
-        root.style.setProperty("--primary", theme.primary);
-        root.style.setProperty("--primary-dark", theme.primaryDark);
-        root.style.setProperty("--text", theme.text);
-        root.style.setProperty("--muted", theme.muted);
-        root.style.setProperty("--line", theme.line);
-        root.style.setProperty("--shadow", theme.shadow);
-        root.style.setProperty("--btn-soft-bg", theme.btnSoftBg);
-        root.style.setProperty("--btn-soft-text", theme.btnSoftText);
-        root.style.setProperty("--btn-soft-hover", theme.btnSoftHover);
-      }
+      // 紅溫值對應文字（固定需求）
+      const HEAT_LABELS = {
+        0: "還行",
+        25: "有點煩",
+        50: "想翻白眼",
+        75: "想卸載",
+        100: "我現在就是💩噴射器",
+      };
 
-      function loadTheme() {
-        const savedTheme = localStorage.getItem(themeStorageKey);
-        const themeName = themes[savedTheme] ? savedTheme : "pink";
-        themeSelect.value = themeName;
-        applyTheme(themeName);
-      }
+      // ===== DOM 快速抓取 =====
+      const app = document.getElementById("app");
+      const titleEl = document.getElementById("mainTitle");
+      const subTitleEl = document.getElementById("subTitle");
+      const stickersEl = document.getElementById("stickers");
+      const todayDateEl = document.getElementById("todayDate");
+      const themeBtns = document.querySelectorAll(".theme-btn");
 
-      function splitSentences(text) {
-        return text
-          .split(/[。！？!?.\n]/)
-          .map((s) => s.trim())
-          .filter(Boolean);
-      }
+      const ventLineEl = document.getElementById("ventLine");
+      const mainDiaryEl = document.getElementById("mainDiary");
+      const worstTargetEl = document.getElementById("worstTarget");
+      const coolingLevelEl = document.getElementById("coolingLevel");
+      const selfTalkEl = document.getElementById("selfTalk");
 
-      function getMoodKeywords(text) {
-        const found = moodMap
-          .filter((item) => item.words.some((word) => text.includes(word)))
-          .map((item) => item.key);
+      const moodBtns = document.querySelectorAll(".mood-btn");
+      const selectedMoodTextEl = document.getElementById("selectedMoodText");
 
-        if (found.length) return found.join("、");
-        return "平穩、努力、前進";
-      }
+      const heatValueEl = document.getElementById("heatValue");
+      const heatNumberEl = document.getElementById("heatNumber");
+      const heatLabelEl = document.getElementById("heatLabel");
 
-      function organizeDiary(rawText) {
-        const text = rawText.trim();
-        if (!text) {
-          return {
-            fullDiary: "請先輸入今天的日記內容喔～",
-            shortReport: "尚未有內容可整理。",
-            quote: "今天也值得一句溫柔的鼓勵。",
-            mood: "待補充",
-          };
-        }
+      const poopBtnEl = document.getElementById("poopBtn");
+      const eyeRollBtnEl = document.getElementById("eyeRollBtn");
+      const counterTextEl = document.getElementById("counterText");
+      const feedbackTextEl = document.getElementById("feedbackText");
+      const clearTodayBtnEl = document.getElementById("clearTodayBtn");
 
-        const sentences = splitSentences(text);
-        const opening = sentences[0] || "今天努力地過了一天";
-        const ending = sentences[sentences.length - 1] || opening;
+      // ===== 日期 key：每天一份資料 =====
+      const today = new Date();
+      const dayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
+        today.getDate()
+      ).padStart(2, "0")}`;
+      const dailyKey = `${APP_KEY}-${dayKey}`;
 
-        const shortReport = `今天重點：${opening}。\n目前進度：${ending}。\n整體來說，有在穩穩前進！`;
-        const quote = `「${ending.replace(/[，,]$/, "")}，我做得到。」`;
+      // 顯示今天日期
+      todayDateEl.textContent = `📅 ${today.toLocaleDateString("zh-TW", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "short",
+      })}`;
 
-        return {
-          fullDiary: text,
-          shortReport,
-          quote,
-          mood: getMoodKeywords(text),
-        };
-      }
+      // 預設狀態（今日）
+      const defaultState = {
+        theme: localStorage.getItem(THEME_KEY) || "rage",
+        ventLine: "",
+        mainDiary: "",
+        mood: "",
+        heatValue: 50,
+        worstTarget: "",
+        coolingLevel: "有",
+        selfTalk: "",
+        poopCount: 0,
+        eyeRollCount: 0,
+      };
 
-      function applyOutputs(data) {
-        Object.entries(outputs).forEach(([key, el]) => {
-          el.textContent = data[key] || defaultOutputs[key];
-        });
-      }
+      let state = loadState();
 
-      function saveData() {
-        const payload = {
-          input: input.value,
-          outputs: Object.fromEntries(
-            Object.entries(outputs).map(([key, el]) => [key, el.textContent])
-          ),
-        };
-        localStorage.setItem(storageKey, JSON.stringify(payload));
-      }
-
-      function loadData() {
-        const stored = localStorage.getItem(storageKey);
-        if (!stored) return;
-
+      function loadState() {
+        const raw = localStorage.getItem(dailyKey);
+        if (!raw) return { ...defaultState };
         try {
-          const data = JSON.parse(stored);
-          input.value = data.input || "";
-          applyOutputs(data.outputs || {});
+          return { ...defaultState, ...JSON.parse(raw) };
         } catch {
-          localStorage.removeItem(storageKey);
+          return { ...defaultState };
         }
       }
 
-      organizeBtn.addEventListener("click", () => {
-        const result = organizeDiary(input.value);
-        applyOutputs(result);
-        saveData();
-      });
+      function saveState() {
+        localStorage.setItem(dailyKey, JSON.stringify(state));
+        localStorage.setItem(THEME_KEY, state.theme);
+      }
 
-      input.addEventListener("input", saveData);
+      // 主題套用：背景、標題、emoji、placeholder
+      function applyTheme(themeName) {
+        const theme = THEMES[themeName] || THEMES.rage;
+        const root = document.documentElement;
 
-      clearBtn.addEventListener("click", () => {
-        input.value = "";
-        applyOutputs(defaultOutputs);
-        localStorage.removeItem(storageKey);
-      });
+        root.style.setProperty("--bg-1", theme.colors.bg1);
+        root.style.setProperty("--bg-2", theme.colors.bg2);
+        root.style.setProperty("--card", theme.colors.card);
+        root.style.setProperty("--text", theme.colors.text);
+        root.style.setProperty("--line", theme.colors.line);
+        root.style.setProperty("--accent", theme.colors.accent);
+        root.style.setProperty("--accent-2", theme.colors.accent2);
+        root.style.setProperty("--chip", theme.colors.chip);
 
-      themeSelect.addEventListener("change", () => {
-        const selected = themeSelect.value;
-        applyTheme(selected);
-        localStorage.setItem(themeStorageKey, selected);
-      });
+        titleEl.textContent = theme.title;
+        subTitleEl.textContent = theme.subtitle;
+        stickersEl.textContent = theme.stickers;
 
-      document.querySelectorAll(".copy-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const key = btn.dataset.copy;
-          const text = outputs[key].textContent;
-          try {
-            await navigator.clipboard.writeText(text);
-            const oldText = btn.textContent;
-            btn.textContent = "已複製！";
-            setTimeout(() => {
-              btn.textContent = oldText;
-            }, 1000);
-          } catch {
-            alert("複製失敗，請手動複製文字。");
-          }
+        ventLineEl.placeholder = theme.placeholders.ventLine;
+        mainDiaryEl.placeholder = theme.placeholders.mainDiary;
+        worstTargetEl.placeholder = theme.placeholders.worstTarget;
+
+        themeBtns.forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.theme === themeName);
+        });
+      }
+
+      function updateMoodUI() {
+        moodBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.mood === state.mood));
+        selectedMoodTextEl.textContent = state.mood ? `目前：${state.mood}` : "目前：未選擇";
+      }
+
+      function updateHeatUI() {
+        const value = Number(state.heatValue);
+        heatValueEl.value = String(value);
+        heatNumberEl.textContent = `紅溫值 ${value}`;
+        heatLabelEl.textContent = HEAT_LABELS[value] || "微妙";
+
+        // 紅溫高時，讓 heatLabel 偏紅，低時比較冷靜
+        heatLabelEl.style.color = value >= 75 ? "#d92e2e" : value <= 25 ? "#3f7fc0" : "var(--text)";
+      }
+
+      function updateCounterUI() {
+        counterTextEl.textContent = `今日 💩 ${state.poopCount} 次｜🙄💅 ${state.eyeRollCount} 次`;
+
+        const total = state.poopCount + state.eyeRollCount;
+        if (total === 0) {
+          feedbackTextEl.textContent = "今日白眼值穩定中，歡迎繼續發瘋。";
+        } else if (total < 6) {
+          feedbackTextEl.textContent = `你今天已經很有精神地噴了 ${total} 次。`;
+        } else {
+          feedbackTextEl.textContent = `今日白眼值穩定上升中（目前 ${total} 次），辛苦了戰士。`;
+        }
+      }
+
+      function renderAll() {
+        applyTheme(state.theme);
+        ventLineEl.value = state.ventLine;
+        mainDiaryEl.value = state.mainDiary;
+        worstTargetEl.value = state.worstTarget;
+        coolingLevelEl.value = state.coolingLevel;
+        selfTalkEl.value = state.selfTalk;
+        updateMoodUI();
+        updateHeatUI();
+        updateCounterUI();
+      }
+
+      // Emoji 粒子：簡單但舒壓
+      function spawnBurst(emoji, amount = 9) {
+        for (let i = 0; i < amount; i++) {
+          const node = document.createElement("div");
+          node.className = "floating-emoji";
+          node.textContent = emoji;
+
+          const x = window.innerWidth * (0.3 + Math.random() * 0.4);
+          const y = window.innerHeight * (0.45 + Math.random() * 0.15);
+          const dx = `${-100 + Math.random() * 200}px`;
+          const dy = `${-60 - Math.random() * 200}px`;
+          const rot = `${-120 + Math.random() * 240}deg`;
+
+          node.style.setProperty("--x", `${x}px`);
+          node.style.setProperty("--y", `${y}px`);
+          node.style.setProperty("--dx", dx);
+          node.style.setProperty("--dy", dy);
+          node.style.setProperty("--rot", rot);
+          document.body.appendChild(node);
+
+          setTimeout(() => node.remove(), 820);
+        }
+      }
+
+      // ===== 事件：主題 =====
+      themeBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.theme = btn.dataset.theme;
+          applyTheme(state.theme);
+          saveState();
         });
       });
 
-      loadTheme();
-      loadData();
+      // ===== 事件：輸入即時保存 =====
+      ventLineEl.addEventListener("input", () => {
+        state.ventLine = ventLineEl.value;
+        saveState();
+      });
+      mainDiaryEl.addEventListener("input", () => {
+        state.mainDiary = mainDiaryEl.value;
+        saveState();
+      });
+      worstTargetEl.addEventListener("input", () => {
+        state.worstTarget = worstTargetEl.value;
+        saveState();
+      });
+      coolingLevelEl.addEventListener("change", () => {
+        state.coolingLevel = coolingLevelEl.value;
+        saveState();
+      });
+      selfTalkEl.addEventListener("input", () => {
+        state.selfTalk = selfTalkEl.value;
+        saveState();
+      });
+
+      // ===== 事件：心情 =====
+      moodBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.mood = btn.dataset.mood;
+          updateMoodUI();
+          saveState();
+        });
+      });
+
+      // ===== 事件：紅溫值 =====
+      heatValueEl.addEventListener("input", () => {
+        state.heatValue = Number(heatValueEl.value);
+        updateHeatUI();
+        saveState();
+      });
+
+      // ===== 事件：發洩按鈕 =====
+      poopBtnEl.addEventListener("click", () => {
+        state.poopCount += 1;
+        updateCounterUI();
+        saveState();
+        spawnBurst("💩", 11);
+      });
+
+      eyeRollBtnEl.addEventListener("click", () => {
+        state.eyeRollCount += 1;
+        updateCounterUI();
+        saveState();
+        // 白眼 + 美甲混搭噴射
+        spawnBurst(Math.random() > 0.5 ? "🙄" : "💅", 11);
+      });
+
+      // ===== 事件：清空今日 =====
+      clearTodayBtnEl.addEventListener("click", () => {
+        const ok = window.confirm("確定要清空今天紀錄嗎？（會清掉今天輸入和兩種噴射次數）");
+        if (!ok) return;
+
+        state = {
+          ...defaultState,
+          theme: state.theme, // 保留目前主題，避免清空後突然換皮
+        };
+        saveState();
+        renderAll();
+      });
+
+      // 初始渲染
+      renderAll();
     </script>
   </body>
 </html>
