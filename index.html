@@ -1144,37 +1144,68 @@
           const diaryText = record.diary || "";
           const summary = (diaryText || "（無內容）").slice(0, 50);
           const totalSprays = record.totalSprays ?? ((record.poopCount || 0) + (record.eyeRollCount || 0));
-          item.innerHTML = `
-            <div class="history-head">
-              <span>${formatDate(record.date)}</span>
-              <span>${record.savedAt.split(" ")[1]}</span>
-            </div>
-            <div class="history-summary">主題：${record.theme}｜摘要：${summary}${diaryText.length > 50 ? "..." : ""}</div>
-            <div class="history-summary">今天噴了 ${totalSprays} 次（💩 ${record.poopCount || 0}｜🙄💅 ${record.eyeRollCount || 0}）</div>
-            <div class="history-actions">
-              <button type="button" data-action="toggle">展開 / 收合</button>
-              <button type="button" data-action="load">載入這筆</button>
-              <button type="button" class="danger" data-action="delete">刪除</button>
-            </div>
-            <div class="history-detail" hidden>
-日期：${formatDate(record.date)}
-存檔時間：${record.savedAt}
-主題：${record.theme}
-紅溫值：${record.rageValue}
-先噴一句：${record.opener || "（空）"}
-心情：${(record.moods || []).join("、") || "（未選）"}
-最雷：${record.worstTarget || "（空）"}
-冷靜度：${record.coolingLevel || "（空）"}
-💩噴射：${record.poopCount} 次
-🙄💅噴射：${record.eyeRollCount} 次
-今日噴射總數：${totalSprays} 次
-主日記：
-${record.diary || "（空）"}
-收尾：${record.closing || "（空）"}
-            </div>
-          `;
+          const head = document.createElement("div");
+          head.className = "history-head";
+          const dateSpan = document.createElement("span");
+          dateSpan.textContent = formatDate(record.date);
+          const timeSpan = document.createElement("span");
+          timeSpan.textContent = (record.savedAt || "").split(" ")[1] || "--:--:--";
+          head.appendChild(dateSpan);
+          head.appendChild(timeSpan);
 
-          const detail = item.querySelector(".history-detail");
+          const summaryLine = document.createElement("div");
+          summaryLine.className = "history-summary";
+          summaryLine.textContent = `主題：${record.theme}｜摘要：${summary}${diaryText.length > 50 ? "..." : ""}`;
+
+          const sprayLine = document.createElement("div");
+          sprayLine.className = "history-summary";
+          sprayLine.textContent = `今天噴了 ${totalSprays} 次（💩 ${record.poopCount || 0}｜🙄💅 ${record.eyeRollCount || 0}）`;
+
+          const actions = document.createElement("div");
+          actions.className = "history-actions";
+          const toggleBtn = document.createElement("button");
+          toggleBtn.type = "button";
+          toggleBtn.dataset.action = "toggle";
+          toggleBtn.textContent = "展開 / 收合";
+          const loadBtn = document.createElement("button");
+          loadBtn.type = "button";
+          loadBtn.dataset.action = "load";
+          loadBtn.textContent = "載入這筆";
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.className = "danger";
+          deleteBtn.dataset.action = "delete";
+          deleteBtn.textContent = "刪除";
+          actions.appendChild(toggleBtn);
+          actions.appendChild(loadBtn);
+          actions.appendChild(deleteBtn);
+
+          const detail = document.createElement("div");
+          detail.className = "history-detail";
+          detail.hidden = true;
+          detail.textContent = [
+            `日期：${formatDate(record.date)}`,
+            `存檔時間：${record.savedAt}`,
+            `主題：${record.theme}`,
+            `紅溫值：${record.rageValue}`,
+            `先噴一句：${record.opener || "（空）"}`,
+            `心情：${(record.moods || []).join("、") || "（未選）"}`,
+            `最雷：${record.worstTarget || "（空）"}`,
+            `冷靜度：${record.coolingLevel || "（空）"}`,
+            `💩噴射：${record.poopCount} 次`,
+            `🙄💅噴射：${record.eyeRollCount} 次`,
+            `今日噴射總數：${totalSprays} 次`,
+            "主日記：",
+            `${record.diary || "（空）"}`,
+            `收尾：${record.closing || "（空）"}`,
+          ].join("\n");
+
+          item.appendChild(head);
+          item.appendChild(summaryLine);
+          item.appendChild(sprayLine);
+          item.appendChild(actions);
+          item.appendChild(detail);
+
           item.querySelector('[data-action="toggle"]').addEventListener("click", () => {
             detail.hidden = !detail.hidden;
           });
@@ -1188,7 +1219,7 @@ ${record.diary || "（空）"}
               mainDiary: record.diary || "",
               lastQuickTemplate: record.quickTemplate || "",
               lastMainTemplate: record.mainTemplate || "",
-              moods: record.moods || [],
+              moods: Array.isArray(record.moods) ? [...record.moods] : [],
               heatValue: record.rageValue ?? 50,
               worstTarget: record.worstTarget || "",
               coolingLevel: record.coolingLevel || "有",
