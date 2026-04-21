@@ -354,6 +354,35 @@
         font-weight: 700;
         color: var(--muted-text);
       }
+      .shooter-status {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: var(--muted-text);
+      }
+      .target-burst {
+        animation: targetBurst 260ms ease;
+      }
+      @keyframes targetBurst {
+        0% { transform: scale(1) rotate(0deg); filter: saturate(1); }
+        35% { transform: scale(0.9) rotate(-2deg); filter: saturate(1.5); }
+        70% { transform: scale(1.08) rotate(2deg); filter: saturate(1.8); }
+        100% { transform: scale(1) rotate(0deg); filter: saturate(1); }
+      }
+      .shooter-wrap.red-micro .fire-btn { filter: brightness(1.08); }
+      .shooter-wrap.red-hot .shooter-stage { border-color: #d96565; }
+      .shooter-wrap.red-rage .shooter-stage {
+        border-color: #f04b4b;
+        box-shadow: 0 0 0 2px rgba(240, 75, 75, 0.2) inset;
+      }
+      .shooter-wrap.red-rage .target-view {
+        animation: rageShake 220ms linear infinite;
+      }
+      @keyframes rageShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-1px); }
+        75% { transform: translateX(1px); }
+      }
       .sound-toggle.on {
         background: #dff5df;
         border-color: #5d9c5d;
@@ -511,6 +540,8 @@
             <div class="stat-chip">本輪射擊：<span id="shotCount">0</span></div>
             <div class="stat-chip">最高紀錄：<span id="bestShotCount">0</span></div>
             <div class="stat-chip">目前標靶：<span id="currentTargetName">雷包01</span></div>
+            <div class="stat-chip">標靶耐久：<span id="targetHpText">0 / 0</span></div>
+            <div class="stat-chip">今日紅溫：<span id="redTempText">平靜</span></div>
           </div>
 
           <div class="shooter-actions">
@@ -535,6 +566,7 @@
           </details>
 
           <div class="shooter-comment" id="shooterComment">今天很克制，先記你一功。</div>
+          <div class="shooter-status" id="shooterStatusText">紅溫狀態同步中...</div>
         </div>
       </section>
     </div>
@@ -683,6 +715,45 @@
         { id: "target_03", name: "雷包03", image: "target_03.png" },
       ];
 
+      // ===== 可調設定：標靶耐久 =====
+      const TARGET_CONFIG = {
+        target_01: { hp: 8 },
+        target_02: { hp: 10 },
+        target_03: { hp: 12 },
+      };
+
+      // ===== 可調設定：每個標靶專屬吐槽池 =====
+      const TARGET_TAUNTS = {
+        target_01: [
+          "嘴上說沒差，手已經在抖了吧。",
+          "你這防守像紙糊的，風一吹就倒。",
+          "再嘴硬啊，耐久都見底了。",
+          "說自己穩，結果穩穩被打爆。",
+          "你這波叫戰術？我看是送幸福。",
+        ],
+        target_02: [
+          "你跑得快，責任也跑得快。",
+          "還沒開打你就先烙跑了。",
+          "隊友在撐，你在散步旅行。",
+          "再退一步就退到觀眾席了。",
+          "你這撤退速度，連風都追不上。",
+        ],
+        target_03: [
+          "別情勒了，先把失誤補上。",
+          "你一句委屈，隊友要扛三把。",
+          "嘴上說可憐，手上還在亂點。",
+          "情緒牌打滿，操作牌全空。",
+          "再演下去，連自己都信了。",
+        ],
+      };
+
+      // ===== 可調設定：紅溫規則 =====
+      const RED_TEMP_CONFIG = {
+        defaultValue: 20,
+        negativeMoods: ["生氣", "煩躁", "委屈", "崩潰", "焦慮", "爆氣", "麻了"],
+        diaryKeywords: ["雷包", "煩", "炸", "崩", "氣死", "吐血", "北爛", "爛", "火大"],
+      };
+
       // DOM
       const diaryDateEl = document.getElementById("diaryDate");
       const saveStatusEl = document.getElementById("saveStatus");
@@ -735,6 +806,9 @@
       const bestShotCountEl = document.getElementById("bestShotCount");
       const shooterCommentEl = document.getElementById("shooterComment");
       const currentTargetNameEl = document.getElementById("currentTargetName");
+      const targetHpTextEl = document.getElementById("targetHpText");
+      const redTempTextEl = document.getElementById("redTempText");
+      const shooterStatusTextEl = document.getElementById("shooterStatusText");
       const targetFile01El = document.getElementById("targetFile01");
       const targetFile02El = document.getElementById("targetFile02");
       const targetFile03El = document.getElementById("targetFile03");
@@ -756,6 +830,8 @@
         hits: 0,
         bestShots: 0,
       };
+      let targetDurability = {};
+      let currentRedTemp = RED_TEMP_CONFIG.defaultValue;
 
       // 全域資料
       let draftsByDate = readJSON(STORAGE_KEYS.draftsByDate, {});
@@ -798,6 +874,22 @@
 
       function addMood(list, mood) {
         return Array.from(new Set([...(list || []), mood]));
+      }
+
+      function getTargetMaxHp(targetId) {
+        return TARGET_CONFIG[targetId]?.hp || 10;
+      }
+
+      function resetTargetDurability(targetId) {
+        targetDurability[targetId] = getTargetMaxHp(targetId);
+      }
+
+      function ensureAllTargetDurability() {
+        targets.forEach((t) => {
+          if (typeof targetDurability[t.id] !== "number") {
+            resetTargetDurability(t.id);
+          }
+        });
       }
 
       function getDefaultDraft() {
@@ -1449,7 +1541,60 @@
         shotCountEl.textContent = String(shooterState.shots);
         bestShotCountEl.textContent = String(shooterState.bestShots);
         shooterCommentEl.textContent = getShooterComment(shooterState.shots);
-        currentTargetNameEl.textContent = targets[shooterState.currentTargetIndex]?.name || "雷包";
+        const target = targets[shooterState.currentTargetIndex];
+        currentTargetNameEl.textContent = target?.name || "雷包";
+        const hp = targetDurability[target?.id] ?? 0;
+        targetHpTextEl.textContent = `${hp} / ${getTargetMaxHp(target?.id)}`;
+      }
+
+      function computeRedTemp(record) {
+        // 0~100，預設偏低躁度避免空資料報錯
+        if (!record) return RED_TEMP_CONFIG.defaultValue;
+
+        let score = Number(record.heatValue ?? 20);
+        const moods = Array.isArray(record.moods) ? record.moods : [];
+        const diary = String(record.mainDiary || "");
+
+        moods.forEach((mood) => {
+          if (RED_TEMP_CONFIG.negativeMoods.some((m) => mood.includes(m))) {
+            score += 8;
+          }
+        });
+
+        RED_TEMP_CONFIG.diaryKeywords.forEach((kw) => {
+          if (diary.includes(kw)) score += 5;
+        });
+
+        return Math.max(0, Math.min(100, score));
+      }
+
+      function getRedTempStage(score) {
+        if (score <= 29) return "平靜";
+        if (score <= 59) return "微躁";
+        if (score <= 79) return "紅溫";
+        return "爆氣";
+      }
+
+      function getDynamicCritChance() {
+        if (currentRedTemp >= 80) return 0.28;
+        if (currentRedTemp >= 60) return 0.22;
+        if (currentRedTemp >= 30) return 0.18;
+        return CRIT_CHANCE;
+      }
+
+      function applyRedTempEffects() {
+        currentRedTemp = computeRedTemp(state);
+        const stage = getRedTempStage(currentRedTemp);
+        redTempTextEl.textContent = `${stage}（${currentRedTemp}）`;
+        shooterStatusTextEl.textContent =
+          stage === "爆氣"
+            ? "今日火氣很足，射擊場進入狂躁模式。"
+            : `紅溫同步完成：${stage}`;
+
+        shooterViewEl.classList.remove("red-micro", "red-hot", "red-rage");
+        if (stage === "微躁") shooterViewEl.classList.add("red-micro");
+        if (stage === "紅溫") shooterViewEl.classList.add("red-hot");
+        if (stage === "爆氣") shooterViewEl.classList.add("red-rage");
       }
 
       function clearHitEffects() {
@@ -1479,12 +1624,14 @@
 
       function renderShooterGame() {
         document.documentElement.style.setProperty("--target-scale", TARGET_SCALE);
+        ensureAllTargetDurability();
         const target = targets[shooterState.currentTargetIndex];
         targetImageEl.classList.remove("hidden");
         targetFallbackEl.classList.add("hidden");
         targetImageEl.src = EMBEDDED_TARGET_IMAGES[target.id] || "";
         targetImageEl.alt = target.name;
         updateShooterStats();
+        applyRedTempEffects();
       }
 
       function fileToDataURL(file) {
@@ -1497,20 +1644,35 @@
       }
 
       function fireShot() {
-        const isCritical = Math.random() < CRIT_CHANCE;
+        const target = targets[shooterState.currentTargetIndex];
+        const targetId = target.id;
+        const isCritical = Math.random() < getDynamicCritChance();
         shooterState.shots += 1;
         shooterState.hits += 1;
         shooterState.bestShots = Math.max(shooterState.bestShots, shooterState.shots);
         saveShooterData();
-        updateShooterStats();
+        targetDurability[targetId] = Math.max(0, (targetDurability[targetId] ?? getTargetMaxHp(targetId)) - 1);
         targetImageEl.classList.remove("target-hit");
         void targetImageEl.offsetWidth;
         targetImageEl.classList.add("target-hit");
         spawnHitText(isCritical);
         playHitSound(isCritical);
-        if (isCritical) {
-          shooterCommentEl.textContent = "致命雷爆！💥🔥 這發超有靈壓！";
+        const isBurst = targetDurability[targetId] <= 0;
+        if (isBurst) {
+          targetImageEl.classList.remove("target-burst");
+          void targetImageEl.offsetWidth;
+          targetImageEl.classList.add("target-burst");
+          const taunts = TARGET_TAUNTS[targetId] || ["你被打爆了，先冷靜一下。"];
+          const taunt = taunts[Math.floor(Math.random() * taunts.length)];
+          shooterCommentEl.textContent = `【${target.name}被打爆】${taunt}`;
+          resetTargetDurability(targetId);
         }
+        if (isCritical) {
+          shooterCommentEl.textContent = isBurst
+            ? shooterCommentEl.textContent
+            : "致命雷爆！💥🔥 這發超有靈壓！";
+        }
+        updateShooterStats();
       }
 
       /*
@@ -1556,6 +1718,7 @@
         resetRoundBtnEl.addEventListener("click", () => {
           shooterState.shots = 0;
           shooterState.hits = 0;
+          targets.forEach((t) => resetTargetDurability(t.id));
           updateShooterStats();
           clearHitEffects();
         });
@@ -1635,6 +1798,7 @@
         renderFormFields();
         renderVentModule();
         renderHistory();
+        applyRedTempEffects();
       }
 
       // 事件：日期切換 -> 載入草稿
