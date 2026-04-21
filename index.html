@@ -354,6 +354,16 @@
         font-weight: 700;
         color: var(--muted-text);
       }
+      .sound-toggle.on {
+        background: #dff5df;
+        border-color: #5d9c5d;
+      }
+      .crit-hint {
+        margin-top: 6px;
+        font-size: 0.86rem;
+        color: var(--muted-text);
+        font-weight: 700;
+      }
 
       @media (min-width: 760px) {
         .top-row { grid-template-columns: 1fr 1fr; }
@@ -507,7 +517,9 @@
             <button type="button" class="fire-btn" id="fireBtn">發射</button>
             <button type="button" id="resetRoundBtn">重置本輪</button>
             <button type="button" id="randomTargetBtn">隨機雷包</button>
+            <button type="button" id="soundToggleBtn" class="sound-toggle">🔊 命中音效：開</button>
           </div>
+          <div class="crit-hint">爆擊特效機率：15%（出現「致命雷爆！💥🔥」）</div>
 
           <details style="margin-top:10px;">
             <summary style="cursor:pointer;font-weight:800;">匯入你的標靶原圖（單檔版）</summary>
@@ -728,12 +740,16 @@
       const targetFile03El = document.getElementById("targetFile03");
       const applyTargetFilesBtnEl = document.getElementById("applyTargetFilesBtn");
       const resetTargetFilesBtnEl = document.getElementById("resetTargetFilesBtn");
+      const soundToggleBtnEl = document.getElementById("soundToggleBtn");
 
       let toastTimer = null;
       let shooterAutoTimer = null;
       let shooterAutoInterval = null;
       const SHOOTER_STORAGE_KEY = "rankDiary_shooter_data";
       const SHOOTER_TARGETS_STORAGE_KEY = "rankDiary_shooter_target_images";
+      const SHOOTER_SOUND_STORAGE_KEY = "rankDiary_shooter_sound";
+      const CRIT_CHANCE = 0.15;
+      let shooterSoundEnabled = true;
       let shooterState = {
         currentTargetIndex: 0,
         shots: 0,
@@ -1336,6 +1352,41 @@ ${record.diary || "（空）"}
         }
       }
 
+      function loadShooterSound() {
+        const raw = localStorage.getItem(SHOOTER_SOUND_STORAGE_KEY);
+        if (raw === null) return;
+        shooterSoundEnabled = raw === "1";
+      }
+
+      function saveShooterSound() {
+        localStorage.setItem(SHOOTER_SOUND_STORAGE_KEY, shooterSoundEnabled ? "1" : "0");
+      }
+
+      function updateShooterSoundUI() {
+        soundToggleBtnEl.textContent = shooterSoundEnabled ? "🔊 命中音效：開" : "🔇 命中音效：關";
+        soundToggleBtnEl.classList.toggle("on", shooterSoundEnabled);
+      }
+
+      // 用 WebAudio 動態生成短音效，不需外部音檔
+      function playHitSound(isCritical = false) {
+        if (!shooterSoundEnabled) return;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = isCritical ? "square" : "triangle";
+        osc.frequency.value = isCritical ? 680 : 420;
+        gain.gain.value = 0.001;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const now = ctx.currentTime;
+        gain.gain.exponentialRampToValueAtTime(0.1, now + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + (isCritical ? 0.2 : 0.12));
+        osc.start(now);
+        osc.stop(now + (isCritical ? 0.22 : 0.14));
+      }
+
       function loadCustomTargetImages() {
         const raw = localStorage.getItem(SHOOTER_TARGETS_STORAGE_KEY);
         if (!raw) return;
@@ -1374,8 +1425,8 @@ ${record.diary || "（空）"}
         hitLayerEl.innerHTML = "";
       }
 
-      function spawnHitText() {
-        const words = ["砰！", "中！", "雷爆！", "命中！"];
+      function spawnHitText(isCritical = false) {
+        const words = isCritical ? ["致命雷爆！💥🔥", "爆擊！💥", "雷包崩潰🔥"] : ["砰！", "中！", "雷爆！", "命中！"];
         const fx = document.createElement("span");
         fx.className = "hit-fx";
         fx.textContent = words[Math.floor(Math.random() * words.length)];
@@ -1415,6 +1466,7 @@ ${record.diary || "（空）"}
       }
 
       function fireShot() {
+        const isCritical = Math.random() < CRIT_CHANCE;
         shooterState.shots += 1;
         shooterState.hits += 1;
         shooterState.bestShots = Math.max(shooterState.bestShots, shooterState.shots);
@@ -1423,7 +1475,11 @@ ${record.diary || "（空）"}
         targetImageEl.classList.remove("target-hit");
         void targetImageEl.offsetWidth;
         targetImageEl.classList.add("target-hit");
-        spawnHitText();
+        spawnHitText(isCritical);
+        playHitSound(isCritical);
+        if (isCritical) {
+          shooterCommentEl.textContent = "致命雷爆！💥🔥 這發超有靈壓！";
+        }
       }
 
       /*
@@ -1471,6 +1527,12 @@ ${record.diary || "（空）"}
           shooterState.hits = 0;
           updateShooterStats();
           clearHitEffects();
+        });
+        soundToggleBtnEl.addEventListener("click", () => {
+          shooterSoundEnabled = !shooterSoundEnabled;
+          saveShooterSound();
+          updateShooterSoundUI();
+          showToast(shooterSoundEnabled ? "命中音效已開啟" : "命中音效已靜音");
         });
 
         const fireDown = (evt) => {
@@ -1628,8 +1690,10 @@ ${record.diary || "（空）"}
 
       // 初始渲染
       loadShooterData();
+      loadShooterSound();
       loadCustomTargetImages();
       bindShooterEvents();
+      updateShooterSoundUI();
       renderShooterGame();
       renderAll();
     </script>
