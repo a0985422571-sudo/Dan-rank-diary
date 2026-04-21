@@ -259,6 +259,24 @@
         border-radius: 14px;
         padding: 10px;
       }
+      .burst-taunt-banner {
+        margin: 2px auto 8px;
+        max-width: min(100%, 420px);
+        min-height: 36px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 2px dashed var(--line);
+        background: rgba(0, 0, 0, 0.72);
+        color: #ffe8b5;
+        font-weight: 900;
+        text-align: center;
+        display: grid;
+        place-items: center;
+        letter-spacing: 0.5px;
+      }
+      .burst-taunt-banner.hidden {
+        visibility: hidden;
+      }
       .target-view {
         position: relative;
         width: min(100%, 420px);
@@ -524,6 +542,7 @@
         </div>
 
         <div class="shooter-stage">
+          <div class="burst-taunt-banner hidden" id="burstTauntBanner"></div>
           <div class="target-view" id="targetView">
             <img id="targetImage" alt="雷包標靶" />
             <div class="target-fallback hidden" id="targetFallback">標靶載入失敗</div>
@@ -795,6 +814,7 @@
       const targetViewEl = document.getElementById("targetView");
       const targetImageEl = document.getElementById("targetImage");
       const targetFallbackEl = document.getElementById("targetFallback");
+      const burstTauntBannerEl = document.getElementById("burstTauntBanner");
       const hitLayerEl = document.getElementById("hitLayer");
       const prevTargetBtnEl = document.getElementById("prevTargetBtn");
       const nextTargetBtnEl = document.getElementById("nextTargetBtn");
@@ -820,6 +840,7 @@
       let shooterAutoTimer = null;
       let shooterAutoInterval = null;
       let burstRespawnTimer = null;
+      let burstTauntTimer = null;
       const SHOOTER_STORAGE_KEY = "rankDiary_shooter_data";
       const SHOOTER_TARGETS_STORAGE_KEY = "rankDiary_shooter_target_images";
       const SHOOTER_SOUND_STORAGE_KEY = "rankDiary_shooter_sound";
@@ -1604,6 +1625,18 @@
         hitLayerEl.innerHTML = "";
       }
 
+      function showBurstTaunt(text) {
+        if (!text) return;
+        burstTauntBannerEl.textContent = text;
+        burstTauntBannerEl.classList.remove("hidden");
+        if (burstTauntTimer) clearTimeout(burstTauntTimer);
+        burstTauntTimer = setTimeout(() => {
+          burstTauntBannerEl.classList.add("hidden");
+          burstTauntBannerEl.textContent = "";
+          burstTauntTimer = null;
+        }, 2000);
+      }
+
       function spawnHitText(isCritical = false) {
         const words = isCritical ? ["致命雷爆！💥🔥", "爆擊！💥", "雷包崩潰🔥"] : ["砰！", "中！", "雷爆！", "命中！"];
         const fx = document.createElement("span");
@@ -1632,6 +1665,12 @@
           clearTimeout(burstRespawnTimer);
           burstRespawnTimer = null;
         }
+        if (burstTauntTimer) {
+          clearTimeout(burstTauntTimer);
+          burstTauntTimer = null;
+        }
+        burstTauntBannerEl.classList.add("hidden");
+        burstTauntBannerEl.textContent = "";
         const target = targets[shooterState.currentTargetIndex];
         targetImageEl.classList.remove("hidden");
         targetFallbackEl.classList.add("hidden");
@@ -1673,7 +1712,7 @@
           targetImageEl.classList.add("target-burst");
           const taunts = TARGET_TAUNTS[targetId] || ["你被打爆了，先冷靜一下。"];
           const taunt = taunts[Math.floor(Math.random() * taunts.length)];
-          overrideComment = `【${target.name}被打爆】${taunt}`;
+          showBurstTaunt(`【${target.name}被打爆】${taunt}`);
           targetImageEl.classList.add("hidden");
           targetFallbackEl.classList.remove("hidden");
           targetFallbackEl.textContent = "💥 標靶已擊倒";
