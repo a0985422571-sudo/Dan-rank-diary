@@ -1069,6 +1069,15 @@
         };
       }
 
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
       function renderHistory() {
         historyListEl.innerHTML = "";
         const sorted = [...historyRecords].sort((a, b) => (a.savedAt < b.savedAt ? 1 : -1));
@@ -1084,33 +1093,44 @@
           const diaryText = record.diary || "";
           const summary = (diaryText || "（無內容）").slice(0, 50);
           const totalSprays = record.totalSprays ?? ((record.poopCount || 0) + (record.eyeRollCount || 0));
+          const savedTime = (record.savedAt || "").split(" ")[1] || "（未知）";
+          const safeDate = escapeHtml(formatDate(record.date));
+          const safeSavedAt = escapeHtml(record.savedAt || "（未知）");
+          const safeTheme = escapeHtml(record.theme || "（未知）");
+          const safeSummary = escapeHtml(summary);
+          const safeMoods = escapeHtml((record.moods || []).join("、") || "（未選）");
+          const safeOpener = escapeHtml(record.opener || "（空）");
+          const safeWorstTarget = escapeHtml(record.worstTarget || "（空）");
+          const safeCoolingLevel = escapeHtml(record.coolingLevel || "（空）");
+          const safeDiary = escapeHtml(record.diary || "（空）");
+          const safeClosing = escapeHtml(record.closing || "（空）");
           item.innerHTML = `
             <div class="history-head">
-              <span>${formatDate(record.date)}</span>
-              <span>${record.savedAt.split(" ")[1]}</span>
+              <span>${safeDate}</span>
+              <span>${escapeHtml(savedTime)}</span>
             </div>
-            <div class="history-summary">主題：${record.theme}｜摘要：${summary}${diaryText.length > 50 ? "..." : ""}</div>
-            <div class="history-summary">今天噴了 ${totalSprays} 次（💩 ${record.poopCount || 0}｜🙄💅 ${record.eyeRollCount || 0}）</div>
+            <div class="history-summary">主題：${safeTheme}｜摘要：${safeSummary}${diaryText.length > 50 ? "..." : ""}</div>
+            <div class="history-summary">今天噴了 ${escapeHtml(totalSprays)} 次（💩 ${escapeHtml(record.poopCount || 0)}｜🙄💅 ${escapeHtml(record.eyeRollCount || 0)}）</div>
             <div class="history-actions">
               <button type="button" data-action="toggle">展開 / 收合</button>
               <button type="button" data-action="load">載入這筆</button>
               <button type="button" class="danger" data-action="delete">刪除</button>
             </div>
             <div class="history-detail" hidden>
-日期：${formatDate(record.date)}
-存檔時間：${record.savedAt}
-主題：${record.theme}
-紅溫值：${record.rageValue}
-先噴一句：${record.opener || "（空）"}
-心情：${(record.moods || []).join("、") || "（未選）"}
-最雷：${record.worstTarget || "（空）"}
-冷靜度：${record.coolingLevel || "（空）"}
-💩噴射：${record.poopCount} 次
-🙄💅噴射：${record.eyeRollCount} 次
-今日噴射總數：${totalSprays} 次
+日期：${safeDate}
+存檔時間：${safeSavedAt}
+主題：${safeTheme}
+紅溫值：${escapeHtml(record.rageValue)}
+先噴一句：${safeOpener}
+心情：${safeMoods}
+最雷：${safeWorstTarget}
+冷靜度：${safeCoolingLevel}
+💩噴射：${escapeHtml(record.poopCount || 0)} 次
+🙄💅噴射：${escapeHtml(record.eyeRollCount || 0)} 次
+今日噴射總數：${escapeHtml(totalSprays)} 次
 主日記：
-${record.diary || "（空）"}
-收尾：${record.closing || "（空）"}
+${safeDiary}
+收尾：${safeClosing}
             </div>
           `;
 
