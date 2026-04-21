@@ -819,6 +819,7 @@
       let toastTimer = null;
       let shooterAutoTimer = null;
       let shooterAutoInterval = null;
+      let burstRespawnTimer = null;
       const SHOOTER_STORAGE_KEY = "rankDiary_shooter_data";
       const SHOOTER_TARGETS_STORAGE_KEY = "rankDiary_shooter_target_images";
       const SHOOTER_SOUND_STORAGE_KEY = "rankDiary_shooter_sound";
@@ -1536,11 +1537,13 @@
         );
       }
 
-      function updateShooterStats() {
+      function updateShooterStats(options = {}) {
         hitCountEl.textContent = String(shooterState.hits);
         shotCountEl.textContent = String(shooterState.shots);
         bestShotCountEl.textContent = String(shooterState.bestShots);
-        shooterCommentEl.textContent = getShooterComment(shooterState.shots);
+        if (!options.preserveComment) {
+          shooterCommentEl.textContent = getShooterComment(shooterState.shots);
+        }
         const target = targets[shooterState.currentTargetIndex];
         currentTargetNameEl.textContent = target?.name || "雷包";
         const hp = targetDurability[target?.id] ?? 0;
@@ -1625,9 +1628,14 @@
       function renderShooterGame() {
         document.documentElement.style.setProperty("--target-scale", TARGET_SCALE);
         ensureAllTargetDurability();
+        if (burstRespawnTimer) {
+          clearTimeout(burstRespawnTimer);
+          burstRespawnTimer = null;
+        }
         const target = targets[shooterState.currentTargetIndex];
         targetImageEl.classList.remove("hidden");
         targetFallbackEl.classList.add("hidden");
+        targetFallbackEl.textContent = "標靶載入中...";
         targetImageEl.src = EMBEDDED_TARGET_IMAGES[target.id] || "";
         targetImageEl.alt = target.name;
         updateShooterStats();
@@ -1658,21 +1666,33 @@
         spawnHitText(isCritical);
         playHitSound(isCritical);
         const isBurst = targetDurability[targetId] <= 0;
+        let overrideComment = "";
         if (isBurst) {
           targetImageEl.classList.remove("target-burst");
           void targetImageEl.offsetWidth;
           targetImageEl.classList.add("target-burst");
           const taunts = TARGET_TAUNTS[targetId] || ["你被打爆了，先冷靜一下。"];
           const taunt = taunts[Math.floor(Math.random() * taunts.length)];
-          shooterCommentEl.textContent = `【${target.name}被打爆】${taunt}`;
+          overrideComment = `【${target.name}被打爆】${taunt}`;
+          targetImageEl.classList.add("hidden");
+          targetFallbackEl.classList.remove("hidden");
+          targetFallbackEl.textContent = "💥 標靶已擊倒";
+          if (burstRespawnTimer) clearTimeout(burstRespawnTimer);
+          burstRespawnTimer = setTimeout(() => {
+            const currentTarget = targets[shooterState.currentTargetIndex];
+            if (currentTarget?.id !== targetId) return;
+            targetImageEl.classList.remove("hidden");
+            targetFallbackEl.classList.add("hidden");
+            targetFallbackEl.textContent = "標靶載入中...";
+            burstRespawnTimer = null;
+          }, 520);
           resetTargetDurability(targetId);
         }
-        if (isCritical) {
-          shooterCommentEl.textContent = isBurst
-            ? shooterCommentEl.textContent
-            : "致命雷爆！💥🔥 這發超有靈壓！";
+        if (isCritical && !isBurst) {
+          overrideComment = "致命雷爆！💥🔥 這發超有靈壓！";
         }
-        updateShooterStats();
+        updateShooterStats({ preserveComment: Boolean(overrideComment) });
+        if (overrideComment) shooterCommentEl.textContent = overrideComment;
       }
 
       /*
