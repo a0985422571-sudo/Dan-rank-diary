@@ -239,6 +239,22 @@
         gap: 8px;
         margin-top: 8px;
       }
+      .copy-modal textarea {
+        width: 100%;
+        min-height: 180px;
+        border: 2px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 0.95rem;
+      }
+      .copy-modal-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .hidden { display: none !important; }
 
       .hidden { display: none !important; }
 
@@ -276,39 +292,6 @@
       }
       .burst-taunt-banner.hidden {
         visibility: hidden;
-      }
-      .crosshair {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: 30px;
-        height: 30px;
-        transform: translate(-50%, -50%);
-        border: 2px solid rgba(255,255,255,0.9);
-        border-radius: 50%;
-        box-shadow: 0 0 0 1px rgba(0,0,0,0.5) inset;
-        pointer-events: none;
-        z-index: 4;
-      }
-      .crosshair::before,
-      .crosshair::after {
-        content: "";
-        position: absolute;
-        background: rgba(255,255,255,0.9);
-      }
-      .crosshair::before {
-        width: 2px;
-        height: 38px;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-      }
-      .crosshair::after {
-        width: 38px;
-        height: 2px;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
       }
       .target-view {
         position: relative;
@@ -429,9 +412,6 @@
       .shooter-wrap.red-rage .target-view {
         animation: rageShake 220ms linear infinite;
       }
-      .shooter-wrap.red-rage .crosshair {
-        border-color: #ffd2d2;
-      }
       @keyframes rageShake {
         0%, 100% { transform: translateX(0); }
         25% { transform: translateX(-1px); }
@@ -455,7 +435,7 @@
         .quick-fill, .template-fill { grid-template-columns: repeat(3, 1fr); }
         .vent-grid { grid-template-columns: 1fr 1fr; }
         .action-row { grid-template-columns: repeat(5, 1fr); }
-        .shooter-actions { grid-template-columns: repeat(5, 1fr); }
+        .shooter-actions { grid-template-columns: repeat(4, 1fr); }
         .fire-btn { grid-column: auto; }
       }
     </style>
@@ -583,7 +563,6 @@
             <img id="targetImage" alt="雷包標靶" />
             <div class="target-fallback hidden" id="targetFallback">標靶載入失敗</div>
             <div class="hit-layer" id="hitLayer"></div>
-            <div class="crosshair" id="targetCrosshair" aria-hidden="true"></div>
           </div>
 
           <div class="target-switch">
@@ -605,7 +584,6 @@
             <button type="button" id="resetRoundBtn">重置本輪</button>
             <button type="button" id="randomTargetBtn">隨機雷包</button>
             <button type="button" id="soundToggleBtn" class="sound-toggle">🔊 命中音效：開</button>
-            <button type="button" id="ammoModeBtn">彈種：一般</button>
           </div>
           <div class="crit-hint">爆擊特效機率：15%（出現「致命雷爆！💥🔥」）</div>
 
@@ -854,7 +832,6 @@
       const targetFallbackEl = document.getElementById("targetFallback");
       const burstTauntBannerEl = document.getElementById("burstTauntBanner");
       const hitLayerEl = document.getElementById("hitLayer");
-      const targetCrosshairEl = document.getElementById("targetCrosshair");
       const prevTargetBtnEl = document.getElementById("prevTargetBtn");
       const nextTargetBtnEl = document.getElementById("nextTargetBtn");
       const randomTargetBtnEl = document.getElementById("randomTargetBtn");
@@ -874,15 +851,12 @@
       const applyTargetFilesBtnEl = document.getElementById("applyTargetFilesBtn");
       const resetTargetFilesBtnEl = document.getElementById("resetTargetFilesBtn");
       const soundToggleBtnEl = document.getElementById("soundToggleBtn");
-      const ammoModeBtnEl = document.getElementById("ammoModeBtn");
 
       let toastTimer = null;
       let shooterAutoTimer = null;
       let shooterAutoInterval = null;
       let burstRespawnTimer = null;
       let burstTauntTimer = null;
-      let shooterAmmoMode = "normal";
-      let lastAimPoint = { x: 50, y: 50 };
       const SHOOTER_STORAGE_KEY = "rankDiary_shooter_data";
       const SHOOTER_TARGETS_STORAGE_KEY = "rankDiary_shooter_target_images";
       const SHOOTER_SOUND_STORAGE_KEY = "rankDiary_shooter_sound";
@@ -1554,26 +1528,6 @@
         soundToggleBtnEl.classList.toggle("on", shooterSoundEnabled);
       }
 
-      function updateAmmoModeUI() {
-        ammoModeBtnEl.textContent = shooterAmmoMode === "poop" ? "彈種：💩" : "彈種：一般";
-      }
-
-      function setCrosshairByPercent(x, y) {
-        const safeX = Math.max(8, Math.min(92, Number(x)));
-        const safeY = Math.max(8, Math.min(92, Number(y)));
-        lastAimPoint = { x: safeX, y: safeY };
-        targetCrosshairEl.style.left = `${safeX}%`;
-        targetCrosshairEl.style.top = `${safeY}%`;
-      }
-
-      function setCrosshairPosition(clientX, clientY) {
-        const rect = targetViewEl.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
-        const x = ((clientX - rect.left) / rect.width) * 100;
-        const y = ((clientY - rect.top) / rect.height) * 100;
-        setCrosshairByPercent(x, y);
-      }
-
       // 用 WebAudio 動態生成短音效，不需外部音檔
       function playHitSound(isCritical = false) {
         if (!shooterSoundEnabled) return;
@@ -1699,19 +1653,13 @@
         }, 2000);
       }
 
-      function spawnHitText(isCritical = false, point = lastAimPoint) {
-        const words = shooterAmmoMode === "poop"
-          ? (isCritical ? ["💩爆擊！", "臭到破防！", "💩直擊！"] : ["💩", "噗滋💩", "中便！", "💩命中"])
-          : (isCritical ? ["致命雷爆！💥🔥", "爆擊！💥", "雷包崩潰🔥"] : ["砰！", "中！", "雷爆！", "命中！"]);
+      function spawnHitText(isCritical = false) {
+        const words = isCritical ? ["致命雷爆！💥🔥", "爆擊！💥", "雷包崩潰🔥"] : ["砰！", "中！", "雷爆！", "命中！"];
         const fx = document.createElement("span");
         fx.className = "hit-fx";
         fx.textContent = words[Math.floor(Math.random() * words.length)];
-        const jitterX = -4 + Math.random() * 8;
-        const jitterY = -4 + Math.random() * 8;
-        const x = Math.max(8, Math.min(92, (point?.x ?? 50) + jitterX));
-        const y = Math.max(8, Math.min(92, (point?.y ?? 50) + jitterY));
-        fx.style.setProperty("--x", `${x}%`);
-        fx.style.setProperty("--y", `${y}%`);
+        fx.style.setProperty("--x", `${30 + Math.random() * 40}%`);
+        fx.style.setProperty("--y", `${35 + Math.random() * 35}%`);
         fx.style.setProperty("--dx", `${-20 + Math.random() * 40}px`);
         fx.style.setProperty("--dy", `${-40 - Math.random() * 40}px`);
         hitLayerEl.appendChild(fx);
@@ -1743,11 +1691,9 @@
         targetImageEl.classList.remove("hidden");
         targetFallbackEl.classList.add("hidden");
         targetFallbackEl.textContent = "標靶載入中...";
-        setCrosshairByPercent(50, 50);
         targetImageEl.src = EMBEDDED_TARGET_IMAGES[target.id] || "";
         targetImageEl.alt = target.name;
         updateShooterStats();
-        updateAmmoModeUI();
         applyRedTempEffects();
       }
 
@@ -1760,7 +1706,7 @@
         });
       }
 
-      function fireShot(options = {}) {
+      function fireShot() {
         const target = targets[shooterState.currentTargetIndex];
         const targetId = target.id;
         const isCritical = Math.random() < getDynamicCritChance();
@@ -1772,8 +1718,7 @@
         targetImageEl.classList.remove("target-hit");
         void targetImageEl.offsetWidth;
         targetImageEl.classList.add("target-hit");
-        const shotPoint = { x: options.x ?? lastAimPoint.x, y: options.y ?? lastAimPoint.y };
-        spawnHitText(isCritical, shotPoint);
+        spawnHitText(isCritical);
         playHitSound(isCritical);
         const isBurst = targetDurability[targetId] <= 0;
         let overrideComment = "";
@@ -1799,9 +1744,7 @@
           resetTargetDurability(targetId);
         }
         if (isCritical && !isBurst) {
-          overrideComment = shooterAmmoMode === "poop"
-            ? "💩致命直擊！這發超有味道！"
-            : "致命雷爆！💥🔥 這發超有靈壓！";
+          overrideComment = "致命雷爆！💥🔥 這發超有靈壓！";
         }
         updateShooterStats({ preserveComment: Boolean(overrideComment) });
         if (overrideComment) shooterCommentEl.textContent = overrideComment;
@@ -1861,12 +1804,6 @@
           showToast(shooterSoundEnabled ? "命中音效已開啟" : "命中音效已靜音");
         });
 
-        ammoModeBtnEl.addEventListener("click", () => {
-          shooterAmmoMode = shooterAmmoMode === "poop" ? "normal" : "poop";
-          updateAmmoModeUI();
-          showToast(shooterAmmoMode === "poop" ? "彈種切換：💩模式" : "彈種切換：一般模式");
-        });
-
         const fireDown = (evt) => {
           evt.preventDefault();
           startAutoFire();
@@ -1885,20 +1822,6 @@
         fireBtnEl.addEventListener("touchstart", fireDown, { passive: false });
         fireBtnEl.addEventListener("touchend", fireUp, { passive: true });
         fireBtnEl.addEventListener("touchcancel", fireUp, { passive: true });
-
-        targetViewEl.addEventListener("mousemove", (evt) => {
-          setCrosshairPosition(evt.clientX, evt.clientY);
-        });
-        targetViewEl.addEventListener("click", (evt) => {
-          setCrosshairPosition(evt.clientX, evt.clientY);
-          fireShot({ x: lastAimPoint.x, y: lastAimPoint.y });
-        });
-        targetViewEl.addEventListener("touchstart", (evt) => {
-          const touch = evt.touches?.[0];
-          if (!touch) return;
-          setCrosshairPosition(touch.clientX, touch.clientY);
-          fireShot({ x: lastAimPoint.x, y: lastAimPoint.y });
-        }, { passive: true });
 
         targetImageEl.addEventListener("error", () => {
           targetImageEl.classList.add("hidden");
