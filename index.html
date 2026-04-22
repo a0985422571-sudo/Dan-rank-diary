@@ -307,11 +307,15 @@
         touch-action: none;
       }
       .target-view img {
-        width: calc(100% * var(--target-scale, 0.9));
-        height: calc(100% * var(--target-scale, 0.9));
+        width: 100%;
+        height: 100%;
         object-fit: contain;
+        object-position: calc(50% + var(--target-shift-x, 0px)) 100%;
+        transform: scale(var(--target-scale, 1));
+        transform-origin: center bottom;
         user-select: none;
         -webkit-user-drag: none;
+        transition: transform 180ms ease, opacity 180ms ease;
       }
       .target-fallback {
         position: absolute;
@@ -453,6 +457,13 @@
       }
       .target-burst {
         animation: targetBurst 260ms ease;
+      }
+      .target-fadeout {
+        animation: targetFadeOut 340ms ease forwards;
+      }
+      @keyframes targetFadeOut {
+        from { opacity: 1; transform: scale(var(--target-scale, 1)) translateY(0); }
+        to { opacity: 0; transform: scale(calc(var(--target-scale, 1) * 1.06)) translateY(18px); }
       }
       @keyframes targetBurst {
         0% { transform: scale(1) rotate(0deg); filter: saturate(1); }
@@ -768,46 +779,22 @@
         { key: "eyeRoll", emoji: "🙄💅", label: "白眼噴射", burst: ["🙄", "💅"], feedbacks: ["白眼值穩定上升中", "你這眼神很有內容", "今天不解釋，直接翻白眼"] },
       ];
 
-      /*
-        ===== 射擊素材設定區（單檔版）=====
-        1) 標靶改成 data URL 內嵌，content:// 也能用
-        2) 新增 target_04、target_05：往 targets 陣列 push 物件，並加 src(data URL)
-        3) 圖片尺寸安全值：改 TARGET_SCALE（避免素材尺寸差太多爆版）
-      */
-      const TARGET_SCALE = 0.9;
-      function svgToDataUrl(svg) {
-        return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-      }
-      // 若你之後有真正 PNG base64，可直接把 src 換成 data:image/png;base64,xxxx
-      const EMBEDDED_TARGET_IMAGES = {
-        target_01: svgToDataUrl(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 900'>
-          <rect width='900' height='900' fill='#000'/>
-          <circle cx='450' cy='430' r='220' fill='#2b3759'/>
-          <circle cx='450' cy='430' r='165' fill='#8a3b67'/>
-          <circle cx='450' cy='430' r='100' fill='#f5d082'/>
-          <text x='450' y='760' text-anchor='middle' fill='#f7e8d0' font-size='52' font-family='sans-serif'>雷包 01</text>
-        </svg>`),
-        target_02: svgToDataUrl(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 900'>
-          <rect width='900' height='900' fill='#050505'/>
-          <rect x='180' y='180' width='540' height='540' rx='34' fill='#8d6fd1'/>
-          <rect x='230' y='230' width='440' height='440' rx='20' fill='#3a275f'/>
-          <text x='450' y='430' text-anchor='middle' fill='#fff1d4' font-size='64' font-family='sans-serif'>雷包 02</text>
-          <text x='450' y='510' text-anchor='middle' fill='#fff1d4' font-size='38' font-family='sans-serif'>選什麼救人位</text>
-        </svg>`),
-        target_03: svgToDataUrl(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 900'>
-          <rect width='900' height='900' fill='#000'/>
-          <path d='M160 620c90-170 170-200 280-230 130-35 220 30 300 230' fill='#9cc3d8'/>
-          <rect x='260' y='255' width='380' height='230' rx='26' fill='#f7c18f'/>
-          <rect x='290' y='300' width='320' height='72' rx='15' fill='#101010'/>
-          <text x='450' y='350' text-anchor='middle' fill='#f8efe4' font-size='46' font-family='sans-serif'>退出了聊天</text>
-          <text x='450' y='760' text-anchor='middle' fill='#f7e8d0' font-size='52' font-family='sans-serif'>雷包 03</text>
-        </svg>`),
+      const DEFAULT_TARGET_IMAGES = {
+        target_01: "target_01.png",
+        target_02: "target_02.png",
+        target_03: "target_03.png",
       };
+      let shooterTargetImages = { ...DEFAULT_TARGET_IMAGES };
       const targets = [
         { id: "target_01", name: "雷包01", image: "target_01.png" },
         { id: "target_02", name: "雷包02", image: "target_02.png" },
         { id: "target_03", name: "雷包03", image: "target_03.png" },
       ];
+      const TARGET_VISUAL_CONFIG = {
+        target_01: { scale: 1.18, shiftX: -6 },
+        target_02: { scale: 1.2, shiftX: 0 },
+        target_03: { scale: 1.1, shiftX: 2 },
+      };
 
       // ===== 可調設定：標靶耐久 =====
       const TARGET_CONFIG = {
@@ -1655,7 +1642,7 @@
           const data = JSON.parse(raw);
           ["target_01", "target_02", "target_03"].forEach((key) => {
             if (typeof data[key] === "string" && data[key].startsWith("data:image/")) {
-              EMBEDDED_TARGET_IMAGES[key] = data[key];
+              shooterTargetImages[key] = data[key];
             }
           });
         } catch {
@@ -1667,9 +1654,9 @@
         localStorage.setItem(
           SHOOTER_TARGETS_STORAGE_KEY,
           JSON.stringify({
-            target_01: EMBEDDED_TARGET_IMAGES.target_01,
-            target_02: EMBEDDED_TARGET_IMAGES.target_02,
-            target_03: EMBEDDED_TARGET_IMAGES.target_03,
+            target_01: shooterTargetImages.target_01,
+            target_02: shooterTargetImages.target_02,
+            target_03: shooterTargetImages.target_03,
           })
         );
       }
@@ -1788,7 +1775,6 @@
       }
 
       function renderShooterGame() {
-        document.documentElement.style.setProperty("--target-scale", TARGET_SCALE);
         ensureAllTargetDurability();
         if (burstRespawnTimer) {
           clearTimeout(burstRespawnTimer);
@@ -1801,10 +1787,14 @@
         burstTauntBannerEl.classList.add("hidden");
         burstTauntBannerEl.textContent = "";
         const target = targets[shooterState.currentTargetIndex];
+        const visual = TARGET_VISUAL_CONFIG[target.id] || { scale: 1, shiftX: 0 };
+        document.documentElement.style.setProperty("--target-scale", String(visual.scale ?? 1));
+        document.documentElement.style.setProperty("--target-shift-x", `${visual.shiftX ?? 0}px`);
         targetImageEl.classList.remove("hidden");
+        targetImageEl.classList.remove("target-fadeout");
         targetFallbackEl.classList.add("hidden");
         targetFallbackEl.textContent = "標靶載入中...";
-        targetImageEl.src = EMBEDDED_TARGET_IMAGES[target.id] || "";
+        targetImageEl.src = shooterTargetImages[target.id] || target.image || "";
         targetImageEl.alt = target.name;
         updateShooterStats();
         applyRedTempEffects();
@@ -1840,17 +1830,25 @@
           targetImageEl.classList.remove("target-burst");
           void targetImageEl.offsetWidth;
           targetImageEl.classList.add("target-burst");
+          targetImageEl.classList.remove("target-fadeout");
+          void targetImageEl.offsetWidth;
+          targetImageEl.classList.add("target-fadeout");
           const taunts = TARGET_TAUNTS[targetId] || ["你被打爆了，先冷靜一下。"];
           const taunt = taunts[Math.floor(Math.random() * taunts.length)];
           showBurstTaunt(`【${target.name}被打爆】${taunt}`);
-          targetImageEl.classList.add("hidden");
-          targetFallbackEl.classList.remove("hidden");
-          targetFallbackEl.textContent = "💥 標靶已擊倒";
+          setTimeout(() => {
+            const currentTarget = targets[shooterState.currentTargetIndex];
+            if (currentTarget?.id !== targetId) return;
+            targetImageEl.classList.add("hidden");
+            targetFallbackEl.classList.remove("hidden");
+            targetFallbackEl.textContent = "💥 標靶已擊倒";
+          }, 260);
           if (burstRespawnTimer) clearTimeout(burstRespawnTimer);
           burstRespawnTimer = setTimeout(() => {
             const currentTarget = targets[shooterState.currentTargetIndex];
             if (currentTarget?.id !== targetId) return;
             targetImageEl.classList.remove("hidden");
+            targetImageEl.classList.remove("target-fadeout");
             targetFallbackEl.classList.add("hidden");
             targetFallbackEl.textContent = "標靶載入中...";
             burstRespawnTimer = null;
@@ -1971,7 +1969,7 @@
             if (!file) continue;
             const dataUrl = await fileToDataURL(file);
             if (dataUrl.startsWith("data:image/")) {
-              EMBEDDED_TARGET_IMAGES[key] = dataUrl;
+              shooterTargetImages[key] = dataUrl;
               changed = true;
             }
           }
