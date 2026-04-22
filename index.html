@@ -3,459 +3,2046 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dan Dan 日記整理器</title>
+    <title>第五人格排位降溫日記 v0.3</title>
     <style>
       :root {
-        --bg: #fff8fc;
-        --bg-accent: #ffeaf5;
-        --card: #ffffff;
-        --card-soft: #fffcfe;
-        --primary: #ff7eb6;
-        --primary-dark: #ff5da6;
-        --text: #4b3e4d;
-        --muted: #8f7b8f;
-        --line: #f7d5e7;
-        --shadow: rgba(255, 126, 182, 0.14);
-        --btn-soft-bg: #ffe2f0;
-        --btn-soft-text: #9e3e71;
-        --btn-soft-hover: #ffd0e6;
+        --bg1: #ffe1d0;
+        --bg2: #ff9f78;
+        --card: #fff7f2;
+        --text: #542b2b;
+        --title-color: var(--text);
+        --muted-text: color-mix(in srgb, var(--text) 78%, #ffffff 22%);
+        --highlight-text: var(--text);
+        --line: #ef8f6a;
+        --accent: #ff5f46;
+        --accent2: #ff936c;
+        --chip: #ffd5c2;
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
       body {
         margin: 0;
-        font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-        background: radial-gradient(circle at top, var(--bg-accent), var(--bg));
+        font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
         color: var(--text);
         min-height: 100vh;
-        display: grid;
-        place-items: center;
-        padding: 24px;
+        background: radial-gradient(circle at 20% 0%, var(--bg1), var(--bg2));
+        transition: background 0.35s ease;
       }
 
-      .app {
-        width: min(920px, 100%);
+      .wrap { width: min(920px, 95%); margin: 16px auto 24px; }
+
+      .card {
         background: var(--card);
         border: 2px solid var(--line);
         border-radius: 20px;
-        box-shadow: 0 8px 24px var(--shadow);
-        padding: 24px;
+        padding: 14px;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.14);
       }
 
-      .app-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
+      .top { position: sticky; top: 8px; z-index: 30; display: grid; gap: 10px; margin-bottom: 12px; }
+      .top-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
+
+      .date-box, .status-box {
+        background: #fff;
+        border: 2px dashed var(--line);
+        border-radius: 12px;
+        padding: 8px 10px;
+        font-weight: 700;
       }
 
-      .theme-select {
+      .status-box { font-size: 0.92rem; }
+      #saveStatus { color: var(--accent); }
+
+      #diaryDate {
+        margin-left: 8px;
         border: 2px solid var(--line);
-        border-radius: 999px;
-        padding: 8px 12px;
+        border-radius: 8px;
+        padding: 4px 8px;
+        font-weight: 700;
+      }
+
+      .head { position: relative; }
+      .stickers { position: absolute; right: 4px; top: -2px; opacity: 0.8; }
+
+      h1 { margin: 4px 0; font-size: clamp(1.2rem, 1.7vw + 1rem, 1.9rem); color: var(--title-color); }
+      .subtitle { margin: 0; opacity: 0.82; font-size: 0.94rem; color: var(--muted-text); }
+
+      .theme-row { margin-top: 12px; display: grid; gap: 8px; grid-template-columns: repeat(2, 1fr); }
+
+      button {
+        cursor: pointer;
+        border: 2px solid var(--line);
+        border-radius: 12px;
+        font-weight: 700;
+        padding: 10px;
         color: var(--text);
-        background: var(--card);
+        background: #fff;
+        transition: transform 0.14s ease, filter 0.2s ease;
+      }
+      button:hover { transform: translateY(-1px); filter: brightness(1.02); }
+      button:active { transform: scale(0.98); }
+      button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+      .theme-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+      .section {
+        margin-top: 12px;
+        background: rgba(255, 255, 255, 0.55);
+        border: 2px dotted var(--line);
+        border-radius: 14px;
+        padding: 10px;
+      }
+      .section h2 { margin: 0 0 8px; font-size: 1rem; }
+
+      label { display: grid; gap: 5px; margin-bottom: 9px; font-weight: 700; font-size: 0.95rem; }
+
+      input[type="text"], textarea, select {
+        width: 100%;
+        border: 2px solid var(--line);
+        border-radius: 10px;
+        padding: 9px 10px;
+        font-size: 1rem;
+        color: var(--text);
+        background: #fff;
+      }
+
+      textarea { min-height: 118px; resize: vertical; }
+
+      .mood-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+      .mood-btn { border-radius: 999px; padding: 7px 11px; }
+      .mood-btn.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+      .grid2 { display: grid; gap: 8px; }
+
+      .heat-box { border: 2px dashed var(--line); border-radius: 12px; padding: 8px; background: #fff; }
+      #heatValue { width: 100%; }
+      .heat-meta { display: flex; justify-content: space-between; font-weight: 700; margin-top: 5px; }
+
+      .quick-fill, .template-fill { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .quick-btn, .template-btn, .action-btn, .vent-btn { background: var(--chip); }
+      .quick-btn, .template-btn { font-size: 0.9rem; line-height: 1.3; }
+      .quick-btn, .template-btn, .history-summary { color: var(--muted-text); }
+
+      .action-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
+      .action-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+      .vent-grid { display: grid; gap: 8px; overflow: visible; }
+      .vent-item { position: relative; overflow: visible; }
+      .vent-meta { font-size: 0.93rem; font-weight: 700; }
+      .vent-total { margin-top: 8px; font-size: 0.95rem; font-weight: 800; }
+      .vent-level { margin-top: 4px; font-size: 0.88rem; color: var(--muted-text); font-weight: 700; }
+
+      .vent-spray-zone {
+        position: absolute;
+        inset: -80px -28px -30px -28px;
+        overflow: visible;
+        pointer-events: none;
+        z-index: 9;
+      }
+      .spray-emoji {
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        font-size: 1.55rem;
+        animation: sprayFloat var(--life, 900ms) ease-out forwards;
+        will-change: transform, opacity;
+      }
+
+      @keyframes sprayFloat {
+        from { transform: translate(0, 0) scale(0.75) rotate(0deg); opacity: 1; }
+        to { transform: translate(var(--dx), var(--dy)) scale(1.2) rotate(var(--rot)); opacity: 0; }
+      }
+
+      .vent-btn.press-pop {
+        filter: brightness(0.92);
+        transform: scale(0.96);
+      }
+      .vent-btn { touch-action: manipulation; }
+
+      .history-wrap { margin-top: 14px; }
+      .history-list { display: grid; gap: 8px; }
+      .history-item {
+        border: 2px solid var(--line);
+        border-radius: 12px;
+        padding: 10px;
+        background: rgba(255,255,255,0.8);
+      }
+      .history-head { display: flex; justify-content: space-between; gap: 8px; font-weight: 800; }
+      .history-summary { margin: 6px 0 8px; font-size: 0.92rem; opacity: 0.9; }
+      .history-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .danger { border-color: #d94747; color: #9b1f1f; }
+      .history-detail {
+        margin-top: 8px;
+        border-top: 1px dashed var(--line);
+        padding-top: 8px;
+        font-size: 0.92rem;
+        white-space: pre-wrap;
+      }
+
+      .empty-tip {
+        border: 2px dashed var(--line);
+        border-radius: 12px;
+        padding: 10px;
+        background: #fff;
         font-size: 0.92rem;
       }
 
-      h1 {
-        margin: 0;
-        font-size: clamp(1.5rem, 2vw + 1rem, 2.1rem);
-        color: var(--primary-dark);
-      }
+      .clear-btn { width: 100%; margin-top: 10px; }
 
-      .subtitle {
-        margin: 8px 0 20px;
-        color: var(--muted);
-      }
-
-      textarea {
-        width: 100%;
-        min-height: 220px;
-        padding: 14px;
-        border-radius: 14px;
-        border: 2px solid var(--line);
-        resize: vertical;
-        font-size: 1rem;
-        line-height: 1.7;
-        color: var(--text);
-      }
-
-      .controls {
-        display: flex;
-        gap: 12px;
-        margin-top: 14px;
-      }
-
-      button {
-        border: 0;
-        border-radius: 999px;
-        padding: 10px 18px;
-        font-size: 0.96rem;
-        font-weight: 700;
-        cursor: pointer;
-      }
-
-      .organize-btn {
-        background: var(--primary);
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--accent);
         color: #fff;
+        border: 2px solid #fff;
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-weight: 700;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        z-index: 100;
       }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-      .organize-btn:hover {
-        background: var(--primary-dark);
-      }
-
-      .clear-btn {
-        background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
-      }
-
-      .clear-btn:hover {
-        background: var(--btn-soft-hover);
-      }
-
-      .grid {
+      .copy-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 14px;
-        margin-top: 22px;
+        place-items: center;
+        z-index: 120;
+        padding: 16px;
+      }
+      .copy-modal[hidden] { display: none; }
+      .copy-modal-card {
+        width: min(680px, 96vw);
+        background: var(--card);
+        border: 2px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+      }
+      .copy-modal textarea {
+        width: 100%;
+        min-height: 180px;
+        border: 2px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 0.95rem;
+      }
+      .copy-modal-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 8px;
       }
 
-      .card {
+      .hidden { display: none !important; }
+
+      /* ===== 雷包射擊場 ===== */
+      .shooter-wrap { margin-top: 14px; }
+      .shooter-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .shooter-title { margin: 0; color: var(--title-color); }
+      .shooter-stage {
+        margin-top: 10px;
+        background: rgba(255,255,255,0.55);
+        border: 2px dashed var(--line);
+        border-radius: 14px;
+        padding: 10px;
+      }
+      .burst-taunt-banner {
+        margin: 2px auto 8px;
+        max-width: min(100%, 420px);
+        min-height: 36px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 2px dashed var(--line);
+        background: rgba(0, 0, 0, 0.72);
+        color: #ffe8b5;
+        font-weight: 900;
+        text-align: center;
+        display: grid;
+        place-items: center;
+        letter-spacing: 0.5px;
+      }
+      .burst-taunt-banner.hidden {
+        visibility: hidden;
+      }
+      .crosshair {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 30px;
+        height: 30px;
+        transform: translate(-50%, -50%);
+        border: 2px solid rgba(255,255,255,0.9);
+        border-radius: 50%;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.5) inset;
+        pointer-events: none;
+        z-index: 4;
+      }
+      .crosshair::before,
+      .crosshair::after {
+        content: "";
+        position: absolute;
+        background: rgba(255,255,255,0.9);
+      }
+      .crosshair::before {
+        width: 2px;
+        height: 38px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+      .crosshair::after {
+        width: 38px;
+        height: 2px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+      .target-view {
+        position: relative;
+        width: min(100%, 420px);
+        aspect-ratio: 1 / 1;
+        margin: 0 auto;
         border: 2px solid var(--line);
         border-radius: 16px;
-        padding: 14px;
-        background: var(--card-soft);
+        background: #000;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
       }
-
-      .card-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+      .target-view img {
+        width: calc(100% * var(--target-scale, 0.9));
+        height: calc(100% * var(--target-scale, 0.9));
+        object-fit: contain;
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+      .target-fallback {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        color: #ffe0cf;
+        background: #2a1d1d;
+        text-align: center;
+        padding: 10px;
+      }
+      .hit-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .hit-fx {
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        color: #fff;
+        font-weight: 900;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.65);
+        animation: hitPop 700ms ease-out forwards;
+      }
+      @keyframes hitPop {
+        from { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+        to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.15); opacity: 0; }
+      }
+      .target-hit {
+        animation: targetHit 180ms ease;
+      }
+      @keyframes targetHit {
+        0% { transform: scale(1) rotate(0deg); }
+        35% { transform: scale(0.95) rotate(-1.2deg); }
+        75% { transform: scale(1.03) rotate(1deg); }
+        100% { transform: scale(1) rotate(0deg); }
+      }
+      .shooter-stats {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 8px;
-        margin-bottom: 8px;
       }
-
-      .card h2 {
-        margin: 0;
-        font-size: 1rem;
-        color: var(--primary-dark);
+      .stat-chip {
+        background: #fff;
+        border: 2px solid var(--line);
+        border-radius: 10px;
+        padding: 8px;
+        font-weight: 700;
+        font-size: 0.93rem;
       }
-
-      .copy-btn {
-        background: var(--btn-soft-bg);
-        color: var(--btn-soft-text);
-        font-size: 0.85rem;
-        padding: 6px 12px;
+      .shooter-actions, .target-switch {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
       }
-
-      .copy-btn:hover {
-        background: var(--btn-soft-hover);
+      .fire-btn {
+        grid-column: 1 / -1;
+        font-size: 1.1rem;
+        padding: 14px;
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
       }
-
-      .output {
-        margin: 0;
-        white-space: pre-wrap;
-        line-height: 1.7;
-        min-height: 64px;
+      .shooter-comment {
+        margin-top: 10px;
+        border: 2px dotted var(--line);
+        background: rgba(255,255,255,0.65);
+        border-radius: 12px;
+        padding: 10px;
+        font-weight: 700;
+        color: var(--muted-text);
       }
-
-      .hint {
-        margin-top: 14px;
-        color: var(--muted);
+      .shooter-status {
+        margin-top: 8px;
         font-size: 0.9rem;
+        font-weight: 800;
+        color: var(--muted-text);
+      }
+      .target-burst {
+        animation: targetBurst 260ms ease;
+      }
+      @keyframes targetBurst {
+        0% { transform: scale(1) rotate(0deg); filter: saturate(1); }
+        35% { transform: scale(0.9) rotate(-2deg); filter: saturate(1.5); }
+        70% { transform: scale(1.08) rotate(2deg); filter: saturate(1.8); }
+        100% { transform: scale(1) rotate(0deg); filter: saturate(1); }
+      }
+      .shooter-wrap.red-micro .fire-btn { filter: brightness(1.08); }
+      .shooter-wrap.red-hot .shooter-stage { border-color: #d96565; }
+      .shooter-wrap.red-rage .shooter-stage {
+        border-color: #f04b4b;
+        box-shadow: 0 0 0 2px rgba(240, 75, 75, 0.2) inset;
+      }
+      .shooter-wrap.red-rage .target-view {
+        animation: rageShake 220ms linear infinite;
+      }
+      .shooter-wrap.red-rage .crosshair {
+        border-color: #ffd2d2;
+      }
+      @keyframes rageShake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-1px); }
+        75% { transform: translateX(1px); }
+      }
+      .sound-toggle.on {
+        background: #dff5df;
+        border-color: #5d9c5d;
+      }
+      .crit-hint {
+        margin-top: 6px;
+        font-size: 0.86rem;
+        color: var(--muted-text);
+        font-weight: 700;
+      }
+
+      @media (min-width: 760px) {
+        .top-row { grid-template-columns: 1fr 1fr; }
+        .theme-row { grid-template-columns: repeat(4, 1fr); }
+        .grid2 { grid-template-columns: 1fr 1fr; }
+        .quick-fill, .template-fill { grid-template-columns: repeat(3, 1fr); }
+        .vent-grid { grid-template-columns: 1fr 1fr; }
+        .action-row { grid-template-columns: repeat(5, 1fr); }
+        .shooter-actions { grid-template-columns: repeat(5, 1fr); }
+        .fire-btn { grid-column: auto; }
       }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
   </head>
   <body>
-    <main class="app">
-      <div class="app-head">
-        <h1>✨ Dan Dan 日記整理器</h1>
-        <label>
-          <span style="font-size: 0.9rem; color: var(--muted); margin-right: 6px">主題</span>
-          <select id="themeSelect" class="theme-select">
-            <option value="pink">粉紅膠囊</option>
-            <option value="starry">星空色</option>
-            <option value="matcha">抹茶拿鐵</option>
-            <option value="sunset">夕陽橘</option>
-          </select>
-        </label>
-      </div>
-      <p class="subtitle">把今天的想法貼進來，一鍵整理成可愛好讀的小回報。</p>
-
-      <textarea id="diaryInput" placeholder="例：今天早上開會有點緊張，但下午完成了重要提案，心情變超好！"></textarea>
-      <div class="controls">
-        <button class="organize-btn" id="organizeBtn">整理日記</button>
-        <button class="clear-btn" id="clearBtn">清空全部</button>
-      </div>
-
-      <section class="grid">
-        <article class="card">
-          <div class="card-head">
-            <h2>今日日記</h2>
-            <button class="copy-btn" data-copy="fullDiary">一鍵複製</button>
+    <div class="wrap">
+      <section class="top">
+        <div class="card top-row">
+          <div class="date-box">
+            今天哪一天：
+            <input id="diaryDate" type="date" />
           </div>
-          <p class="output" id="fullDiary">（整理後會顯示在這裡）</p>
-        </article>
-
-        <article class="card">
-          <div class="card-head">
-            <h2>小蝦蝦版短版回報</h2>
-            <button class="copy-btn" data-copy="shortReport">一鍵複製</button>
-          </div>
-          <p class="output" id="shortReport">（整理後會顯示在這裡）</p>
-        </article>
-
-        <article class="card">
-          <div class="card-head">
-            <h2>今日金句</h2>
-            <button class="copy-btn" data-copy="quote">一鍵複製</button>
-          </div>
-          <p class="output" id="quote">（整理後會顯示在這裡）</p>
-        </article>
-
-        <article class="card">
-          <div class="card-head">
-            <h2>今日情緒關鍵字</h2>
-            <button class="copy-btn" data-copy="mood">一鍵複製</button>
-          </div>
-          <p class="output" id="mood">（整理後會顯示在這裡）</p>
-        </article>
+          <div class="status-box">草稿狀態：<span id="saveStatus">未儲存</span></div>
+        </div>
       </section>
 
-      <p class="hint">小提醒：這是前端離線小工具，內容不會被上傳。</p>
-    </main>
+      <main class="card" id="diaryCard">
+        <header class="head">
+          <div class="stickers" id="stickers">😡🔥💥</div>
+          <h1 id="mainTitle">本日紅溫紀錄 😡🔥</h1>
+          <p class="subtitle" id="subTitle">今天又被雷到了，先把火噴出來。</p>
+        </header>
+
+        <section class="theme-row" id="themeRow"></section>
+
+        <section class="section">
+          <h2>快速填入（一鍵發瘋）</h2>
+          <div class="quick-fill" id="quickFill"></div>
+        </section>
+
+        <section class="section">
+          <h2>主日記模板（只填主日記）</h2>
+          <div class="template-fill" id="templateFill"></div>
+        </section>
+
+        <section class="section">
+          <h2>排位降溫日記本體</h2>
+          <label>
+            先噴一句
+            <input id="ventLine" type="text" placeholder="你現在最想罵什麼" />
+          </label>
+          <label>
+            今天發生什麼事（主日記區）
+            <textarea id="mainDiary" placeholder="今天哪一波最讓你想砸手機"></textarea>
+          </label>
+
+          <div class="grid2">
+            <label>
+              我現在心情（可複選）
+              <div class="mood-wrap" id="moodWrap"></div>
+              <small id="selectedMood">目前：未選擇</small>
+            </label>
+            <label>
+              紅溫值
+              <div class="heat-box">
+                <input id="heatValue" type="range" min="0" max="100" step="25" value="50" />
+                <div class="heat-meta">
+                  <span id="heatNumber">50</span>
+                  <span id="heatLabel">想翻白眼</span>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div class="grid2">
+            <label>
+              最雷的是誰 / 什麼事
+              <input id="worstTarget" type="text" placeholder="今天最雷的是誰 / 哪件事" />
+            </label>
+            <label>
+              打完這篇後有比較冷靜嗎？
+              <select id="coolingLevel">
+                <option value="有">有，至少不想砸手機了</option>
+                <option value="一點點">一點點，還是有點火</option>
+                <option value="沒有">沒有，我還在噴發</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            給自己一句話
+            <input id="selfTalk" type="text" placeholder="今天辛苦了，先活下來，明天再戰" />
+          </label>
+        </section>
+
+        <section class="section">
+          <h2>發洩按鈕區（可連續噴射）</h2>
+          <div class="vent-grid" id="ventGrid"></div>
+          <div class="vent-total" id="ventTotal">今天噴了 0 次</div>
+          <div class="vent-level" id="ventLevel">還沒開噴，先深呼吸。</div>
+        </section>
+
+        <section class="section">
+          <h2>主要操作</h2>
+          <div class="action-row">
+            <button id="saveRecordBtn" class="action-btn primary" type="button">存成今天紀錄</button>
+            <button id="copyExportBtn" class="action-btn" type="button">匯出文字（複製）</button>
+            <button id="downloadExportBtn" class="action-btn" type="button">匯出文字（下載）</button>
+            <button id="shareShotBtn" class="action-btn" type="button">截圖分享</button>
+            <button id="openShooterBtn" class="action-btn" type="button">進入雷包射擊場</button>
+          </div>
+        </section>
+
+        <button class="clear-btn" id="clearTodayBtn" type="button">清空今天草稿</button>
+      </main>
+
+      <section class="card history-wrap">
+        <h2>歷史紀錄</h2>
+        <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr;">
+          <button id="clearHistoryBtn" type="button" class="danger">清空全部歷史</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+      </section>
+
+      <section class="card shooter-wrap hidden" id="shooterView">
+        <div class="shooter-head">
+          <h2 class="shooter-title">雷包射擊場</h2>
+          <button type="button" id="backDiaryBtn">← 返回日記</button>
+        </div>
+
+        <div class="shooter-stage">
+          <div class="burst-taunt-banner hidden" id="burstTauntBanner"></div>
+          <div class="target-view" id="targetView">
+            <img id="targetImage" alt="雷包標靶" />
+            <div class="target-fallback hidden" id="targetFallback">標靶載入失敗</div>
+            <div class="hit-layer" id="hitLayer"></div>
+            <div class="crosshair" id="targetCrosshair" aria-hidden="true"></div>
+          </div>
+
+          <div class="target-switch">
+            <button type="button" id="prevTargetBtn">上一個標靶</button>
+            <button type="button" id="nextTargetBtn">下一個標靶</button>
+          </div>
+
+          <div class="shooter-stats">
+            <div class="stat-chip">命中次數：<span id="hitCount">0</span></div>
+            <div class="stat-chip">本輪射擊：<span id="shotCount">0</span></div>
+            <div class="stat-chip">最高紀錄：<span id="bestShotCount">0</span></div>
+            <div class="stat-chip">目前標靶：<span id="currentTargetName">雷包01</span></div>
+            <div class="stat-chip">標靶耐久：<span id="targetHpText">0 / 0</span></div>
+            <div class="stat-chip">今日紅溫：<span id="redTempText">平靜</span></div>
+          </div>
+
+          <div class="shooter-actions">
+            <button type="button" class="fire-btn" id="fireBtn">發射</button>
+            <button type="button" id="resetRoundBtn">重置本輪</button>
+            <button type="button" id="randomTargetBtn">隨機雷包</button>
+            <button type="button" id="soundToggleBtn" class="sound-toggle">🔊 命中音效：開</button>
+            <button type="button" id="ammoModeBtn">彈種：一般</button>
+          </div>
+          <div class="crit-hint">爆擊特效機率：15%（出現「致命雷爆！💥🔥」）</div>
+
+          <details style="margin-top:10px;">
+            <summary style="cursor:pointer;font-weight:800;">匯入你的標靶原圖（單檔版）</summary>
+            <div style="display:grid;gap:8px;margin-top:8px;">
+              <label>target_01.png<input type="file" id="targetFile01" accept="image/png,image/*" /></label>
+              <label>target_02.png<input type="file" id="targetFile02" accept="image/png,image/*" /></label>
+              <label>target_03.png<input type="file" id="targetFile03" accept="image/png,image/*" /></label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <button type="button" id="applyTargetFilesBtn">套用匯入圖片</button>
+                <button type="button" id="resetTargetFilesBtn">還原預設標靶</button>
+              </div>
+            </div>
+          </details>
+
+          <div class="shooter-comment" id="shooterComment">今天很克制，先記你一功。</div>
+          <div class="shooter-status" id="shooterStatusText">紅溫狀態同步中...</div>
+        </div>
+      </section>
+    </div>
+
+    <div id="toast" class="toast">已存成今天紀錄</div>
+    <div id="copyModal" class="copy-modal" hidden>
+      <div class="copy-modal-card">
+        <strong>系統複製失敗，已開啟手動複製框</strong>
+        <p style="margin:6px 0 8px;font-size:0.9rem;opacity:0.85;">請長按/全選下面文字後複製。</p>
+        <textarea id="manualCopyText" readonly></textarea>
+        <div class="copy-modal-actions">
+          <button type="button" id="manualSelectBtn">全選文字</button>
+          <button type="button" id="manualCloseBtn">關閉</button>
+        </div>
+      </div>
+    </div>
 
     <script>
-      const input = document.getElementById("diaryInput");
-      const organizeBtn = document.getElementById("organizeBtn");
-      const clearBtn = document.getElementById("clearBtn");
-      const themeSelect = document.getElementById("themeSelect");
-      const outputs = {
-        fullDiary: document.getElementById("fullDiary"),
-        shortReport: document.getElementById("shortReport"),
-        quote: document.getElementById("quote"),
-        mood: document.getElementById("mood"),
-      };
-      const storageKey = "danDanDiaryData";
-      const themeStorageKey = "danDanDiaryTheme";
-      const defaultOutputs = {
-        fullDiary: "（整理後會顯示在這裡）",
-        shortReport: "（整理後會顯示在這裡）",
-        quote: "（整理後會顯示在這裡）",
-        mood: "（整理後會顯示在這裡）",
+      // =============================
+      // localStorage key 規劃
+      // draftsByDate: { "2026-04-20": {...草稿...}, ... }
+      // historyRecords: [{id, date, savedAt, ...}, ...]
+      // =============================
+      const STORAGE_KEYS = {
+        draftsByDate: "rankDiary_draftsByDate",
+        historyRecords: "rankDiary_historyRecords",
+        selectedDate: "rankDiary_selectedDate",
       };
 
-      const moodMap = [
-        { key: "開心", words: ["開心", "快樂", "興奮", "滿足"] },
-        { key: "緊張", words: ["緊張", "焦慮", "壓力", "不安"] },
-        { key: "感恩", words: ["感謝", "感恩", "幸運", "珍惜"] },
-        { key: "疲憊", words: ["累", "疲憊", "睏", "沒力"] },
-        { key: "平靜", words: ["平靜", "放鬆", "穩定", "安心"] },
-      ];
+      const HEAT_LABELS = { 0: "還行", 25: "有點煩", 50: "想翻白眼", 75: "想卸載", 100: "我現在就是💩噴射器" };
+      const VENT_LABELS = {
+        poop: "💩 大便噴射",
+        eyeRoll: "🙄💅 白眼噴射",
+      };
 
       const themes = {
-        pink: {
-          bg: "#fff8fc",
-          bgAccent: "#ffeaf5",
-          card: "#ffffff",
-          cardSoft: "#fffcfe",
-          primary: "#ff7eb6",
-          primaryDark: "#ff5da6",
-          text: "#4b3e4d",
-          muted: "#8f7b8f",
-          line: "#f7d5e7",
-          shadow: "rgba(255, 126, 182, 0.14)",
-          btnSoftBg: "#ffe2f0",
-          btnSoftText: "#9e3e71",
-          btnSoftHover: "#ffd0e6",
+        rage: {
+          name: "被雷到紅溫了",
+          title: "本日紅溫紀錄 😡🔥",
+          subtitle: "今天又被雷到了，先把火噴出來。",
+          stickers: "😡🔥💥",
+          colors: ["#ffe1d0", "#ff9f78", "#fff7f2", "#542b2b", "#ef8f6a", "#ff5f46", "#ff936c", "#ffd5c2"],
+          placeholders: ["你現在最想罵什麼", "今天哪一波最讓你想砸手機", "今天最雷的是誰 / 哪件事"],
         },
-        starry: {
-          bg: "#0f1226",
-          bgAccent: "#1a2148",
-          card: "#1b2345",
-          cardSoft: "#212b52",
-          primary: "#7fa8ff",
-          primaryDark: "#a6beff",
-          text: "#e5ebff",
-          muted: "#b6c0eb",
-          line: "#3b467e",
-          shadow: "rgba(8, 12, 30, 0.45)",
-          btnSoftBg: "#2f3d72",
-          btnSoftText: "#d8e0ff",
-          btnSoftHover: "#3b4a84",
+        love: {
+          name: "想卸載，但老公還在",
+          title: "退坑失敗日記 😭💕",
+          subtitle: "今天本來想卸載，想到夢角又忍住了。",
+          stickers: "😭💔💕",
+          colors: ["#ffe8f5", "#ffb3d9", "#fff8fc", "#653351", "#ef87bc", "#f05aa6", "#ff95c9", "#ffd8ec"],
+          placeholders: ["今天又是因為誰沒辦法退坑", "今天發生什麼讓你一邊崩潰一邊留在坑裡", "今天最讓你心碎的是什麼"],
         },
-        matcha: {
-          bg: "#f5f7ed",
-          bgAccent: "#e5efdb",
-          card: "#ffffff",
-          cardSoft: "#f8fbf2",
-          primary: "#7da869",
-          primaryDark: "#5f8550",
-          text: "#394635",
-          muted: "#6f7d67",
-          line: "#d6e3c6",
-          shadow: "rgba(94, 127, 85, 0.14)",
-          btnSoftBg: "#e8f1da",
-          btnSoftText: "#4f6647",
-          btnSoftHover: "#dce9c9",
+        shame: {
+          name: "我今天拉了一坨",
+          title: "今日社死懺悔錄 🥹💦",
+          subtitle: "打得爛到怕被匿名公審，先寫下來。",
+          stickers: "🥹💦🫠",
+          colors: ["#dde8ff", "#a2b7df", "#f6f9ff", "#304164", "#819cc9", "#617fc9", "#89a5e1", "#d8e4ff"],
+          placeholders: ["你現在最想替自己找什麼藉口", "今天哪一波最值得社死", "今天你最怕別人拿哪件事公審你"],
         },
-        sunset: {
-          bg: "#fff4e9",
-          bgAccent: "#ffe2cb",
-          card: "#ffffff",
-          cardSoft: "#fffaf4",
-          primary: "#f08a4b",
-          primaryDark: "#d86d2f",
-          text: "#573f33",
-          muted: "#8c6b5a",
-          line: "#f3ceb3",
-          shadow: "rgba(200, 116, 56, 0.18)",
-          btnSoftBg: "#ffe4cf",
-          btnSoftText: "#8a512f",
-          btnSoftHover: "#ffd4b3",
+        boss: {
+          name: "老子才是老大",
+          title: "今天我最大 👑",
+          subtitle: "不爽被問、不爽被催、不爽被情勒。",
+          stickers: "👑🖤🥀",
+          colors: ["#181818", "#311111", "#151515", "#b7a077", "#5f4822", "#9b7a35", "#6f2424", "#262220"],
+          textLayers: { title: "#d2bc88", body: "#b7a077", muted: "#9f9275", highlight: "#c6af7f" },
+          placeholders: ["先一句：今天誰在那邊問問問", "把你的不爽與邊界一次講完", "今天最不爽被催的事"],
         },
       };
 
-      function applyTheme(themeName) {
-        const theme = themes[themeName] || themes.pink;
-        const root = document.documentElement;
-        root.style.setProperty("--bg", theme.bg);
-        root.style.setProperty("--bg-accent", theme.bgAccent);
-        root.style.setProperty("--card", theme.card);
-        root.style.setProperty("--card-soft", theme.cardSoft);
-        root.style.setProperty("--primary", theme.primary);
-        root.style.setProperty("--primary-dark", theme.primaryDark);
-        root.style.setProperty("--text", theme.text);
-        root.style.setProperty("--muted", theme.muted);
-        root.style.setProperty("--line", theme.line);
-        root.style.setProperty("--shadow", theme.shadow);
-        root.style.setProperty("--btn-soft-bg", theme.btnSoftBg);
-        root.style.setProperty("--btn-soft-text", theme.btnSoftText);
-        root.style.setProperty("--btn-soft-hover", theme.btnSoftHover);
+      const moods = ["崩潰", "爆氣", "委屈", "麻了", "勉強活著", "老大模式"];
+
+      const quickFillItems = [
+        { label: "今天被雷到爆氣", apply: (s) => ({ ...s, theme: "rage", moods: addMood(s.moods, "爆氣"), worstTarget: s.worstTarget || "神奇路人隊友", mainDiary: s.mainDiary || "今天又被雷到，心態直接裂開。" }) },
+        { label: "今天想卸載第五人格", apply: (s) => ({ ...s, theme: "rage", heatValue: 75, selfTalk: "先別卸載，先去喝水。" }) },
+        { label: "今天是夢角把我留住", apply: (s) => ({ ...s, theme: "love", moods: addMood(s.moods, "委屈"), selfTalk: "算了，我老公還在，我再忍一下。" }) },
+        { label: "今天打得像一坨怕被匿名公審", apply: (s) => ({ ...s, theme: "shame", moods: addMood(s.moods, "崩潰"), mainDiary: s.mainDiary || "我今天真的打得很可疑，先懺悔。" }) },
+        { label: "今天只想翻白眼", apply: (s) => ({ ...s, heatValue: 50, moods: addMood(s.moods, "麻了"), ventLine: s.ventLine || "🙄 我已經懶得生氣了" }) },
+        { label: "老子才是老大", apply: (s) => ({ ...s, theme: "boss", moods: addMood(s.moods, "老大模式"), selfTalk: "今天我不陪你演，我最大。" }) },
+      ];
+
+      const diaryTemplates = [
+        {
+          label: "被雷到爆氣模板",
+          content: "今天又被雷到紅溫，整個人快爆開。明明可以好好打，結果硬是被搞到心態炸裂。我現在真的很想噴人。",
+        },
+        {
+          label: "想卸載第五人格模板",
+          content: "今天真的玩到很想卸載第五人格，但想到我老公（夢角）還在裡面，我又卸不下去。愛與痛苦同時存在。",
+        },
+        {
+          label: "怕被匿名公審模板",
+          content: "我今天打得像一坨，現在很怕被匿名公審。明知道大家不一定會記得，但我現在就是很介意，很想找洞鑽。",
+        },
+        {
+          label: "老子才是老大模板",
+          content:
+            "...在那問問問，我們都用自己的面具人格，相處不就完了嗎？就這麼想要我的秘密，你們是守得住秘密的人嗎？一群『人』。我也還沒發，發完就徹底算人消失了。別說我發得慢，免費的東西別催，看我心情，懂嗎？老子才是老大。",
+        },
+      ];
+
+      const ventConfigs = [
+        { key: "poop", emoji: "💩", label: "大便噴射", burst: ["💩"], feedbacks: ["已成功排出情緒廢物", "今天也有努力噴射", "你已經不是普通噴射器了"] },
+        { key: "eyeRoll", emoji: "🙄💅", label: "白眼噴射", burst: ["🙄", "💅"], feedbacks: ["白眼值穩定上升中", "你這眼神很有內容", "今天不解釋，直接翻白眼"] },
+      ];
+
+      /*
+        ===== 射擊素材設定區（單檔版）=====
+        1) 標靶改成 data URL 內嵌，content:// 也能用
+        2) 新增 target_04、target_05：往 targets 陣列 push 物件，並加 src(data URL)
+        3) 圖片尺寸安全值：改 TARGET_SCALE（避免素材尺寸差太多爆版）
+      */
+      const TARGET_SCALE = 0.9;
+      function svgToDataUrl(svg) {
+        return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
       }
+      // 若你之後有真正 PNG base64，可直接把 src 換成 data:image/png;base64,xxxx
+      const EMBEDDED_TARGET_IMAGES = {
+        target_01: svgToDataUrl(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 900'>
+          <rect width='900' height='900' fill='#000'/>
+          <circle cx='450' cy='430' r='220' fill='#2b3759'/>
+          <circle cx='450' cy='430' r='165' fill='#8a3b67'/>
+          <circle cx='450' cy='430' r='100' fill='#f5d082'/>
+          <text x='450' y='760' text-anchor='middle' fill='#f7e8d0' font-size='52' font-family='sans-serif'>雷包 01</text>
+        </svg>`),
+        target_02: svgToDataUrl(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 900'>
+          <rect width='900' height='900' fill='#050505'/>
+          <rect x='180' y='180' width='540' height='540' rx='34' fill='#8d6fd1'/>
+          <rect x='230' y='230' width='440' height='440' rx='20' fill='#3a275f'/>
+          <text x='450' y='430' text-anchor='middle' fill='#fff1d4' font-size='64' font-family='sans-serif'>雷包 02</text>
+          <text x='450' y='510' text-anchor='middle' fill='#fff1d4' font-size='38' font-family='sans-serif'>選什麼救人位</text>
+        </svg>`),
+        target_03: svgToDataUrl(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 900'>
+          <rect width='900' height='900' fill='#000'/>
+          <path d='M160 620c90-170 170-200 280-230 130-35 220 30 300 230' fill='#9cc3d8'/>
+          <rect x='260' y='255' width='380' height='230' rx='26' fill='#f7c18f'/>
+          <rect x='290' y='300' width='320' height='72' rx='15' fill='#101010'/>
+          <text x='450' y='350' text-anchor='middle' fill='#f8efe4' font-size='46' font-family='sans-serif'>退出了聊天</text>
+          <text x='450' y='760' text-anchor='middle' fill='#f7e8d0' font-size='52' font-family='sans-serif'>雷包 03</text>
+        </svg>`),
+      };
+      const targets = [
+        { id: "target_01", name: "雷包01", image: "target_01.png" },
+        { id: "target_02", name: "雷包02", image: "target_02.png" },
+        { id: "target_03", name: "雷包03", image: "target_03.png" },
+      ];
 
-      function loadTheme() {
-        const savedTheme = localStorage.getItem(themeStorageKey);
-        const themeName = themes[savedTheme] ? savedTheme : "pink";
-        themeSelect.value = themeName;
-        applyTheme(themeName);
-      }
+      // ===== 可調設定：標靶耐久 =====
+      const TARGET_CONFIG = {
+        target_01: { hp: 8 },
+        target_02: { hp: 10 },
+        target_03: { hp: 12 },
+      };
 
-      function splitSentences(text) {
-        return text
-          .split(/[。！？!?.\n]/)
-          .map((s) => s.trim())
-          .filter(Boolean);
-      }
+      // ===== 可調設定：每個標靶專屬吐槽池 =====
+      const TARGET_TAUNTS = {
+        target_01: [
+          "打我幹嘛，我又沒說錯。",
+          "你氣成這樣，代表我講中了吧。",
+          "哇，破防仔來囉。",
+          "你先冷靜，我先閃。",
+          "好啦好啦，算你贏。",
+        ],
+        target_02: [
+          "我先退群了你們聊。",
+          "欸不是，我剛剛爆ping。",
+          "這波不算，我沒準備好。",
+          "先走一步，下次再雷。",
+          "我只是暫時離開戰場。",
+        ],
+        target_03: [
+          "我都這麼努力了你還打我。",
+          "所以現在都怪我就對了。",
+          "你們是不是都在針對我。",
+          "我一個人扛不住欸。",
+          "好啦，都是我爛，可以了吧。",
+        ],
+      };
 
-      function getMoodKeywords(text) {
-        const found = moodMap
-          .filter((item) => item.words.some((word) => text.includes(word)))
-          .map((item) => item.key);
+      // ===== 可調設定：紅溫規則 =====
+      const RED_TEMP_CONFIG = {
+        defaultValue: 20,
+        negativeMoods: ["生氣", "煩躁", "委屈", "崩潰", "焦慮", "爆氣", "麻了"],
+        diaryKeywords: ["雷包", "煩", "炸", "崩", "氣死", "吐血", "北爛", "爛", "火大"],
+      };
 
-        if (found.length) return found.join("、");
-        return "平穩、努力、前進";
-      }
+      // DOM
+      const diaryDateEl = document.getElementById("diaryDate");
+      const saveStatusEl = document.getElementById("saveStatus");
+      const mainTitleEl = document.getElementById("mainTitle");
+      const subTitleEl = document.getElementById("subTitle");
+      const stickersEl = document.getElementById("stickers");
+      const themeRowEl = document.getElementById("themeRow");
+      const quickFillEl = document.getElementById("quickFill");
+      const templateFillEl = document.getElementById("templateFill");
+      const moodWrapEl = document.getElementById("moodWrap");
+      const selectedMoodEl = document.getElementById("selectedMood");
+      const ventLineEl = document.getElementById("ventLine");
+      const mainDiaryEl = document.getElementById("mainDiary");
+      const heatValueEl = document.getElementById("heatValue");
+      const heatNumberEl = document.getElementById("heatNumber");
+      const heatLabelEl = document.getElementById("heatLabel");
+      const worstTargetEl = document.getElementById("worstTarget");
+      const coolingLevelEl = document.getElementById("coolingLevel");
+      const selfTalkEl = document.getElementById("selfTalk");
+      const ventGridEl = document.getElementById("ventGrid");
+      const ventTotalEl = document.getElementById("ventTotal");
+      const ventLevelEl = document.getElementById("ventLevel");
+      const saveRecordBtnEl = document.getElementById("saveRecordBtn");
+      const copyExportBtnEl = document.getElementById("copyExportBtn");
+      const downloadExportBtnEl = document.getElementById("downloadExportBtn");
+      const shareShotBtnEl = document.getElementById("shareShotBtn");
+      const clearTodayBtnEl = document.getElementById("clearTodayBtn");
+      const clearHistoryBtnEl = document.getElementById("clearHistoryBtn");
+      const historyListEl = document.getElementById("historyList");
+      const toastEl = document.getElementById("toast");
+      const diaryCardEl = document.getElementById("diaryCard");
+      const copyModalEl = document.getElementById("copyModal");
+      const manualCopyTextEl = document.getElementById("manualCopyText");
+      const manualSelectBtnEl = document.getElementById("manualSelectBtn");
+      const manualCloseBtnEl = document.getElementById("manualCloseBtn");
+      const openShooterBtnEl = document.getElementById("openShooterBtn");
+      const shooterViewEl = document.getElementById("shooterView");
+      const backDiaryBtnEl = document.getElementById("backDiaryBtn");
+      const targetViewEl = document.getElementById("targetView");
+      const targetImageEl = document.getElementById("targetImage");
+      const targetFallbackEl = document.getElementById("targetFallback");
+      const burstTauntBannerEl = document.getElementById("burstTauntBanner");
+      const hitLayerEl = document.getElementById("hitLayer");
+      const targetCrosshairEl = document.getElementById("targetCrosshair");
+      const prevTargetBtnEl = document.getElementById("prevTargetBtn");
+      const nextTargetBtnEl = document.getElementById("nextTargetBtn");
+      const randomTargetBtnEl = document.getElementById("randomTargetBtn");
+      const fireBtnEl = document.getElementById("fireBtn");
+      const resetRoundBtnEl = document.getElementById("resetRoundBtn");
+      const hitCountEl = document.getElementById("hitCount");
+      const shotCountEl = document.getElementById("shotCount");
+      const bestShotCountEl = document.getElementById("bestShotCount");
+      const shooterCommentEl = document.getElementById("shooterComment");
+      const currentTargetNameEl = document.getElementById("currentTargetName");
+      const targetHpTextEl = document.getElementById("targetHpText");
+      const redTempTextEl = document.getElementById("redTempText");
+      const shooterStatusTextEl = document.getElementById("shooterStatusText");
+      const targetFile01El = document.getElementById("targetFile01");
+      const targetFile02El = document.getElementById("targetFile02");
+      const targetFile03El = document.getElementById("targetFile03");
+      const applyTargetFilesBtnEl = document.getElementById("applyTargetFilesBtn");
+      const resetTargetFilesBtnEl = document.getElementById("resetTargetFilesBtn");
+      const soundToggleBtnEl = document.getElementById("soundToggleBtn");
+      const ammoModeBtnEl = document.getElementById("ammoModeBtn");
 
-      function organizeDiary(rawText) {
-        const text = rawText.trim();
-        if (!text) {
-          return {
-            fullDiary: "請先輸入今天的日記內容喔～",
-            shortReport: "尚未有內容可整理。",
-            quote: "今天也值得一句溫柔的鼓勵。",
-            mood: "待補充",
-          };
-        }
+      let toastTimer = null;
+      let shooterAutoTimer = null;
+      let shooterAutoInterval = null;
+      let burstRespawnTimer = null;
+      let burstTauntTimer = null;
+      let shooterAmmoMode = "normal";
+      let lastAimPoint = { x: 50, y: 50 };
+      const SHOOTER_STORAGE_KEY = "rankDiary_shooter_data";
+      const SHOOTER_TARGETS_STORAGE_KEY = "rankDiary_shooter_target_images";
+      const SHOOTER_SOUND_STORAGE_KEY = "rankDiary_shooter_sound";
+      const CRIT_CHANCE = 0.15;
+      let shooterSoundEnabled = true;
+      let shooterState = {
+        currentTargetIndex: 0,
+        shots: 0,
+        hits: 0,
+        bestShots: 0,
+      };
+      let targetDurability = {};
+      let currentRedTemp = RED_TEMP_CONFIG.defaultValue;
 
-        const sentences = splitSentences(text);
-        const opening = sentences[0] || "今天努力地過了一天";
-        const ending = sentences[sentences.length - 1] || opening;
+      // 全域資料
+      let draftsByDate = readJSON(STORAGE_KEYS.draftsByDate, {});
+      let historyRecords = readJSON(STORAGE_KEYS.historyRecords, []);
+      let currentDate = localStorage.getItem(STORAGE_KEYS.selectedDate) || getTodayDate();
+      let state = loadDraft(currentDate);
 
-        const shortReport = `今天重點：${opening}。\n目前進度：${ending}。\n整體來說，有在穩穩前進！`;
-        const quote = `「${ending.replace(/[，,]$/, "")}，我做得到。」`;
-
-        return {
-          fullDiary: text,
-          shortReport,
-          quote,
-          mood: getMoodKeywords(text),
-        };
-      }
-
-      function applyOutputs(data) {
-        Object.entries(outputs).forEach(([key, el]) => {
-          el.textContent = data[key] || defaultOutputs[key];
-        });
-      }
-
-      function saveData() {
-        const payload = {
-          input: input.value,
-          outputs: Object.fromEntries(
-            Object.entries(outputs).map(([key, el]) => [key, el.textContent])
-          ),
-        };
-        localStorage.setItem(storageKey, JSON.stringify(payload));
-      }
-
-      function loadData() {
-        const stored = localStorage.getItem(storageKey);
-        if (!stored) return;
-
+      function readJSON(key, fallback) {
         try {
-          const data = JSON.parse(stored);
-          input.value = data.input || "";
-          applyOutputs(data.outputs || {});
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
         } catch {
-          localStorage.removeItem(storageKey);
+          return fallback;
         }
       }
 
-      organizeBtn.addEventListener("click", () => {
-        const result = organizeDiary(input.value);
-        applyOutputs(result);
-        saveData();
-      });
+      function writeJSON(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
 
-      input.addEventListener("input", saveData);
+      function getTodayDate() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
 
-      clearBtn.addEventListener("click", () => {
-        input.value = "";
-        applyOutputs(defaultOutputs);
-        localStorage.removeItem(storageKey);
-      });
+      function formatDate(dateStr) {
+        return dateStr.replace(/-/g, "/");
+      }
 
-      themeSelect.addEventListener("change", () => {
-        const selected = themeSelect.value;
-        applyTheme(selected);
-        localStorage.setItem(themeStorageKey, selected);
-      });
+      function nowTimeStamp() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        const h = String(d.getHours()).padStart(2, "0");
+        const min = String(d.getMinutes()).padStart(2, "0");
+        const s = String(d.getSeconds()).padStart(2, "0");
+        return `${y}-${m}-${day} ${h}:${min}:${s}`;
+      }
 
-      document.querySelectorAll(".copy-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const key = btn.dataset.copy;
-          const text = outputs[key].textContent;
-          try {
-            await navigator.clipboard.writeText(text);
-            const oldText = btn.textContent;
-            btn.textContent = "已複製！";
-            setTimeout(() => {
-              btn.textContent = oldText;
-            }, 1000);
-          } catch {
-            alert("複製失敗，請手動複製文字。");
+      function addMood(list, mood) {
+        return Array.from(new Set([...(list || []), mood]));
+      }
+
+      function getTargetMaxHp(targetId) {
+        return TARGET_CONFIG[targetId]?.hp || 10;
+      }
+
+      function resetTargetDurability(targetId) {
+        targetDurability[targetId] = getTargetMaxHp(targetId);
+      }
+
+      function ensureAllTargetDurability() {
+        targets.forEach((t) => {
+          if (typeof targetDurability[t.id] !== "number") {
+            resetTargetDurability(t.id);
           }
         });
+      }
+
+      function getDefaultDraft() {
+        const counts = { poop: 0, eyeRoll: 0 };
+        return {
+          theme: "rage",
+          ventLine: "",
+          mainDiary: "",
+          lastQuickTemplate: "",
+          lastMainTemplate: "",
+          moods: [],
+          heatValue: 50,
+          worstTarget: "",
+          coolingLevel: "有",
+          selfTalk: "",
+          ventCounts: counts,
+        };
+      }
+
+      function loadDraft(date) {
+        const draft = draftsByDate[date];
+        if (!draft) {
+          setDraftStatus(`已載入 ${formatDate(date)} 的空白草稿`);
+          return getDefaultDraft();
+        }
+        const merged = { ...getDefaultDraft(), ...draft };
+        const oldCounts = draft.ventCounts || {};
+        merged.ventCounts = {
+          ...getDefaultDraft().ventCounts,
+          ...oldCounts,
+          eyeRoll: oldCounts.eyeRoll ?? oldCounts.eyeroll ?? 0, // 向後相容舊 key
+        };
+        merged.moods = Array.isArray(draft.moods) ? draft.moods : draft.mood ? [draft.mood] : [];
+        setDraftStatus(`已載入 ${formatDate(date)} 的草稿`);
+        return merged;
+      }
+
+      function saveDraft(message = "已自動儲存草稿") {
+        draftsByDate[currentDate] = { ...state };
+        writeJSON(STORAGE_KEYS.draftsByDate, draftsByDate);
+        localStorage.setItem(STORAGE_KEYS.selectedDate, currentDate);
+        setDraftStatus(message);
+      }
+
+      function setDraftStatus(text) {
+        saveStatusEl.textContent = text;
+      }
+
+      function showToast(text) {
+        toastEl.textContent = text;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2000);
+      }
+
+      function applyTheme(themeKey) {
+        const theme = themes[themeKey] || themes.rage;
+        const [bg1, bg2, card, text, line, accent, accent2, chip] = theme.colors;
+        const root = document.documentElement;
+        root.style.setProperty("--bg1", bg1);
+        root.style.setProperty("--bg2", bg2);
+        root.style.setProperty("--card", card);
+        root.style.setProperty("--text", text);
+        root.style.setProperty("--line", line);
+        root.style.setProperty("--accent", accent);
+        root.style.setProperty("--accent2", accent2);
+        root.style.setProperty("--chip", chip);
+        root.style.setProperty("--title-color", theme.textLayers?.title || text);
+        root.style.setProperty("--muted-text", theme.textLayers?.muted || text);
+        root.style.setProperty("--highlight-text", theme.textLayers?.highlight || text);
+        mainTitleEl.textContent = theme.title;
+        subTitleEl.textContent = theme.subtitle;
+        stickersEl.textContent = theme.stickers;
+        ventLineEl.placeholder = theme.placeholders[0];
+        mainDiaryEl.placeholder = theme.placeholders[1];
+        worstTargetEl.placeholder = theme.placeholders[2];
+      }
+
+      function renderThemeButtons() {
+        themeRowEl.innerHTML = "";
+        Object.entries(themes).forEach(([key, theme]) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `theme-btn ${state.theme === key ? "active" : ""}`;
+          btn.textContent = theme.name;
+          btn.addEventListener("click", () => {
+            state.theme = key;
+            applyTheme(state.theme);
+            renderThemeButtons();
+            saveDraft();
+          });
+          themeRowEl.appendChild(btn);
+        });
+      }
+
+      function renderQuickFill() {
+        quickFillEl.innerHTML = "";
+        quickFillItems.forEach((item) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "quick-btn";
+          btn.textContent = item.label;
+          btn.addEventListener("click", () => {
+            state = item.apply(state);
+            state.lastQuickTemplate = item.label;
+            renderAll();
+            saveDraft(`已套用「${item.label}」草稿`);
+            showToast(`已套用：${item.label}`);
+          });
+          quickFillEl.appendChild(btn);
+        });
+      }
+
+      function renderTemplates() {
+        templateFillEl.innerHTML = "";
+        diaryTemplates.forEach((tpl) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "template-btn";
+          btn.textContent = tpl.label;
+          btn.addEventListener("click", () => {
+            if (mainDiaryEl.value.trim()) {
+              const ok = window.confirm("主日記目前有內容，確定覆蓋嗎？");
+              if (!ok) return;
+            }
+            state.mainDiary = tpl.content;
+            mainDiaryEl.value = tpl.content;
+            state.lastMainTemplate = tpl.label;
+            saveDraft(`已套用模板：${tpl.label}`);
+            showToast("模板已帶入主日記");
+          });
+          templateFillEl.appendChild(btn);
+        });
+      }
+
+      function renderMoodButtons() {
+        moodWrapEl.innerHTML = "";
+        moods.forEach((m) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `mood-btn ${state.moods.includes(m) ? "active" : ""}`;
+          btn.textContent = m;
+          btn.addEventListener("click", () => {
+            if (state.moods.includes(m)) {
+              state.moods = state.moods.filter((v) => v !== m);
+            } else {
+              state.moods.push(m);
+            }
+            renderMoodButtons();
+            saveDraft();
+          });
+          moodWrapEl.appendChild(btn);
+        });
+        selectedMoodEl.textContent = `目前：${state.moods.length ? state.moods.join("、") : "未選擇"}`;
+      }
+
+      function renderHeat() {
+        heatValueEl.value = String(state.heatValue);
+        heatNumberEl.textContent = `${state.heatValue}`;
+        heatLabelEl.textContent = HEAT_LABELS[state.heatValue] || "微妙";
+        heatLabelEl.style.color = state.heatValue >= 75 ? "#d33131" : state.heatValue <= 25 ? "#3f7fc0" : "var(--text)";
+      }
+
+      // 以「按鈕容器」為基準產生局部噴射，避免噴到畫面角落
+      function emitLocalSpray(zoneEl, emojiList, origin) {
+        const rect = zoneEl.getBoundingClientRect();
+        const burstCount = 3 + Math.floor(Math.random() * 4); // 3~6
+        const baseX = origin?.x ?? rect.width / 2;
+        const baseY = origin?.y ?? rect.height * 0.62;
+
+        for (let i = 0; i < burstCount; i++) {
+          const node = document.createElement("span");
+          node.className = "spray-emoji";
+          node.textContent = emojiList[Math.floor(Math.random() * emojiList.length)];
+          const spreadX = -22 + Math.random() * 44; // 手機上保持按鈕附近
+          const spreadY = -8 + Math.random() * 22;
+          const dx = -70 + Math.random() * 140;
+          const dy = -110 - Math.random() * 90;
+          const rot = -90 + Math.random() * 180;
+          const lifeMs = 700 + Math.floor(Math.random() * 500);
+          const scale = (0.9 + Math.random() * 0.35).toFixed(2);
+
+          node.style.setProperty("--x", `${baseX + spreadX}px`);
+          node.style.setProperty("--y", `${baseY + spreadY}px`);
+          node.style.setProperty("--dx", `${dx}px`);
+          node.style.setProperty("--dy", `${dy}px`);
+          node.style.setProperty("--rot", `${rot}deg`);
+          node.style.setProperty("--life", `${lifeMs}ms`);
+          node.style.transform = `scale(${scale})`;
+
+          zoneEl.appendChild(node);
+          node.addEventListener("animationend", () => node.remove(), { once: true });
+        }
+      }
+
+      function ventLevelText(total) {
+        if (total <= 0) return "還沒開噴，先深呼吸。";
+        if (total <= 5) return "普通發洩中：還算克制（大概）。";
+        if (total <= 15) return "進入噴射模式：手感開始來了。";
+        if (total <= 30) return "今天火力很足：你真的很努力在降溫。";
+        return "今日紅溫戰神：噴射器已進入神話級。";
+      }
+
+      function renderVentModule() {
+        ventGridEl.innerHTML = "";
+        ventConfigs.forEach((cfg) => {
+          const wrap = document.createElement("div");
+          wrap.className = "vent-item";
+          const btn = document.createElement("button");
+          const meta = document.createElement("div");
+          const sprayZone = document.createElement("div");
+          const count = Number(state.ventCounts[cfg.key] || 0);
+          btn.type = "button";
+          btn.className = "vent-btn";
+          btn.textContent = VENT_LABELS[cfg.key] || `${cfg.emoji} ${cfg.label}`;
+          meta.className = "vent-meta";
+          meta.textContent = `今日 ${cfg.label}：${count} 次`;
+
+          sprayZone.className = "vent-spray-zone";
+          sprayZone.setAttribute("aria-hidden", "true");
+
+          const applySingleSpray = (evt) => {
+            state.ventCounts[cfg.key] = (state.ventCounts[cfg.key] || 0) + 1;
+            const newCount = state.ventCounts[cfg.key];
+            const randomTxt = cfg.feedbacks[Math.floor(Math.random() * cfg.feedbacks.length)];
+            meta.textContent = `今日 ${cfg.label}：${newCount} 次｜${randomTxt}`;
+            const rect = sprayZone.getBoundingClientRect();
+            const hasPoint = evt && typeof evt.clientX === "number" && typeof evt.clientY === "number";
+            const origin = hasPoint
+              ? {
+                  x: Math.min(Math.max(20, evt.clientX - rect.left), rect.width - 20),
+                  y: Math.min(Math.max(20, evt.clientY - rect.top), rect.height - 20),
+                }
+              : { x: rect.width / 2, y: rect.height * 0.62 };
+            emitLocalSpray(sprayZone, cfg.burst, origin);
+            btn.classList.remove("press-pop");
+            void btn.offsetWidth;
+            btn.classList.add("press-pop");
+            setTimeout(() => btn.classList.remove("press-pop"), 130);
+            updateVentTotal();
+            saveDraft();
+          };
+
+          // Pointer 事件：短按 1 次；長壓 250ms 後每 100ms 連續噴射
+          let holdDelayTimer = null;
+          let holdInterval = null;
+          let isHolding = false;
+          let longPressMode = false;
+
+          const clearHoldTimers = () => {
+            if (holdDelayTimer) clearTimeout(holdDelayTimer);
+            if (holdInterval) clearInterval(holdInterval);
+            holdDelayTimer = null;
+            holdInterval = null;
+            isHolding = false;
+          };
+
+          btn.addEventListener("pointerdown", (evt) => {
+            if (evt.pointerType === "mouse" && evt.button !== 0) return;
+            evt.preventDefault();
+            isHolding = true;
+            longPressMode = false;
+            holdDelayTimer = setTimeout(() => {
+              if (!isHolding) return;
+              longPressMode = true;
+              applySingleSpray();
+              holdInterval = setInterval(() => applySingleSpray(), 100);
+            }, 250);
+          });
+
+          const stopHold = (evt) => {
+            if (!isHolding) return;
+            const wasLong = longPressMode;
+            clearHoldTimers();
+            // 未進入長壓才算短按單次，避免重複計數
+            if (!wasLong) applySingleSpray(evt);
+          };
+
+          btn.addEventListener("pointerup", stopHold);
+          btn.addEventListener("pointercancel", stopHold);
+          btn.addEventListener("pointerleave", stopHold);
+          btn.addEventListener("lostpointercapture", stopHold);
+
+          // 某些行動瀏覽器保底事件
+          btn.addEventListener("touchend", stopHold, { passive: true });
+          btn.addEventListener("touchcancel", stopHold, { passive: true });
+
+          wrap.appendChild(sprayZone);
+          wrap.appendChild(btn);
+          wrap.appendChild(meta);
+          ventGridEl.appendChild(wrap);
+        });
+        updateVentTotal();
+      }
+
+      function updateVentTotal() {
+        const total = Object.values(state.ventCounts).reduce((sum, n) => sum + Number(n || 0), 0);
+        ventTotalEl.textContent = `今天噴了 ${total} 次（💩 ${state.ventCounts.poop || 0}｜🙄💅 ${state.ventCounts.eyeRoll || 0}）`;
+        ventLevelEl.textContent = ventLevelText(total);
+      }
+
+      function renderFormFields() {
+        ventLineEl.value = state.ventLine;
+        mainDiaryEl.value = state.mainDiary;
+        worstTargetEl.value = state.worstTarget;
+        coolingLevelEl.value = state.coolingLevel;
+        selfTalkEl.value = state.selfTalk;
+      }
+
+      function buildRecordFromState() {
+        return {
+          id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          date: currentDate,
+          savedAt: nowTimeStamp(),
+          theme: themes[state.theme]?.name || state.theme,
+          themeKey: state.theme,
+          rageValue: state.heatValue,
+          totalSprays: (state.ventCounts.poop || 0) + (state.ventCounts.eyeRoll || 0),
+          quickTemplate: state.lastQuickTemplate || "",
+          mainTemplate: state.lastMainTemplate || "",
+          opener: state.ventLine,
+          diary: state.mainDiary,
+          moods: [...state.moods],
+          poopCount: state.ventCounts.poop || 0,
+          eyeRollCount: state.ventCounts.eyeRoll || 0,
+          worstTarget: state.worstTarget,
+          coolingLevel: state.coolingLevel,
+          closing: state.selfTalk,
+        };
+      }
+
+      function renderHistory() {
+        historyListEl.innerHTML = "";
+        const sorted = [...historyRecords].sort((a, b) => (a.savedAt < b.savedAt ? 1 : -1));
+
+        if (!sorted.length) {
+          historyListEl.innerHTML = '<div class="empty-tip">目前還沒有正式存檔。先按「存成今天紀錄」留下一筆吧！</div>';
+          return;
+        }
+
+        sorted.forEach((record) => {
+          const item = document.createElement("article");
+          item.className = "history-item";
+          const diaryText = record.diary || "";
+          const summary = (diaryText || "（無內容）").slice(0, 50);
+          const totalSprays = record.totalSprays ?? ((record.poopCount || 0) + (record.eyeRollCount || 0));
+          const head = document.createElement("div");
+          head.className = "history-head";
+          const dateSpan = document.createElement("span");
+          dateSpan.textContent = formatDate(record.date);
+          const timeSpan = document.createElement("span");
+          timeSpan.textContent = (record.savedAt || "").split(" ")[1] || "--:--:--";
+          head.appendChild(dateSpan);
+          head.appendChild(timeSpan);
+
+          const summaryLine = document.createElement("div");
+          summaryLine.className = "history-summary";
+          summaryLine.textContent = `主題：${record.theme}｜摘要：${summary}${diaryText.length > 50 ? "..." : ""}`;
+
+          const sprayLine = document.createElement("div");
+          sprayLine.className = "history-summary";
+          sprayLine.textContent = `今天噴了 ${totalSprays} 次（💩 ${record.poopCount || 0}｜🙄💅 ${record.eyeRollCount || 0}）`;
+
+          const actions = document.createElement("div");
+          actions.className = "history-actions";
+          const toggleBtn = document.createElement("button");
+          toggleBtn.type = "button";
+          toggleBtn.dataset.action = "toggle";
+          toggleBtn.textContent = "展開 / 收合";
+          const loadBtn = document.createElement("button");
+          loadBtn.type = "button";
+          loadBtn.dataset.action = "load";
+          loadBtn.textContent = "載入這筆";
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.className = "danger";
+          deleteBtn.dataset.action = "delete";
+          deleteBtn.textContent = "刪除";
+          actions.appendChild(toggleBtn);
+          actions.appendChild(loadBtn);
+          actions.appendChild(deleteBtn);
+
+          const detail = document.createElement("div");
+          detail.className = "history-detail";
+          detail.hidden = true;
+          detail.textContent = [
+            `日期：${formatDate(record.date)}`,
+            `存檔時間：${record.savedAt}`,
+            `主題：${record.theme}`,
+            `紅溫值：${record.rageValue}`,
+            `先噴一句：${record.opener || "（空）"}`,
+            `心情：${(record.moods || []).join("、") || "（未選）"}`,
+            `最雷：${record.worstTarget || "（空）"}`,
+            `冷靜度：${record.coolingLevel || "（空）"}`,
+            `💩噴射：${record.poopCount} 次`,
+            `🙄💅噴射：${record.eyeRollCount} 次`,
+            `今日噴射總數：${totalSprays} 次`,
+            "主日記：",
+            `${record.diary || "（空）"}`,
+            `收尾：${record.closing || "（空）"}`,
+          ].join("\n");
+
+          item.appendChild(head);
+          item.appendChild(summaryLine);
+          item.appendChild(sprayLine);
+          item.appendChild(actions);
+          item.appendChild(detail);
+
+          item.querySelector('[data-action="toggle"]').addEventListener("click", () => {
+            detail.hidden = !detail.hidden;
+          });
+
+          item.querySelector('[data-action="load"]').addEventListener("click", () => {
+            currentDate = record.date;
+            state = {
+              ...getDefaultDraft(),
+              theme: record.themeKey || "rage",
+              ventLine: record.opener || "",
+              mainDiary: record.diary || "",
+              lastQuickTemplate: record.quickTemplate || "",
+              lastMainTemplate: record.mainTemplate || "",
+              moods: Array.isArray(record.moods) ? [...record.moods] : [],
+              heatValue: record.rageValue ?? 50,
+              worstTarget: record.worstTarget || "",
+              coolingLevel: record.coolingLevel || "有",
+              selfTalk: record.closing || "",
+              ventCounts: { poop: record.poopCount || 0, eyeRoll: record.eyeRollCount || 0 },
+            };
+            saveDraft("已載入歷史紀錄到草稿");
+            renderAll();
+            showToast("已載入這筆紀錄");
+          });
+
+          item.querySelector('[data-action="delete"]').addEventListener("click", () => {
+            const ok = window.confirm("確定刪除這筆正式紀錄嗎？");
+            if (!ok) return;
+            historyRecords = historyRecords.filter((r) => r.id !== record.id);
+            writeJSON(STORAGE_KEYS.historyRecords, historyRecords);
+            renderHistory();
+            showToast("已刪除這筆紀錄");
+          });
+
+          historyListEl.appendChild(item);
+        });
+      }
+
+      // 共用匯出文字產生器，複製與下載都走同一份格式
+      function buildExportText(recordLike) {
+        const poopCount = Number(recordLike.ventCounts?.poop || recordLike.poopCount || 0);
+        const eyeRollCount = Number(recordLike.ventCounts?.eyeRoll || recordLike.ventCounts?.eyeroll || recordLike.eyeRollCount || 0);
+        const total = poopCount + eyeRollCount;
+        const moodsText = (recordLike.moods || []).join("、") || "（未選）";
+        const themeName = themes[recordLike.theme]?.name || themes[state.theme]?.name || "未設定";
+        const quickTemplate = recordLike.lastQuickTemplate || recordLike.quickTemplate || "（未套用）";
+        const mainTemplate = recordLike.lastMainTemplate || recordLike.mainTemplate || "（未套用）";
+        const rageValue = recordLike.heatValue ?? recordLike.rageValue ?? 50;
+        const opener = recordLike.ventLine ?? recordLike.opener ?? "（空）";
+        const diary = recordLike.mainDiary ?? recordLike.diary ?? "（空）";
+        const closing = recordLike.selfTalk ?? recordLike.closing ?? "（空）";
+
+        return `日期：${formatDate(currentDate)}\n主題：${themeName}\n快速填入：${quickTemplate}\n主日記模板：${mainTemplate}\n紅溫值：${rageValue}\n先噴一句：${opener}\n主日記：\n${diary}\n心情：\n${moodsText}\n💩噴射：${poopCount} 次\n🙄💅噴射：${eyeRollCount} 次\n總噴射：${total} 次\n給自己一句話：\n${closing}`;
+      }
+
+      function openManualCopyModal(text) {
+        manualCopyTextEl.value = text;
+        copyModalEl.hidden = false;
+        manualCopyTextEl.focus();
+        manualCopyTextEl.select();
+      }
+
+      function fallbackCopyText(text) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        ta.style.top = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, ta.value.length);
+        let ok = false;
+        try {
+          ok = document.execCommand("copy");
+        } catch {
+          ok = false;
+        }
+        ta.remove();
+        return ok;
+      }
+
+      async function copyExportText() {
+        const text = buildExportText(state);
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast("已複製文字，可直接貼給朋友或存備份");
+        } catch {
+          const fallbackOk = fallbackCopyText(text);
+          if (fallbackOk) {
+            showToast("已改用備援複製，文字已複製");
+            return;
+          }
+          openManualCopyModal(text);
+          showToast("系統複製失敗，已開啟手動複製框");
+        }
+      }
+
+      function downloadExportText() {
+        const text = buildExportText(state);
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `rankDiary_${currentDate}.txt`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        showToast("匯出成功（已下載 txt）");
+      }
+
+      async function shareScreenshot() {
+        if (typeof html2canvas === "undefined") {
+          showToast("截圖套件尚未載入");
+          return;
+        }
+
+        const canvas = await html2canvas(diaryCardEl, { scale: 2, backgroundColor: null });
+
+        // 優先嘗試 Web Share API 分享檔案
+        canvas.toBlob(async (blob) => {
+          if (!blob) return showToast("截圖失敗");
+
+          const file = new File([blob], `rankDiary_${currentDate}.png`, { type: "image/png" });
+          const canShareFile = navigator.canShare && navigator.canShare({ files: [file] });
+
+          if (navigator.share && canShareFile) {
+            try {
+              await navigator.share({ files: [file], title: "第五人格排位降溫日記" });
+              showToast("截圖分享成功");
+              return;
+            } catch {
+              // 使用者取消或平台失敗時，直接 fallback 到下載
+            }
+          }
+
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = `rankDiary_${currentDate}.png`;
+          a.click();
+          URL.revokeObjectURL(a.href);
+          showToast("不支援分享，已下載 PNG");
+        }, "image/png");
+      }
+
+      function getShooterComment(count) {
+        if (count <= 5) return "今天很克制，先記你一功。";
+        if (count <= 15) return "有在發洩，但還沒進入暴走狀態。";
+        if (count <= 30) return "看來今天真的被雷到了。";
+        if (count <= 60) return "你今天不是普通噴射器，是戰術轟炸機。";
+        return "雷包已被宇宙送走。";
+      }
+
+      function saveShooterData() {
+        localStorage.setItem(
+          SHOOTER_STORAGE_KEY,
+          JSON.stringify({
+            bestShots: shooterState.bestShots,
+            currentTargetIndex: shooterState.currentTargetIndex,
+          })
+        );
+      }
+
+      function loadShooterData() {
+        const raw = localStorage.getItem(SHOOTER_STORAGE_KEY);
+        if (!raw) return;
+        try {
+          const data = JSON.parse(raw);
+          shooterState.bestShots = Number(data.bestShots || 0);
+          shooterState.currentTargetIndex = Math.max(
+            0,
+            Math.min(targets.length - 1, Number(data.currentTargetIndex || 0))
+          );
+        } catch {
+          // ignore bad data
+        }
+      }
+
+      function loadShooterSound() {
+        const raw = localStorage.getItem(SHOOTER_SOUND_STORAGE_KEY);
+        if (raw === null) return;
+        shooterSoundEnabled = raw === "1";
+      }
+
+      function saveShooterSound() {
+        localStorage.setItem(SHOOTER_SOUND_STORAGE_KEY, shooterSoundEnabled ? "1" : "0");
+      }
+
+      function updateShooterSoundUI() {
+        soundToggleBtnEl.textContent = shooterSoundEnabled ? "🔊 命中音效：開" : "🔇 命中音效：關";
+        soundToggleBtnEl.classList.toggle("on", shooterSoundEnabled);
+      }
+
+      function updateAmmoModeUI() {
+        ammoModeBtnEl.textContent = shooterAmmoMode === "poop" ? "彈種：💩" : "彈種：一般";
+      }
+
+      function setCrosshairByPercent(x, y) {
+        const safeX = Math.max(8, Math.min(92, Number(x)));
+        const safeY = Math.max(8, Math.min(92, Number(y)));
+        lastAimPoint = { x: safeX, y: safeY };
+        targetCrosshairEl.style.left = `${safeX}%`;
+        targetCrosshairEl.style.top = `${safeY}%`;
+      }
+
+      function setCrosshairPosition(clientX, clientY) {
+        const rect = targetViewEl.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const x = ((clientX - rect.left) / rect.width) * 100;
+        const y = ((clientY - rect.top) / rect.height) * 100;
+        setCrosshairByPercent(x, y);
+      }
+
+      // 用 WebAudio 動態生成短音效，不需外部音檔
+      function playHitSound(isCritical = false) {
+        if (!shooterSoundEnabled) return;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = isCritical ? "square" : "triangle";
+        osc.frequency.value = isCritical ? 680 : 420;
+        gain.gain.value = 0.001;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const now = ctx.currentTime;
+        gain.gain.exponentialRampToValueAtTime(0.1, now + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + (isCritical ? 0.2 : 0.12));
+        osc.start(now);
+        osc.stop(now + (isCritical ? 0.22 : 0.14));
+      }
+
+      function loadCustomTargetImages() {
+        const raw = localStorage.getItem(SHOOTER_TARGETS_STORAGE_KEY);
+        if (!raw) return;
+        try {
+          const data = JSON.parse(raw);
+          ["target_01", "target_02", "target_03"].forEach((key) => {
+            if (typeof data[key] === "string" && data[key].startsWith("data:image/")) {
+              EMBEDDED_TARGET_IMAGES[key] = data[key];
+            }
+          });
+        } catch {
+          // ignore
+        }
+      }
+
+      function saveCustomTargetImages() {
+        localStorage.setItem(
+          SHOOTER_TARGETS_STORAGE_KEY,
+          JSON.stringify({
+            target_01: EMBEDDED_TARGET_IMAGES.target_01,
+            target_02: EMBEDDED_TARGET_IMAGES.target_02,
+            target_03: EMBEDDED_TARGET_IMAGES.target_03,
+          })
+        );
+      }
+
+      function updateShooterStats(options = {}) {
+        hitCountEl.textContent = String(shooterState.hits);
+        shotCountEl.textContent = String(shooterState.shots);
+        bestShotCountEl.textContent = String(shooterState.bestShots);
+        if (!options.preserveComment) {
+          shooterCommentEl.textContent = getShooterComment(shooterState.shots);
+        }
+        const target = targets[shooterState.currentTargetIndex];
+        currentTargetNameEl.textContent = target?.name || "雷包";
+        const hp = targetDurability[target?.id] ?? 0;
+        targetHpTextEl.textContent = `${hp} / ${getTargetMaxHp(target?.id)}`;
+      }
+
+      function computeRedTemp(record) {
+        // 0~100，預設偏低躁度避免空資料報錯
+        if (!record) return RED_TEMP_CONFIG.defaultValue;
+
+        let score = Number(record.heatValue ?? 20);
+        const moods = Array.isArray(record.moods) ? record.moods : [];
+        const diary = String(record.mainDiary || "");
+
+        moods.forEach((mood) => {
+          if (RED_TEMP_CONFIG.negativeMoods.some((m) => mood.includes(m))) {
+            score += 8;
+          }
+        });
+
+        RED_TEMP_CONFIG.diaryKeywords.forEach((kw) => {
+          if (diary.includes(kw)) score += 5;
+        });
+
+        return Math.max(0, Math.min(100, score));
+      }
+
+      function getRedTempStage(score) {
+        if (score <= 29) return "平靜";
+        if (score <= 59) return "微躁";
+        if (score <= 79) return "紅溫";
+        return "爆氣";
+      }
+
+      function getDynamicCritChance() {
+        if (currentRedTemp >= 80) return 0.28;
+        if (currentRedTemp >= 60) return 0.22;
+        if (currentRedTemp >= 30) return 0.18;
+        return CRIT_CHANCE;
+      }
+
+      function applyRedTempEffects() {
+        currentRedTemp = computeRedTemp(state);
+        const stage = getRedTempStage(currentRedTemp);
+        redTempTextEl.textContent = `${stage}（${currentRedTemp}）`;
+        shooterStatusTextEl.textContent =
+          stage === "爆氣"
+            ? "今日火氣很足，射擊場進入狂躁模式。"
+            : `紅溫同步完成：${stage}`;
+
+        shooterViewEl.classList.remove("red-micro", "red-hot", "red-rage");
+        if (stage === "微躁") shooterViewEl.classList.add("red-micro");
+        if (stage === "紅溫") shooterViewEl.classList.add("red-hot");
+        if (stage === "爆氣") shooterViewEl.classList.add("red-rage");
+      }
+
+      function clearHitEffects() {
+        hitLayerEl.innerHTML = "";
+      }
+
+      function showBurstTaunt(text) {
+        if (!text) return;
+        burstTauntBannerEl.textContent = text;
+        burstTauntBannerEl.classList.remove("hidden");
+        if (burstTauntTimer) clearTimeout(burstTauntTimer);
+        burstTauntTimer = setTimeout(() => {
+          burstTauntBannerEl.classList.add("hidden");
+          burstTauntBannerEl.textContent = "";
+          burstTauntTimer = null;
+        }, 2000);
+      }
+
+      function spawnHitText(isCritical = false, point = lastAimPoint) {
+        const words = shooterAmmoMode === "poop"
+          ? (isCritical ? ["💩爆擊！", "臭到破防！", "💩直擊！"] : ["💩", "噗滋💩", "中便！", "💩命中"])
+          : (isCritical ? ["致命雷爆！💥🔥", "爆擊！💥", "雷包崩潰🔥"] : ["砰！", "中！", "雷爆！", "命中！"]);
+        const fx = document.createElement("span");
+        fx.className = "hit-fx";
+        fx.textContent = words[Math.floor(Math.random() * words.length)];
+        const jitterX = -4 + Math.random() * 8;
+        const jitterY = -4 + Math.random() * 8;
+        const x = Math.max(8, Math.min(92, (point?.x ?? 50) + jitterX));
+        const y = Math.max(8, Math.min(92, (point?.y ?? 50) + jitterY));
+        fx.style.setProperty("--x", `${x}%`);
+        fx.style.setProperty("--y", `${y}%`);
+        fx.style.setProperty("--dx", `${-20 + Math.random() * 40}px`);
+        fx.style.setProperty("--dy", `${-40 - Math.random() * 40}px`);
+        hitLayerEl.appendChild(fx);
+        fx.addEventListener("animationend", () => fx.remove(), { once: true });
+      }
+
+      function switchTarget(index) {
+        const safeIndex = (index + targets.length) % targets.length;
+        shooterState.currentTargetIndex = safeIndex;
+        saveShooterData();
+        clearHitEffects();
+        renderShooterGame();
+      }
+
+      function renderShooterGame() {
+        document.documentElement.style.setProperty("--target-scale", TARGET_SCALE);
+        ensureAllTargetDurability();
+        if (burstRespawnTimer) {
+          clearTimeout(burstRespawnTimer);
+          burstRespawnTimer = null;
+        }
+        if (burstTauntTimer) {
+          clearTimeout(burstTauntTimer);
+          burstTauntTimer = null;
+        }
+        burstTauntBannerEl.classList.add("hidden");
+        burstTauntBannerEl.textContent = "";
+        const target = targets[shooterState.currentTargetIndex];
+        targetImageEl.classList.remove("hidden");
+        targetFallbackEl.classList.add("hidden");
+        targetFallbackEl.textContent = "標靶載入中...";
+        setCrosshairByPercent(50, 50);
+        targetImageEl.src = EMBEDDED_TARGET_IMAGES[target.id] || "";
+        targetImageEl.alt = target.name;
+        updateShooterStats();
+        updateAmmoModeUI();
+        applyRedTempEffects();
+      }
+
+      function fileToDataURL(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ""));
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function fireShot(options = {}) {
+        const target = targets[shooterState.currentTargetIndex];
+        const targetId = target.id;
+        const isCritical = Math.random() < getDynamicCritChance();
+        shooterState.shots += 1;
+        shooterState.hits += 1;
+        shooterState.bestShots = Math.max(shooterState.bestShots, shooterState.shots);
+        saveShooterData();
+        targetDurability[targetId] = Math.max(0, (targetDurability[targetId] ?? getTargetMaxHp(targetId)) - 1);
+        targetImageEl.classList.remove("target-hit");
+        void targetImageEl.offsetWidth;
+        targetImageEl.classList.add("target-hit");
+        const shotPoint = { x: options.x ?? lastAimPoint.x, y: options.y ?? lastAimPoint.y };
+        spawnHitText(isCritical, shotPoint);
+        playHitSound(isCritical);
+        const isBurst = targetDurability[targetId] <= 0;
+        let overrideComment = "";
+        if (isBurst) {
+          targetImageEl.classList.remove("target-burst");
+          void targetImageEl.offsetWidth;
+          targetImageEl.classList.add("target-burst");
+          const taunts = TARGET_TAUNTS[targetId] || ["你被打爆了，先冷靜一下。"];
+          const taunt = taunts[Math.floor(Math.random() * taunts.length)];
+          showBurstTaunt(`【${target.name}被打爆】${taunt}`);
+          targetImageEl.classList.add("hidden");
+          targetFallbackEl.classList.remove("hidden");
+          targetFallbackEl.textContent = "💥 標靶已擊倒";
+          if (burstRespawnTimer) clearTimeout(burstRespawnTimer);
+          burstRespawnTimer = setTimeout(() => {
+            const currentTarget = targets[shooterState.currentTargetIndex];
+            if (currentTarget?.id !== targetId) return;
+            targetImageEl.classList.remove("hidden");
+            targetFallbackEl.classList.add("hidden");
+            targetFallbackEl.textContent = "標靶載入中...";
+            burstRespawnTimer = null;
+          }, 520);
+          resetTargetDurability(targetId);
+        }
+        if (isCritical && !isBurst) {
+          overrideComment = shooterAmmoMode === "poop"
+            ? "💩致命直擊！這發超有味道！"
+            : "致命雷爆！💥🔥 這發超有靈壓！";
+        }
+        updateShooterStats({ preserveComment: Boolean(overrideComment) });
+        if (overrideComment) shooterCommentEl.textContent = overrideComment;
+      }
+
+      /*
+        長按連發速度在這裡調：
+        - 長按啟動延遲：250ms
+        - 連發間隔：140ms（可改 120~180ms）
+      */
+      function startAutoFire() {
+        stopAutoFire();
+        shooterAutoTimer = setTimeout(() => {
+          fireShot();
+          shooterAutoInterval = setInterval(fireShot, 140);
+        }, 250);
+      }
+
+      function stopAutoFire() {
+        if (shooterAutoTimer) clearTimeout(shooterAutoTimer);
+        if (shooterAutoInterval) clearInterval(shooterAutoInterval);
+        shooterAutoTimer = null;
+        shooterAutoInterval = null;
+      }
+
+      function bindShooterEvents() {
+        openShooterBtnEl.addEventListener("click", () => {
+          document.getElementById("diaryCard").classList.add("hidden");
+          document.querySelector(".history-wrap").classList.add("hidden");
+          shooterViewEl.classList.remove("hidden");
+          renderShooterGame();
+        });
+
+        backDiaryBtnEl.addEventListener("click", () => {
+          shooterViewEl.classList.add("hidden");
+          document.getElementById("diaryCard").classList.remove("hidden");
+          document.querySelector(".history-wrap").classList.remove("hidden");
+          stopAutoFire();
+        });
+
+        prevTargetBtnEl.addEventListener("click", () => switchTarget(shooterState.currentTargetIndex - 1));
+        nextTargetBtnEl.addEventListener("click", () => switchTarget(shooterState.currentTargetIndex + 1));
+        randomTargetBtnEl.addEventListener("click", () => {
+          switchTarget(Math.floor(Math.random() * targets.length));
+        });
+        resetRoundBtnEl.addEventListener("click", () => {
+          shooterState.shots = 0;
+          shooterState.hits = 0;
+          targets.forEach((t) => resetTargetDurability(t.id));
+          updateShooterStats();
+          clearHitEffects();
+        });
+        soundToggleBtnEl.addEventListener("click", () => {
+          shooterSoundEnabled = !shooterSoundEnabled;
+          saveShooterSound();
+          updateShooterSoundUI();
+          showToast(shooterSoundEnabled ? "命中音效已開啟" : "命中音效已靜音");
+        });
+
+        ammoModeBtnEl.addEventListener("click", () => {
+          shooterAmmoMode = shooterAmmoMode === "poop" ? "normal" : "poop";
+          updateAmmoModeUI();
+          showToast(shooterAmmoMode === "poop" ? "彈種切換：💩模式" : "彈種切換：一般模式");
+        });
+
+        const fireDown = (evt) => {
+          evt.preventDefault();
+          startAutoFire();
+        };
+        const fireUp = () => {
+          if (!shooterAutoInterval && shooterAutoTimer) {
+            // 短按：尚未進入連發時，放開補一發
+            fireShot();
+          }
+          stopAutoFire();
+        };
+
+        fireBtnEl.addEventListener("mousedown", fireDown);
+        fireBtnEl.addEventListener("mouseup", fireUp);
+        fireBtnEl.addEventListener("mouseleave", fireUp);
+        fireBtnEl.addEventListener("touchstart", fireDown, { passive: false });
+        fireBtnEl.addEventListener("touchend", fireUp, { passive: true });
+        fireBtnEl.addEventListener("touchcancel", fireUp, { passive: true });
+
+        targetViewEl.addEventListener("mousemove", (evt) => {
+          setCrosshairPosition(evt.clientX, evt.clientY);
+        });
+        targetViewEl.addEventListener("click", (evt) => {
+          setCrosshairPosition(evt.clientX, evt.clientY);
+          fireShot({ x: lastAimPoint.x, y: lastAimPoint.y });
+        });
+        targetViewEl.addEventListener("touchstart", (evt) => {
+          const touch = evt.touches?.[0];
+          if (!touch) return;
+          setCrosshairPosition(touch.clientX, touch.clientY);
+          fireShot({ x: lastAimPoint.x, y: lastAimPoint.y });
+        }, { passive: true });
+
+        targetImageEl.addEventListener("error", () => {
+          targetImageEl.classList.add("hidden");
+          targetFallbackEl.classList.remove("hidden");
+          const target = targets[shooterState.currentTargetIndex];
+          targetFallbackEl.textContent = `標靶載入失敗：${target?.image || "未知檔名"}（內嵌圖也讀取失敗）`;
+        });
+
+        applyTargetFilesBtnEl.addEventListener("click", async () => {
+          const pairs = [
+            ["target_01", targetFile01El.files?.[0]],
+            ["target_02", targetFile02El.files?.[0]],
+            ["target_03", targetFile03El.files?.[0]],
+          ];
+
+          let changed = false;
+          for (const [key, file] of pairs) {
+            if (!file) continue;
+            const dataUrl = await fileToDataURL(file);
+            if (dataUrl.startsWith("data:image/")) {
+              EMBEDDED_TARGET_IMAGES[key] = dataUrl;
+              changed = true;
+            }
+          }
+
+          if (!changed) {
+            showToast("沒有選到圖片，請先選檔再套用");
+            return;
+          }
+          saveCustomTargetImages();
+          renderShooterGame();
+          showToast("已套用你的標靶原圖（已存進本機）");
+        });
+
+        resetTargetFilesBtnEl.addEventListener("click", () => {
+          localStorage.removeItem(SHOOTER_TARGETS_STORAGE_KEY);
+          location.reload();
+        });
+      }
+
+      function renderAll() {
+        diaryDateEl.value = currentDate;
+        applyTheme(state.theme);
+        renderThemeButtons();
+        renderQuickFill();
+        renderTemplates();
+        renderMoodButtons();
+        renderHeat();
+        renderFormFields();
+        renderVentModule();
+        renderHistory();
+        applyRedTempEffects();
+      }
+
+      // 事件：日期切換 -> 載入草稿
+      diaryDateEl.addEventListener("change", () => {
+        if (!diaryDateEl.value) return;
+        currentDate = diaryDateEl.value;
+        localStorage.setItem(STORAGE_KEYS.selectedDate, currentDate);
+        state = loadDraft(currentDate);
+        renderAll();
       });
 
-      loadTheme();
-      loadData();
+      // 事件：欄位輸入 -> 草稿自動儲存
+      ventLineEl.addEventListener("input", () => {
+        state.ventLine = ventLineEl.value;
+        saveDraft();
+      });
+      mainDiaryEl.addEventListener("input", () => {
+        state.mainDiary = mainDiaryEl.value;
+        saveDraft();
+      });
+      worstTargetEl.addEventListener("input", () => {
+        state.worstTarget = worstTargetEl.value;
+        saveDraft();
+      });
+      coolingLevelEl.addEventListener("change", () => {
+        state.coolingLevel = coolingLevelEl.value;
+        saveDraft();
+      });
+      selfTalkEl.addEventListener("input", () => {
+        state.selfTalk = selfTalkEl.value;
+        saveDraft();
+      });
+      heatValueEl.addEventListener("input", () => {
+        state.heatValue = Number(heatValueEl.value);
+        renderHeat();
+        saveDraft();
+      });
+
+      // 主要操作
+      saveRecordBtnEl.addEventListener("click", () => {
+        const record = buildRecordFromState();
+        historyRecords.push(record);
+        writeJSON(STORAGE_KEYS.historyRecords, historyRecords);
+        renderHistory();
+        showToast("存檔成功，已加入歷史紀錄");
+      });
+
+      copyExportBtnEl.addEventListener("click", copyExportText);
+      downloadExportBtnEl.addEventListener("click", downloadExportText);
+      shareShotBtnEl.addEventListener("click", shareScreenshot);
+      manualSelectBtnEl.addEventListener("click", () => {
+        manualCopyTextEl.focus();
+        manualCopyTextEl.select();
+        manualCopyTextEl.setSelectionRange(0, manualCopyTextEl.value.length);
+      });
+      manualCloseBtnEl.addEventListener("click", () => {
+        copyModalEl.hidden = true;
+      });
+      copyModalEl.addEventListener("click", (event) => {
+        if (event.target === copyModalEl) copyModalEl.hidden = true;
+      });
+
+      // 清空目前日期草稿
+      clearTodayBtnEl.addEventListener("click", () => {
+        const ok = window.confirm(`確定清空 ${formatDate(currentDate)} 的草稿嗎？`);
+        if (!ok) return;
+        state = getDefaultDraft();
+        draftsByDate[currentDate] = { ...state };
+        writeJSON(STORAGE_KEYS.draftsByDate, draftsByDate);
+        renderAll();
+        setDraftStatus(`已清空 ${formatDate(currentDate)} 草稿`);
+        showToast("已清空今天草稿");
+      });
+
+      // 清空全部正式歷史
+      clearHistoryBtnEl.addEventListener("click", () => {
+        const ok = window.confirm("確定清空全部歷史紀錄嗎？此動作無法復原。");
+        if (!ok) return;
+        historyRecords = [];
+        writeJSON(STORAGE_KEYS.historyRecords, historyRecords);
+        renderHistory();
+        showToast("全部歷史紀錄已清空");
+      });
+
+      // 初始渲染
+      loadShooterData();
+      loadShooterSound();
+      loadCustomTargetImages();
+      bindShooterEvents();
+      updateShooterSoundUI();
+      renderShooterGame();
+      renderAll();
     </script>
   </body>
 </html>
