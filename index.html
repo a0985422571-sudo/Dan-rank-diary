@@ -385,6 +385,12 @@
         filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.45));
         animation: projectileFly 170ms linear forwards;
       }
+      .projectile-img {
+        width: min(11vw, 42px);
+        height: min(11vw, 42px);
+        object-fit: contain;
+        display: block;
+      }
       @keyframes projectileFly {
         from {
           left: var(--from-x);
@@ -753,6 +759,12 @@
         poop: "💩 大便噴射",
         eyeRoll: "🙄💅 白眼噴射",
       };
+      const DIARY_CELEBRATION_IMAGE_CANDIDATES = [
+        "red_lady_diary_complete.png",
+        "red_lady_diary_complete_02.png",
+        "red_lady_diary_complete_03.png",
+        "red_lady_diary_complete_04.png",
+      ];
 
       const themes = {
         rage: {
@@ -951,6 +963,7 @@
 
       let toastTimer = null;
       let celebrationTimer = null;
+      let availableCelebrationImages = [];
       let shooterAutoTimer = null;
       let shooterAutoInterval = null;
       let burstRespawnTimer = null;
@@ -960,12 +973,18 @@
       const SHOOTER_SOUND_STORAGE_KEY = "rankDiary_shooter_sound";
       const SHOOTER_FIRE_STYLE_STORAGE_KEY = "rankDiary_shooter_fire_style";
       const CRIT_CHANCE = 0.15;
-      const FIRE_STYLES = {
-        normal: { label: "標準", projectile: "•" },
-        poop: { label: "💩", projectile: "💩" },
-      };
+      const FIRE_STYLES = [
+        { key: "normal", label: "標準 •", projectile: { type: "emoji", value: "•" } },
+        { key: "poop", label: "💩", projectile: { type: "emoji", value: "💩" } },
+        { key: "eyeroll", label: "🙄", projectile: { type: "emoji", value: "🙄" } },
+        { key: "edamame", label: "毛豆", projectile: { type: "image", value: "edamame_mode.png" } },
+        { key: "bigedamame", label: "大毛豆", projectile: { type: "image", value: "bigedamame_mode.png" } },
+        { key: "mistblade", label: "迷霧刃", projectile: { type: "image", value: "mist_blade_mode.jpg" } },
+      ];
+      const FIRE_STYLE_MAP = Object.fromEntries(FIRE_STYLES.map((style) => [style.key, style]));
       let shooterSoundEnabled = true;
       let shooterFireStyle = "normal";
+      let availableFireStyleKeys = FIRE_STYLES.filter((style) => style.projectile.type === "emoji").map((style) => style.key);
       let shooterState = {
         currentTargetIndex: 0,
         shots: 0,
@@ -1107,6 +1126,11 @@
       }
 
       function showDiaryCompleteCelebration() {
+        const imagePool = availableCelebrationImages.length ? availableCelebrationImages : DIARY_CELEBRATION_IMAGE_CANDIDATES;
+        const randomImage = imagePool[Math.floor(Math.random() * imagePool.length)] || DIARY_CELEBRATION_IMAGE_CANDIDATES[0];
+        if (randomImage) {
+          diaryCompleteImageEl.src = randomImage;
+        }
         diaryCompleteCelebrationEl.classList.remove("show");
         void diaryCompleteCelebrationEl.offsetWidth;
         diaryCompleteCelebrationEl.classList.add("show");
@@ -1116,6 +1140,20 @@
           diaryCompleteCelebrationEl.classList.remove("show");
           celebrationTimer = null;
         }, 1600);
+      }
+
+      async function preloadCelebrationImages() {
+        const checks = DIARY_CELEBRATION_IMAGE_CANDIDATES.map(
+          (src) =>
+            new Promise((resolve) => {
+              const img = new Image();
+              img.onload = () => resolve(src);
+              img.onerror = () => resolve(null);
+              img.src = src;
+            })
+        );
+        const loaded = await Promise.all(checks);
+        availableCelebrationImages = loaded.filter(Boolean);
       }
 
       function applyTheme(themeKey) {
@@ -1660,7 +1698,7 @@
 
       function loadShooterFireStyle() {
         const raw = localStorage.getItem(SHOOTER_FIRE_STYLE_STORAGE_KEY);
-        if (raw && FIRE_STYLES[raw]) {
+        if (raw && FIRE_STYLE_MAP[raw]) {
           shooterFireStyle = raw;
         }
       }
@@ -1675,8 +1713,32 @@
       }
 
       function updateFireStyleUI() {
-        const style = FIRE_STYLES[shooterFireStyle] || FIRE_STYLES.normal;
+        const style = FIRE_STYLE_MAP[shooterFireStyle] || FIRE_STYLE_MAP.normal;
         fireStyleBtnEl.textContent = `射擊樣式：${style.label}`;
+      }
+
+      function getAvailableFireStyles() {
+        return FIRE_STYLES.filter((style) => availableFireStyleKeys.includes(style.key));
+      }
+
+      async function preloadFireStyleImages() {
+        const imageStyles = FIRE_STYLES.filter((style) => style.projectile.type === "image");
+        const checks = imageStyles.map(
+          (style) =>
+            new Promise((resolve) => {
+              const img = new Image();
+              img.onload = () => resolve(style.key);
+              img.onerror = () => resolve(null);
+              img.src = style.projectile.value;
+            })
+        );
+        const loadedImageKeys = (await Promise.all(checks)).filter(Boolean);
+        const emojiKeys = FIRE_STYLES.filter((style) => style.projectile.type === "emoji").map((style) => style.key);
+        availableFireStyleKeys = [...emojiKeys, ...loadedImageKeys];
+        if (!availableFireStyleKeys.includes(shooterFireStyle)) {
+          shooterFireStyle = "normal";
+          saveShooterFireStyle();
+        }
       }
 
       function updateAimReticle() {
@@ -1822,9 +1884,17 @@
 
       function spawnProjectile() {
         const projectile = document.createElement("span");
-        const style = FIRE_STYLES[shooterFireStyle] || FIRE_STYLES.normal;
+        const style = FIRE_STYLE_MAP[shooterFireStyle] || FIRE_STYLE_MAP.normal;
         projectile.className = "projectile";
-        projectile.textContent = style.projectile;
+        if (style.projectile.type === "image") {
+          const img = document.createElement("img");
+          img.className = "projectile-img";
+          img.alt = style.label;
+          img.src = style.projectile.value;
+          projectile.appendChild(img);
+        } else {
+          projectile.textContent = style.projectile.value;
+        }
         projectile.style.setProperty("--from-x", "50%");
         projectile.style.setProperty("--from-y", "92%");
         projectile.style.setProperty("--to-x", `${(aimPoint.x * 100).toFixed(2)}%`);
@@ -1996,10 +2066,13 @@
           showToast(shooterSoundEnabled ? "命中音效已開啟" : "命中音效已靜音");
         });
         fireStyleBtnEl.addEventListener("click", () => {
-          shooterFireStyle = shooterFireStyle === "normal" ? "poop" : "normal";
+          const styleKeys = getAvailableFireStyles().map((style) => style.key);
+          const currentIndex = styleKeys.indexOf(shooterFireStyle);
+          const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % styleKeys.length : 0;
+          shooterFireStyle = styleKeys[nextIndex] || "normal";
           saveShooterFireStyle();
           updateFireStyleUI();
-          showToast(`已切換為「${FIRE_STYLES[shooterFireStyle].label}」射擊`);
+          showToast(`已切換為「${(FIRE_STYLE_MAP[shooterFireStyle] || FIRE_STYLE_MAP.normal).label}」射擊`);
         });
 
         const fireDown = (evt) => {
@@ -2177,7 +2250,9 @@
       loadShooterData();
       loadShooterSound();
       loadShooterFireStyle();
+      preloadFireStyleImages().then(updateFireStyleUI);
       loadCustomTargetImages();
+      preloadCelebrationImages();
       bindShooterEvents();
       updateShooterSoundUI();
       updateFireStyleUI();
