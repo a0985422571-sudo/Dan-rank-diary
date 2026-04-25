@@ -391,6 +391,25 @@
         object-fit: contain;
         display: block;
       }
+      .projectile-emoji-badge {
+        position: absolute;
+        right: -8px;
+        bottom: -8px;
+        font-size: 1rem;
+      }
+      .mist-trail {
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        font-size: 1.2rem;
+        opacity: 0.85;
+        animation: mistTrailDrift 260ms ease-out forwards;
+        pointer-events: none;
+      }
+      @keyframes mistTrailDrift {
+        from { opacity: 0.88; transform: translate(-50%, -50%) scale(0.85); }
+        to { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.25); }
+      }
       @keyframes projectileFly {
         from {
           left: var(--from-x);
@@ -977,9 +996,9 @@
         { key: "normal", label: "標準 •", projectile: { type: "emoji", value: "•" } },
         { key: "poop", label: "💩", projectile: { type: "emoji", value: "💩" } },
         { key: "eyeroll", label: "🙄", projectile: { type: "emoji", value: "🙄" } },
-        { key: "edamame", label: "毛豆", projectile: { type: "image", value: "edamame_mode.png" } },
-        { key: "bigedamame", label: "大毛豆", projectile: { type: "image", value: "bigedamame_mode.png" } },
-        { key: "mistblade", label: "迷霧刃", projectile: { type: "image", value: "mist_blade_mode.jpg" } },
+        { key: "edamame", label: "🫛 毛豆", projectile: { type: "image", value: "edamame_mode.png", badge: "🫛" } },
+        { key: "bigedamame", label: "🫛 大毛豆", projectile: { type: "image", value: "bigedamame_mode.png", badge: "🫛" } },
+        { key: "mistblade", label: "迷霧刃", projectile: { type: "image", value: "mist_blade_mode.png" } },
       ];
       const FIRE_STYLE_MAP = Object.fromEntries(FIRE_STYLES.map((style) => [style.key, style]));
       let shooterSoundEnabled = true;
@@ -1721,6 +1740,10 @@
         return FIRE_STYLES.filter((style) => availableFireStyleKeys.includes(style.key));
       }
 
+      function getCurrentFireStyle() {
+        return FIRE_STYLE_MAP[shooterFireStyle] || FIRE_STYLE_MAP.normal;
+      }
+
       async function preloadFireStyleImages() {
         const imageStyles = FIRE_STYLES.filter((style) => style.projectile.type === "image");
         const checks = imageStyles.map(
@@ -1884,7 +1907,7 @@
 
       function spawnProjectile() {
         const projectile = document.createElement("span");
-        const style = FIRE_STYLE_MAP[shooterFireStyle] || FIRE_STYLE_MAP.normal;
+        const style = getCurrentFireStyle();
         projectile.className = "projectile";
         if (style.projectile.type === "image") {
           const img = document.createElement("img");
@@ -1892,6 +1915,12 @@
           img.alt = style.label;
           img.src = style.projectile.value;
           projectile.appendChild(img);
+          if (style.projectile.badge) {
+            const badge = document.createElement("span");
+            badge.className = "projectile-emoji-badge";
+            badge.textContent = style.projectile.badge;
+            projectile.appendChild(badge);
+          }
         } else {
           projectile.textContent = style.projectile.value;
         }
@@ -1901,10 +1930,34 @@
         projectile.style.setProperty("--to-y", `${(aimPoint.y * 100).toFixed(2)}%`);
         hitLayerEl.appendChild(projectile);
         projectile.addEventListener("animationend", () => projectile.remove(), { once: true });
+
+        if (style.key === "mistblade") {
+          for (let i = 0; i < 4; i++) {
+            const trail = document.createElement("span");
+            trail.className = "mist-trail";
+            trail.textContent = "☁️";
+            trail.style.setProperty("--x", `${48 + Math.random() * 6}%`);
+            trail.style.setProperty("--y", `${88 + Math.random() * 6}%`);
+            trail.style.setProperty("--dx", `${(aimPoint.x - 0.5) * 100 + (-20 + Math.random() * 40)}px`);
+            trail.style.setProperty("--dy", `${(aimPoint.y - 0.9) * 100 + (-12 + Math.random() * 22)}px`);
+            trail.style.animationDelay = `${i * 30}ms`;
+            hitLayerEl.appendChild(trail);
+            trail.addEventListener("animationend", () => trail.remove(), { once: true });
+          }
+        }
       }
 
       function spawnHitText(isCritical = false) {
-        const words = isCritical ? ["致命雷爆！💥🔥", "爆擊！💥", "雷包崩潰🔥"] : ["砰！", "中！", "雷爆！", "命中！"];
+        const style = getCurrentFireStyle();
+        const styleHitWords = {
+          normal: ["砰！", "中！", "雷爆！", "命中！"],
+          poop: ["💩 命中！", "臭臭直擊！", "便意壓制成功！"],
+          eyeroll: ["白眼已送達🙄", "嗯嗯你說得都對🙄", "眼神殺到位🙄"],
+          edamame: ["🫛 豆豆命中！", "毛豆飛擊！", "豆你玩！"],
+          bigedamame: ["🫛 巨豆重擊！", "大毛豆壓制！", "豆力全開！"],
+          mistblade: ["霧刃劃過！", "煙霧斬擊！", "迷霧命中！"],
+        };
+        const words = isCritical ? ["致命雷爆！💥🔥", "爆擊！💥", "雷包崩潰🔥"] : (styleHitWords[style.key] || styleHitWords.normal);
         const fx = document.createElement("span");
         fx.className = "hit-fx";
         fx.textContent = words[Math.floor(Math.random() * words.length)];
