@@ -208,6 +208,47 @@
         z-index: 100;
       }
       .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .diary-complete-celebration {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 110;
+      }
+      .diary-complete-card {
+        position: absolute;
+        left: 50%;
+        bottom: 14%;
+        transform: translateX(-50%) translateY(16px) scale(0.9);
+        opacity: 0;
+      }
+      .diary-complete-celebration.show .diary-complete-card {
+        animation: celebrationCardInOut 1500ms ease forwards;
+      }
+      .diary-complete-img {
+        width: min(60vw, 320px);
+        max-height: 45vh;
+        object-fit: contain;
+        filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.35));
+      }
+      .celebration-spark {
+        position: absolute;
+        left: var(--x);
+        top: var(--y);
+        font-size: 1.7rem;
+        text-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+        animation: celebrationSpark 1200ms ease-out forwards;
+      }
+      @keyframes celebrationCardInOut {
+        0% { opacity: 0; transform: translateX(-50%) translateY(22px) scale(0.86); }
+        15% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        72% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        100% { opacity: 0; transform: translateX(-50%) translateY(-18px) scale(0.93); }
+      }
+      @keyframes celebrationSpark {
+        from { opacity: 0; transform: translate(-50%, -50%) scale(0.45); }
+        16% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        to { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2); }
+      }
 
       .copy-modal {
         position: fixed;
@@ -678,6 +719,11 @@
     </div>
 
     <div id="toast" class="toast">已存成今天紀錄</div>
+    <div id="diaryCompleteCelebration" class="diary-complete-celebration" aria-hidden="true">
+      <div class="diary-complete-card">
+        <img id="diaryCompleteImage" class="diary-complete-img" src="red_lady_diary_complete.png" alt="完成日記慶祝圖" />
+      </div>
+    </div>
     <div id="copyModal" class="copy-modal" hidden>
       <div class="copy-modal-card">
         <strong>系統複製失敗，已開啟手動複製框</strong>
@@ -866,6 +912,8 @@
       const clearHistoryBtnEl = document.getElementById("clearHistoryBtn");
       const historyListEl = document.getElementById("historyList");
       const toastEl = document.getElementById("toast");
+      const diaryCompleteCelebrationEl = document.getElementById("diaryCompleteCelebration");
+      const diaryCompleteImageEl = document.getElementById("diaryCompleteImage");
       const diaryCardEl = document.getElementById("diaryCard");
       const copyModalEl = document.getElementById("copyModal");
       const manualCopyTextEl = document.getElementById("manualCopyText");
@@ -902,6 +950,7 @@
       const aimReticleEl = document.getElementById("aimReticle");
 
       let toastTimer = null;
+      let celebrationTimer = null;
       let shooterAutoTimer = null;
       let shooterAutoInterval = null;
       let burstRespawnTimer = null;
@@ -1037,6 +1086,36 @@
         toastEl.classList.add("show");
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2000);
+      }
+
+      function spawnCelebrationSparks() {
+        const emojis = ["💓", "🎉", "🎇"];
+        const count = 12;
+        for (let i = 0; i < count; i++) {
+          const spark = document.createElement("span");
+          spark.className = "celebration-spark";
+          spark.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          const x = 24 + Math.random() * 52;
+          const y = 28 + Math.random() * 44;
+          spark.style.setProperty("--x", `${x}%`);
+          spark.style.setProperty("--y", `${y}%`);
+          spark.style.setProperty("--dx", `${-95 + Math.random() * 190}px`);
+          spark.style.setProperty("--dy", `${-130 + Math.random() * 240}px`);
+          diaryCompleteCelebrationEl.appendChild(spark);
+          spark.addEventListener("animationend", () => spark.remove(), { once: true });
+        }
+      }
+
+      function showDiaryCompleteCelebration() {
+        diaryCompleteCelebrationEl.classList.remove("show");
+        void diaryCompleteCelebrationEl.offsetWidth;
+        diaryCompleteCelebrationEl.classList.add("show");
+        spawnCelebrationSparks();
+        if (celebrationTimer) clearTimeout(celebrationTimer);
+        celebrationTimer = setTimeout(() => {
+          diaryCompleteCelebrationEl.classList.remove("show");
+          celebrationTimer = null;
+        }, 1600);
       }
 
       function applyTheme(themeKey) {
@@ -2047,6 +2126,14 @@
         writeJSON(STORAGE_KEYS.historyRecords, historyRecords);
         renderHistory();
         showToast("存檔成功，已加入歷史紀錄");
+        showDiaryCompleteCelebration();
+      });
+
+      diaryCompleteImageEl.addEventListener("error", () => {
+        diaryCompleteImageEl.alt = "完成日記慶祝";
+        diaryCompleteImageEl.src =
+          "data:image/svg+xml;utf8," +
+          encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 260'><rect width='360' height='260' rx='18' fill='%23fff7f2'/><text x='180' y='128' text-anchor='middle' font-size='32'>完成啦！🎉</text><text x='180' y='172' text-anchor='middle' font-size='20'>放入 red_lady_diary_complete.png 就會顯示你的圖</text></svg>");
       });
 
       copyExportBtnEl.addEventListener("click", copyExportText);
