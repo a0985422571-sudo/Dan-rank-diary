@@ -96,6 +96,7 @@
       .section h2 { margin: 0 0 8px; font-size: 1rem; }
 
       label { display: grid; gap: 5px; margin-bottom: 9px; font-weight: 700; font-size: 0.95rem; }
+      .field-block { display: grid; gap: 5px; margin-bottom: 9px; font-weight: 700; font-size: 0.95rem; }
 
       input[type="text"], textarea, select {
         width: 100%;
@@ -552,11 +553,11 @@
           </label>
 
           <div class="grid2">
-            <label>
+            <div class="field-block">
               我現在心情（可複選）
               <div class="mood-wrap" id="moodWrap"></div>
               <small id="selectedMood">目前：未選擇</small>
-            </label>
+            </div>
             <label>
               紅溫值
               <div class="heat-box">
