@@ -160,6 +160,30 @@
         transform: scale(0.96);
       }
       .vent-btn { touch-action: manipulation; }
+      .red-butterfly-cheer {
+        width: 100%;
+        margin-top: 8px;
+        background: linear-gradient(135deg, var(--chip), #fff);
+      }
+      .red-butterfly-overlay {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: rgba(0, 0, 0, 0.32);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 180ms ease;
+        z-index: 115;
+      }
+      .red-butterfly-overlay.show { opacity: 1; }
+      .red-butterfly-video {
+        width: min(72vw, 360px);
+        max-height: 48vh;
+        border-radius: 18px;
+        object-fit: contain;
+        filter: drop-shadow(0 16px 30px rgba(0, 0, 0, 0.35));
+      }
 
       .history-wrap { margin-top: 14px; }
       .history-list { display: grid; gap: 8px; }
@@ -660,6 +684,7 @@
         <section class="section">
           <h2>發洩按鈕區（可連續噴射）</h2>
           <div class="vent-grid" id="ventGrid"></div>
+          <button id="redButterflyCheerBtn" class="vent-btn red-butterfly-cheer" type="button">🦋 紅蝶加油</button>
           <div class="vent-total" id="ventTotal">今天噴了 0 次</div>
           <div class="vent-level" id="ventLevel">還沒開噴，先深呼吸。</div>
         </section>
@@ -748,6 +773,9 @@
       <div class="diary-complete-card">
         <img id="diaryCompleteImage" class="diary-complete-img" src="red_lady_diary_complete.png" alt="完成日記慶祝圖" />
       </div>
+    </div>
+    <div id="redButterflyOverlay" class="red-butterfly-overlay" aria-hidden="true">
+      <video id="redButterflyVideo" class="red-butterfly-video" src="red_butterfly.mp4" muted playsinline preload="auto"></video>
     </div>
     <div id="copyModal" class="copy-modal" hidden>
       <div class="copy-modal-card">
@@ -935,6 +963,7 @@
       const ventGridEl = document.getElementById("ventGrid");
       const ventTotalEl = document.getElementById("ventTotal");
       const ventLevelEl = document.getElementById("ventLevel");
+      const redButterflyCheerBtnEl = document.getElementById("redButterflyCheerBtn");
       const saveRecordBtnEl = document.getElementById("saveRecordBtn");
       const copyExportBtnEl = document.getElementById("copyExportBtn");
       const downloadExportBtnEl = document.getElementById("downloadExportBtn");
@@ -945,6 +974,8 @@
       const toastEl = document.getElementById("toast");
       const diaryCompleteCelebrationEl = document.getElementById("diaryCompleteCelebration");
       const diaryCompleteImageEl = document.getElementById("diaryCompleteImage");
+      const redButterflyOverlayEl = document.getElementById("redButterflyOverlay");
+      const redButterflyVideoEl = document.getElementById("redButterflyVideo");
       const diaryCardEl = document.getElementById("diaryCard");
       const copyModalEl = document.getElementById("copyModal");
       const manualCopyTextEl = document.getElementById("manualCopyText");
@@ -982,6 +1013,8 @@
 
       let toastTimer = null;
       let celebrationTimer = null;
+      let redButterflyTimer = null;
+      let redButterflyRequested = false;
       let availableCelebrationImages = [];
       let shooterAutoTimer = null;
       let shooterAutoInterval = null;
@@ -1124,6 +1157,27 @@
         toastEl.classList.add("show");
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2000);
+      }
+
+      function hideRedButterflyCheer() {
+        redButterflyOverlayEl.classList.remove("show");
+        redButterflyVideoEl.pause();
+        redButterflyTimer = null;
+      }
+
+      function showRedButterflyCheer() {
+        if (redButterflyTimer) clearTimeout(redButterflyTimer);
+        redButterflyOverlayEl.classList.remove("show");
+        redButterflyVideoEl.pause();
+        redButterflyVideoEl.currentTime = 0;
+        redButterflyRequested = true;
+        void redButterflyOverlayEl.offsetWidth;
+        redButterflyOverlayEl.classList.add("show");
+        redButterflyVideoEl.play().catch(() => {
+          hideRedButterflyCheer();
+          showToast("紅蝶動畫播放失敗，請確認 red_butterfly.mp4 已放好");
+        });
+        redButterflyTimer = setTimeout(hideRedButterflyCheer, 2000);
       }
 
       function spawnCelebrationSparks() {
@@ -2243,6 +2297,13 @@
         state.heatValue = Number(heatValueEl.value);
         renderHeat();
         saveDraft();
+      });
+
+      redButterflyCheerBtnEl.addEventListener("click", showRedButterflyCheer);
+      redButterflyVideoEl.addEventListener("error", () => {
+        if (!redButterflyRequested) return;
+        hideRedButterflyCheer();
+        showToast("找不到 red_butterfly.mp4，放入檔案後就能播放紅蝶加油動畫");
       });
 
       // 主要操作
