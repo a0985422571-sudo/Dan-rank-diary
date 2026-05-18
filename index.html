@@ -364,7 +364,7 @@
         pointer-events: none;
       }
       .lawyer-frog-fx.show {
-        animation: lawyerFrogAppear 6500ms ease forwards;
+        animation: lawyerFrogAppear 3900ms ease forwards;
       }
       .lawyer-frog-fx-img {
         position: relative;
@@ -374,6 +374,28 @@
         object-fit: contain;
         filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.55));
       }
+      .lawyer-frog-emoji-ring {
+        position: absolute;
+        inset: 14%;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .lawyer-frog-emoji-ring span {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        font-size: clamp(1.35rem, 6vw, 2.35rem);
+        filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55));
+        animation: lawyerFrogEmojiBob 900ms ease-in-out infinite alternate;
+        animation-delay: var(--delay, 0ms);
+        transform: translate(-50%, -50%) translate(var(--emoji-x), var(--emoji-y));
+      }
+      .lawyer-frog-emoji-ring span:nth-child(1) { --emoji-x: -118px; --emoji-y: -74px; --delay: 0ms; }
+      .lawyer-frog-emoji-ring span:nth-child(2) { --emoji-x: 112px; --emoji-y: -84px; --delay: 120ms; }
+      .lawyer-frog-emoji-ring span:nth-child(3) { --emoji-x: -132px; --emoji-y: 28px; --delay: 240ms; }
+      .lawyer-frog-emoji-ring span:nth-child(4) { --emoji-x: 130px; --emoji-y: 34px; --delay: 360ms; }
+      .lawyer-frog-emoji-ring span:nth-child(5) { --emoji-x: -62px; --emoji-y: 120px; --delay: 480ms; }
+      .lawyer-frog-emoji-ring span:nth-child(6) { --emoji-x: 72px; --emoji-y: 116px; --delay: 600ms; }
       .lawyer-frog-fx-fallback {
         position: absolute;
         z-index: 0;
@@ -386,9 +408,13 @@
       }
       @keyframes lawyerFrogAppear {
         0% { opacity: 0; transform: translateY(18px) scale(0.72) rotate(-6deg); }
-        8% { opacity: 1; transform: translateY(0) scale(1.04) rotate(3deg); }
-        88% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+        12% { opacity: 1; transform: translateY(0) scale(1.04) rotate(3deg); }
+        90% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
         100% { opacity: 0; transform: translateY(-8px) scale(1.68) rotate(5deg); }
+      }
+      @keyframes lawyerFrogEmojiBob {
+        from { transform: translate(-50%, -50%) translate(var(--emoji-x), var(--emoji-y)) scale(0.9) rotate(-6deg); }
+        to { transform: translate(-50%, -50%) translate(var(--emoji-x), calc(var(--emoji-y) - 10px)) scale(1.08) rotate(8deg); }
       }
       .burst-taunt-banner {
         margin: 2px auto 8px;
@@ -775,6 +801,14 @@
             <div class="lawyer-frog-fx" id="lawyerFrogFx" aria-hidden="true">
               <span class="lawyer-frog-fx-fallback" aria-hidden="true">🐸</span>
               <img id="lawyerFrogImg" class="lawyer-frog-fx-img" src="green_frog1.png" alt="律師告你青蛙動畫" />
+              <div class="lawyer-frog-emoji-ring" aria-hidden="true">
+                <span>🐸</span>
+                <span>🐸</span>
+                <span>🐸</span>
+                <span>🐸</span>
+                <span>🐸</span>
+                <span>🐸</span>
+              </div>
             </div>
             <div class="aim-reticle" id="aimReticle" aria-hidden="true"></div>
           </div>
@@ -1084,7 +1118,7 @@
       const CRIT_CHANCE = 0.15;
       const LAWYER_FROG_FRAMES = Array.from({ length: 7 }, (_, index) => `green_frog${index + 1}.png`);
       const LAWYER_FROG_FRAME_MS = 120;
-      const LAWYER_FROG_FINAL_HOLD_MS = 5650;
+      const LAWYER_FROG_FINAL_HOLD_MS = 3000;
       const FIRE_STYLES = [
         { key: "normal", label: "標準 •", projectile: { type: "emoji", value: "•" } },
         { key: "poop", label: "💩", projectile: { type: "emoji", value: "💩" } },
