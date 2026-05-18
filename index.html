@@ -364,7 +364,7 @@
         pointer-events: none;
       }
       .lawyer-frog-fx.show {
-        animation: lawyerFrogAppear 980ms ease forwards;
+        animation: lawyerFrogAppear 6500ms ease forwards;
       }
       .lawyer-frog-fx-img {
         position: relative;
@@ -386,9 +386,9 @@
       }
       @keyframes lawyerFrogAppear {
         0% { opacity: 0; transform: translateY(18px) scale(0.72) rotate(-6deg); }
-        16% { opacity: 1; transform: translateY(0) scale(1.04) rotate(3deg); }
-        72% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
-        100% { opacity: 0; transform: translateY(-18px) scale(0.86) rotate(5deg); }
+        8% { opacity: 1; transform: translateY(0) scale(1.04) rotate(3deg); }
+        88% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+        100% { opacity: 0; transform: translateY(-8px) scale(1.68) rotate(5deg); }
       }
       .burst-taunt-banner {
         margin: 2px auto 8px;
@@ -1083,6 +1083,8 @@
       const SHOOTER_FIRE_STYLE_STORAGE_KEY = "rankDiary_shooter_fire_style";
       const CRIT_CHANCE = 0.15;
       const LAWYER_FROG_FRAMES = Array.from({ length: 7 }, (_, index) => `green_frog${index + 1}.png`);
+      const LAWYER_FROG_FRAME_MS = 120;
+      const LAWYER_FROG_FINAL_HOLD_MS = 5650;
       const FIRE_STYLES = [
         { key: "normal", label: "標準 •", projectile: { type: "emoji", value: "•" } },
         { key: "poop", label: "💩", projectile: { type: "emoji", value: "💩" } },
@@ -2028,11 +2030,11 @@
             lawyerFrogTimer = null;
             lawyerFrogImgEl.src = LAWYER_FROG_FRAMES[LAWYER_FROG_FRAMES.length - 1];
             showToast("律師函已寄出 🐸⚖️");
-            lawyerFrogHideTimer = setTimeout(hideLawyerFrogAnimation, 420);
+            lawyerFrogHideTimer = setTimeout(hideLawyerFrogAnimation, LAWYER_FROG_FINAL_HOLD_MS);
             return;
           }
           lawyerFrogImgEl.src = nextFrame;
-        }, 120);
+        }, LAWYER_FROG_FRAME_MS);
       }
 
       function showBurstTaunt(text) {
