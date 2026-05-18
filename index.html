@@ -1371,7 +1371,9 @@
           btn.className = "quick-btn";
           btn.textContent = item.label;
           btn.addEventListener("click", () => {
+            const currentTheme = state.theme;
             state = item.apply(state);
+            state.theme = currentTheme;
             state.lastQuickTemplate = item.label;
             renderAll();
             saveDraft(`已套用「${item.label}」草稿`);
