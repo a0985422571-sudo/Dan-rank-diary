@@ -335,11 +335,64 @@
       }
       .shooter-title { margin: 0; color: var(--title-color); }
       .shooter-stage {
+        position: relative;
         margin-top: 10px;
         background: rgba(255,255,255,0.55);
         border: 2px dashed var(--line);
         border-radius: 14px;
         padding: 10px;
+        overflow: hidden;
+      }
+      .lawyer-frog-bg {
+        position: absolute;
+        right: 12px;
+        top: 52px;
+        z-index: 2;
+        width: 86px;
+        height: 86px;
+        padding: 6px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        background: radial-gradient(circle at 35% 25%, #f8fff1, #b7df8a 58%, #5f9f44);
+        border: 3px solid rgba(84, 43, 43, 0.72);
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
+      }
+      .lawyer-frog-bg:hover { transform: translateY(-1px) rotate(-2deg); }
+      .lawyer-frog-bg.is-animating { animation: lawyerFrogWiggle 240ms ease-in-out infinite; }
+      .lawyer-frog-img {
+        position: absolute;
+        inset: 8px 8px 18px;
+        width: calc(100% - 16px);
+        height: calc(100% - 26px);
+        object-fit: contain;
+        pointer-events: none;
+      }
+      .lawyer-frog-label {
+        position: absolute;
+        left: 50%;
+        bottom: 8px;
+        transform: translateX(-50%);
+        width: max-content;
+        max-width: 76px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.88);
+        font-size: 0.72rem;
+        line-height: 1.1;
+        color: var(--text);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+      }
+      .lawyer-frog-fallback {
+        position: absolute;
+        top: 16px;
+        font-size: 2rem;
+        pointer-events: none;
+      }
+      @keyframes lawyerFrogWiggle {
+        0%, 100% { transform: rotate(-3deg) scale(1); }
+        50% { transform: rotate(3deg) scale(1.05); }
       }
       .burst-taunt-banner {
         margin: 2px auto 8px;
@@ -718,6 +771,11 @@
         </div>
 
         <div class="shooter-stage">
+          <button type="button" class="lawyer-frog-bg" id="lawyerFrogBtn" aria-label="律師告你">
+            <span class="lawyer-frog-fallback" aria-hidden="true">🐸</span>
+            <img id="lawyerFrogImg" class="lawyer-frog-img" src="green_frog1.png" alt="律師告你青蛙動畫" />
+            <span class="lawyer-frog-label">律師告你</span>
+          </button>
           <div class="burst-taunt-banner hidden" id="burstTauntBanner"></div>
           <div class="target-view" id="targetView">
             <img id="targetImage" alt="雷包標靶" />
@@ -1010,6 +1068,8 @@
       const soundToggleBtnEl = document.getElementById("soundToggleBtn");
       const fireStyleBtnEl = document.getElementById("fireStyleBtn");
       const aimReticleEl = document.getElementById("aimReticle");
+      const lawyerFrogBtnEl = document.getElementById("lawyerFrogBtn");
+      const lawyerFrogImgEl = document.getElementById("lawyerFrogImg");
 
       let toastTimer = null;
       let celebrationTimer = null;
@@ -1018,6 +1078,7 @@
       let availableCelebrationImages = [];
       let shooterAutoTimer = null;
       let shooterAutoInterval = null;
+      let lawyerFrogTimer = null;
       let burstRespawnTimer = null;
       let burstTauntTimer = null;
       const SHOOTER_STORAGE_KEY = "rankDiary_shooter_data";
@@ -1025,6 +1086,7 @@
       const SHOOTER_SOUND_STORAGE_KEY = "rankDiary_shooter_sound";
       const SHOOTER_FIRE_STYLE_STORAGE_KEY = "rankDiary_shooter_fire_style";
       const CRIT_CHANCE = 0.15;
+      const LAWYER_FROG_FRAMES = Array.from({ length: 7 }, (_, index) => `green_frog${index + 1}.png`);
       const FIRE_STYLES = [
         { key: "normal", label: "標準 •", projectile: { type: "emoji", value: "•" } },
         { key: "poop", label: "💩", projectile: { type: "emoji", value: "💩" } },
@@ -1947,6 +2009,27 @@
         hitLayerEl.innerHTML = "";
       }
 
+      function playLawyerFrogAnimation() {
+        if (lawyerFrogTimer) clearInterval(lawyerFrogTimer);
+        let frameIndex = 0;
+        lawyerFrogBtnEl.classList.add("is-animating");
+        lawyerFrogImgEl.hidden = false;
+        lawyerFrogImgEl.src = LAWYER_FROG_FRAMES[frameIndex];
+        lawyerFrogTimer = setInterval(() => {
+          frameIndex += 1;
+          const nextFrame = LAWYER_FROG_FRAMES[frameIndex];
+          if (!nextFrame) {
+            clearInterval(lawyerFrogTimer);
+            lawyerFrogTimer = null;
+            lawyerFrogImgEl.src = LAWYER_FROG_FRAMES[LAWYER_FROG_FRAMES.length - 1];
+            lawyerFrogBtnEl.classList.remove("is-animating");
+            showToast("律師函已寄出 🐸⚖️");
+            return;
+          }
+          lawyerFrogImgEl.src = nextFrame;
+        }, 120);
+      }
+
       function showBurstTaunt(text) {
         if (!text) return;
         burstTauntBannerEl.textContent = text;
@@ -2172,6 +2255,14 @@
           updateShooterSoundUI();
           showToast(shooterSoundEnabled ? "命中音效已開啟" : "命中音效已靜音");
         });
+        lawyerFrogBtnEl.addEventListener("click", playLawyerFrogAnimation);
+        lawyerFrogImgEl.addEventListener("load", () => {
+          lawyerFrogImgEl.hidden = false;
+        });
+        lawyerFrogImgEl.addEventListener("error", () => {
+          lawyerFrogImgEl.hidden = true;
+        });
+
         fireStyleBtnEl.addEventListener("click", () => {
           const styleKeys = getAvailableFireStyles().map((style) => style.key);
           const currentIndex = styleKeys.indexOf(shooterFireStyle);
