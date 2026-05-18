@@ -6,17 +6,17 @@
     <title>第五人格排位降溫日記 v0.3</title>
     <style>
       :root {
-        --bg1: #ffe1d0;
-        --bg2: #ff9f78;
-        --card: #fff7f2;
+        --bg1: #fff7ef;
+        --bg2: #ffdccc;
+        --card: #fffaf5;
         --text: #542b2b;
         --title-color: var(--text);
         --muted-text: color-mix(in srgb, var(--text) 78%, #ffffff 22%);
         --highlight-text: var(--text);
-        --line: #ef8f6a;
-        --accent: #ff5f46;
-        --accent2: #ff936c;
-        --chip: #ffd5c2;
+        --line: #efad91;
+        --accent: #ff735c;
+        --accent2: #ffa17e;
+        --chip: #ffe0d1;
       }
 
       * { box-sizing: border-box; }
@@ -26,18 +26,25 @@
         font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
         color: var(--text);
         min-height: 100vh;
-        background: radial-gradient(circle at 20% 0%, var(--bg1), var(--bg2));
+        background:
+          radial-gradient(circle at 18% 10%, color-mix(in srgb, var(--accent2) 28%, transparent), transparent 30%),
+          radial-gradient(circle at 82% 0%, color-mix(in srgb, var(--bg1) 72%, transparent), transparent 34%),
+          radial-gradient(color-mix(in srgb, var(--line) 16%, transparent) 1px, transparent 1px),
+          linear-gradient(135deg, var(--bg1), var(--bg2));
+        background-size: auto, auto, 18px 18px, auto;
         transition: background 0.35s ease;
       }
 
       .wrap { width: min(920px, 95%); margin: 16px auto 24px; }
 
       .card {
-        background: var(--card);
-        border: 2px solid var(--line);
+        background: color-mix(in srgb, var(--card) 92%, #ffffff 8%);
+        border: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
         border-radius: 20px;
         padding: 14px;
-        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.14);
+        box-shadow:
+          0 18px 36px color-mix(in srgb, var(--text) 14%, transparent),
+          0 2px 8px rgba(255, 255, 255, 0.55) inset;
       }
 
       .top { position: sticky; top: 8px; z-index: 30; display: grid; gap: 10px; margin-bottom: 12px; }
@@ -88,8 +95,8 @@
 
       .section {
         margin-top: 12px;
-        background: rgba(255, 255, 255, 0.55);
-        border: 2px dotted var(--line);
+        background: rgba(255, 255, 255, 0.62);
+        border: 1.5px dashed color-mix(in srgb, var(--line) 68%, #ffffff 32%);
         border-radius: 14px;
         padding: 10px;
       }
@@ -364,7 +371,7 @@
         pointer-events: none;
       }
       .lawyer-frog-fx.show {
-        animation: lawyerFrogAppear 980ms ease forwards;
+        animation: lawyerFrogAppear 3900ms ease forwards;
       }
       .lawyer-frog-fx-img {
         position: relative;
@@ -374,6 +381,28 @@
         object-fit: contain;
         filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.55));
       }
+      .lawyer-frog-emoji-ring {
+        position: absolute;
+        inset: 14%;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .lawyer-frog-emoji-ring span {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        font-size: clamp(1.35rem, 6vw, 2.35rem);
+        filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55));
+        animation: lawyerFrogEmojiBob 900ms ease-in-out infinite alternate;
+        animation-delay: var(--delay, 0ms);
+        transform: translate(-50%, -50%) translate(var(--emoji-x), var(--emoji-y));
+      }
+      .lawyer-frog-emoji-ring span:nth-child(1) { --emoji-x: -118px; --emoji-y: -74px; --delay: 0ms; }
+      .lawyer-frog-emoji-ring span:nth-child(2) { --emoji-x: 112px; --emoji-y: -84px; --delay: 120ms; }
+      .lawyer-frog-emoji-ring span:nth-child(3) { --emoji-x: -132px; --emoji-y: 28px; --delay: 240ms; }
+      .lawyer-frog-emoji-ring span:nth-child(4) { --emoji-x: 130px; --emoji-y: 34px; --delay: 360ms; }
+      .lawyer-frog-emoji-ring span:nth-child(5) { --emoji-x: -62px; --emoji-y: 120px; --delay: 480ms; }
+      .lawyer-frog-emoji-ring span:nth-child(6) { --emoji-x: 72px; --emoji-y: 116px; --delay: 600ms; }
       .lawyer-frog-fx-fallback {
         position: absolute;
         z-index: 0;
@@ -386,9 +415,13 @@
       }
       @keyframes lawyerFrogAppear {
         0% { opacity: 0; transform: translateY(18px) scale(0.72) rotate(-6deg); }
-        16% { opacity: 1; transform: translateY(0) scale(1.04) rotate(3deg); }
-        72% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
-        100% { opacity: 0; transform: translateY(-18px) scale(0.86) rotate(5deg); }
+        12% { opacity: 1; transform: translateY(0) scale(1.04) rotate(3deg); }
+        90% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+        100% { opacity: 0; transform: translateY(-8px) scale(1.68) rotate(5deg); }
+      }
+      @keyframes lawyerFrogEmojiBob {
+        from { transform: translate(-50%, -50%) translate(var(--emoji-x), var(--emoji-y)) scale(0.9) rotate(-6deg); }
+        to { transform: translate(-50%, -50%) translate(var(--emoji-x), calc(var(--emoji-y) - 10px)) scale(1.08) rotate(8deg); }
       }
       .burst-taunt-banner {
         margin: 2px auto 8px;
@@ -767,11 +800,6 @@
         </div>
 
         <div class="shooter-stage">
-          <button type="button" class="lawyer-frog-bg" id="lawyerFrogBtn" aria-label="律師告你">
-            <span class="lawyer-frog-fallback" aria-hidden="true">🐸</span>
-            <img id="lawyerFrogImg" class="lawyer-frog-img" src="green_frog1.png" alt="律師告你青蛙動畫" />
-            <span class="lawyer-frog-label">律師告你</span>
-          </button>
           <div class="burst-taunt-banner hidden" id="burstTauntBanner"></div>
           <div class="target-view" id="targetView">
             <img id="targetImage" alt="雷包標靶" />
@@ -780,6 +808,14 @@
             <div class="lawyer-frog-fx" id="lawyerFrogFx" aria-hidden="true">
               <span class="lawyer-frog-fx-fallback" aria-hidden="true">🐸</span>
               <img id="lawyerFrogImg" class="lawyer-frog-fx-img" src="green_frog1.png" alt="律師告你青蛙動畫" />
+              <div class="lawyer-frog-emoji-ring" aria-hidden="true">
+                <span>🐸</span>
+                <span>🐸</span>
+                <span>🐸</span>
+                <span>🐸</span>
+                <span>🐸</span>
+                <span>🐸</span>
+              </div>
             </div>
             <div class="aim-reticle" id="aimReticle" aria-hidden="true"></div>
           </div>
@@ -877,7 +913,7 @@
           title: "本日紅溫紀錄 😡🔥",
           subtitle: "今天又被雷到了，先把火噴出來。",
           stickers: "😡🔥💥",
-          colors: ["#ffe1d0", "#ff9f78", "#fff7f2", "#542b2b", "#ef8f6a", "#ff5f46", "#ff936c", "#ffd5c2"],
+          colors: ["#fff7ef", "#ffdccc", "#fffaf5", "#542b2b", "#efad91", "#ff735c", "#ffa17e", "#ffe0d1"],
           placeholders: ["你現在最想罵什麼", "今天哪一波最讓你想砸手機", "今天最雷的是誰 / 哪件事"],
         },
         love: {
@@ -1088,6 +1124,8 @@
       const SHOOTER_FIRE_STYLE_STORAGE_KEY = "rankDiary_shooter_fire_style";
       const CRIT_CHANCE = 0.15;
       const LAWYER_FROG_FRAMES = Array.from({ length: 7 }, (_, index) => `green_frog${index + 1}.png`);
+      const LAWYER_FROG_FRAME_MS = 120;
+      const LAWYER_FROG_FINAL_HOLD_MS = 3000;
       const FIRE_STYLES = [
         { key: "normal", label: "標準 •", projectile: { type: "emoji", value: "•" } },
         { key: "poop", label: "💩", projectile: { type: "emoji", value: "💩" } },
@@ -2033,11 +2071,11 @@
             lawyerFrogTimer = null;
             lawyerFrogImgEl.src = LAWYER_FROG_FRAMES[LAWYER_FROG_FRAMES.length - 1];
             showToast("律師函已寄出 🐸⚖️");
-            lawyerFrogHideTimer = setTimeout(hideLawyerFrogAnimation, 420);
+            lawyerFrogHideTimer = setTimeout(hideLawyerFrogAnimation, LAWYER_FROG_FINAL_HOLD_MS);
             return;
           }
           lawyerFrogImgEl.src = nextFrame;
-        }, 120);
+        }, LAWYER_FROG_FRAME_MS);
       }
 
       function showBurstTaunt(text) {
