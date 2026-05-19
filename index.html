@@ -8,6 +8,8 @@
       :root {
         --bg1: #ffe1d0;
         --bg2: #ff9f78;
+        --bg-pattern: none;
+        --bg-pattern-size: auto;
         --card: #fff7f2;
         --text: #542b2b;
         --title-color: var(--text);
@@ -26,7 +28,9 @@
         font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
         color: var(--text);
         min-height: 100vh;
-        background: radial-gradient(circle at 20% 0%, var(--bg1), var(--bg2));
+        background-image: var(--bg-pattern), radial-gradient(circle at 20% 0%, var(--bg1), var(--bg2));
+        background-size: var(--bg-pattern-size), auto;
+        background-attachment: fixed;
         transition: background 0.35s ease;
       }
 
@@ -900,6 +904,16 @@
         "red_lady_diary_complete_04.png",
       ];
 
+      function makeEmojiPattern(emojis) {
+        const emojiMarkup = emojis
+          .map(({ icon, x, y, size, opacity, rotate = 0 }) =>
+            `<text x="${x}" y="${y}" font-size="${size}" opacity="${opacity}" transform="rotate(${rotate} ${x} ${y})">${icon}</text>`
+          )
+          .join("");
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">${emojiMarkup}</svg>`;
+        return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+      }
+
       const themes = {
         rage: {
           name: "被雷到紅溫了",
@@ -907,6 +921,13 @@
           subtitle: "今天又被雷到了，先把火噴出來。",
           stickers: "😡🔥💥",
           colors: ["#ffe1d0", "#ff9f78", "#fff7f2", "#542b2b", "#ef8f6a", "#ff5f46", "#ff936c", "#ffd5c2"],
+          bgPattern: makeEmojiPattern([
+            { icon: "🔥", x: 18, y: 30, size: 16, opacity: 0.12, rotate: -10 },
+            { icon: "😡", x: 76, y: 24, size: 15, opacity: 0.1, rotate: 8 },
+            { icon: "🔥", x: 104, y: 80, size: 18, opacity: 0.11, rotate: 12 },
+            { icon: "😠", x: 36, y: 104, size: 14, opacity: 0.09, rotate: -6 },
+          ]),
+          bgPatternSize: "128px 128px",
           placeholders: ["你現在最想罵什麼", "今天哪一波最讓你想砸手機", "今天最雷的是誰 / 哪件事"],
         },
         love: {
@@ -1329,6 +1350,8 @@
         const root = document.documentElement;
         root.style.setProperty("--bg1", bg1);
         root.style.setProperty("--bg2", bg2);
+        root.style.setProperty("--bg-pattern", theme.bgPattern || "none");
+        root.style.setProperty("--bg-pattern-size", theme.bgPatternSize || "auto");
         root.style.setProperty("--card", card);
         root.style.setProperty("--text", text);
         root.style.setProperty("--line", line);
@@ -1371,7 +1394,9 @@
           btn.className = "quick-btn";
           btn.textContent = item.label;
           btn.addEventListener("click", () => {
+            const currentTheme = state.theme;
             state = item.apply(state);
+            state.theme = currentTheme;
             state.lastQuickTemplate = item.label;
             renderAll();
             saveDraft(`已套用「${item.label}」草稿`);
