@@ -665,6 +665,109 @@
         color: var(--muted-text);
         font-weight: 700;
       }
+      .dressup-wrap { margin-top: 14px; }
+      .dressup-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      .dressup-stage {
+        margin-top: 10px;
+        background: rgba(255,255,255,0.55);
+        border: 2px dashed var(--line);
+        border-radius: 14px;
+        padding: 12px;
+      }
+      .doll-stack {
+        position: relative;
+        width: min(74vw, 280px);
+        max-width: 280px;
+        margin: 0 auto;
+        aspect-ratio: 1 / 1.35;
+      }
+      .doll-layer {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .dressup-msg {
+        margin: 10px auto 0;
+        width: min(100%, 320px);
+        min-height: 42px;
+        font-weight: 700;
+        color: var(--muted-text);
+        text-align: center;
+      }
+      .dressup-actions, .dressup-interact, .dressup-snacks {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .dressup-cake-fx {
+        position: absolute;
+        left: 50%;
+        top: 56%;
+        font-size: 1.4rem;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .dressup-cake-fx.show { animation: cakeFloat 900ms ease-out forwards; }
+      .doll-stack.petting { animation: dollPet 500ms ease; }
+      .dressup-feed-count {
+        margin: 6px auto 0;
+        width: min(100%, 320px);
+        font-size: 0.9rem;
+        font-weight: 800;
+        text-align: center;
+        color: var(--muted-text);
+      }
+      .dressup-snacks {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .snack-btn {
+        background: var(--chip);
+      }
+      .dressup-pet-fx {
+        position: absolute;
+        left: 50%;
+        top: 8%;
+        transform: translate(-50%, 0);
+        font-size: 1.35rem;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .dressup-pet-fx.show { animation: petEmojiPop 620ms ease-out forwards; }
+      @keyframes petEmojiPop {
+        from { opacity: 0; transform: translate(-50%, 10px) scale(0.8); }
+        30% { opacity: 1; transform: translate(-50%, -2px) scale(1.05); }
+        to { opacity: 0; transform: translate(-50%, -18px) scale(1); }
+      }
+      .dressup-fallback {
+        margin: 8px auto 0;
+        width: min(100%, 320px);
+        padding: 8px 10px;
+        border: 2px dashed var(--line);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--muted-text);
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-align: center;
+      }
+      @keyframes cakeFloat {
+        from { opacity: 1; transform: translate(-50%, -8px) scale(0.9); }
+        to { opacity: 0; transform: translate(-50%, -56px) scale(1.2); }
+      }
+      @keyframes dollPet {
+        0% { transform: scale(1); }
+        35% { transform: scale(1.05) rotate(-1deg); }
+        65% { transform: scale(1.04) rotate(1deg); }
+        100% { transform: scale(1) rotate(0deg); }
+      }
 
       @media (min-width: 760px) {
         .top-row { grid-template-columns: 1fr 1fr; }
@@ -776,6 +879,7 @@
             <button id="downloadExportBtn" class="action-btn" type="button">匯出文字（下載）</button>
             <button id="shareShotBtn" class="action-btn" type="button">截圖分享</button>
             <button id="openShooterBtn" class="action-btn" type="button">進入雷包射擊場</button>
+            <button id="openDressupBtn" class="action-btn" type="button">🎀 打開換裝艾瑪</button>
           </div>
         </section>
 
@@ -855,6 +959,40 @@
 
           <div class="shooter-comment" id="shooterComment">今天很克制，先記你一功。</div>
           <div class="shooter-status" id="shooterStatusText">紅溫狀態同步中...</div>
+        </div>
+      </section>
+
+      <section class="card dressup-wrap hidden" id="dressupView">
+        <div class="dressup-head">
+          <h2 class="shooter-title">換裝艾瑪</h2>
+          <button type="button" id="backFromDressupBtn">← 回到日記</button>
+        </div>
+        <div class="dressup-stage">
+          <div class="doll-stack" id="dollStack">
+            <img id="dollBaseImage" class="doll-layer" src="doll_base.png" alt="底娃" />
+            <img id="dollOutfitImage" class="doll-layer" src="outfit_green_adventurer.png" alt="艾瑪服裝" />
+            <span class="dressup-cake-fx" id="dressupCakeFx" aria-hidden="true">🍰</span>
+            <span class="dressup-pet-fx" id="dressupPetFx" aria-hidden="true">🫳❤️</span>
+          </div>
+          <div class="dressup-msg" id="dressupMessage">艾瑪今天穿得暖暖，準備繼續排位 🧸</div>
+          <div class="dressup-fallback hidden" id="dressupFallbackMsg"></div>
+          <div class="dressup-feed-count" id="dressupFeedCount">已餵食艾瑪 0 次</div>
+          <div class="dressup-actions">
+            <button type="button" id="wearGreenBtn">🧰 綠色冒險裝</button>
+            <button type="button" id="wearBlueBtn">🩵 藍白洋裝</button>
+          </div>
+          <div class="dressup-snacks" id="dressupSnacks">
+            <button type="button" class="snack-btn" data-snack="🍭">🍭</button>
+            <button type="button" class="snack-btn" data-snack="🍬">🍬</button>
+            <button type="button" class="snack-btn" data-snack="🍫">🍫</button>
+            <button type="button" class="snack-btn" data-snack="🍩">🍩</button>
+            <button type="button" class="snack-btn" data-snack="🍪">🍪</button>
+            <button type="button" class="snack-btn" data-snack="🧋">🧋</button>
+          </div>
+          <div class="dressup-interact">
+            <button type="button" id="feedCakeBtn">🍰 給蛋糕</button>
+            <button type="button" id="petHeadBtn">🤲 摸摸頭</button>
+          </div>
         </div>
       </section>
     </div>
@@ -1090,8 +1228,24 @@
       const manualSelectBtnEl = document.getElementById("manualSelectBtn");
       const manualCloseBtnEl = document.getElementById("manualCloseBtn");
       const openShooterBtnEl = document.getElementById("openShooterBtn");
+      const openDressupBtnEl = document.getElementById("openDressupBtn");
       const shooterViewEl = document.getElementById("shooterView");
       const backDiaryBtnEl = document.getElementById("backDiaryBtn");
+      const dressupViewEl = document.getElementById("dressupView");
+      const backFromDressupBtnEl = document.getElementById("backFromDressupBtn");
+      const dollStackEl = document.getElementById("dollStack");
+      const dollBaseImageEl = document.getElementById("dollBaseImage");
+      const dollOutfitImageEl = document.getElementById("dollOutfitImage");
+      const dressupMessageEl = document.getElementById("dressupMessage");
+      const wearGreenBtnEl = document.getElementById("wearGreenBtn");
+      const wearBlueBtnEl = document.getElementById("wearBlueBtn");
+      const feedCakeBtnEl = document.getElementById("feedCakeBtn");
+      const petHeadBtnEl = document.getElementById("petHeadBtn");
+      const dressupCakeFxEl = document.getElementById("dressupCakeFx");
+      const dressupFallbackMsgEl = document.getElementById("dressupFallbackMsg");
+      const dressupFeedCountEl = document.getElementById("dressupFeedCount");
+      const dressupPetFxEl = document.getElementById("dressupPetFx");
+      const dressupSnacksEl = document.getElementById("dressupSnacks");
       const targetViewEl = document.getElementById("targetView");
       const targetImageEl = document.getElementById("targetImage");
       const targetFallbackEl = document.getElementById("targetFallback");
@@ -1132,6 +1286,10 @@
       let lawyerFrogHideTimer = null;
       let burstRespawnTimer = null;
       let burstTauntTimer = null;
+      let dollFaceIndex = 0;
+      let dollFaceTimer = null;
+      let petHeadTimer = null;
+      let dressupFeedCount = 0;
       const SHOOTER_STORAGE_KEY = "rankDiary_shooter_data";
       const SHOOTER_TARGETS_STORAGE_KEY = "rankDiary_shooter_target_images";
       const SHOOTER_SOUND_STORAGE_KEY = "rankDiary_shooter_sound";
@@ -2288,18 +2446,116 @@
         shooterAutoInterval = null;
       }
 
+      function showMainDiaryView() {
+        diaryCardEl.classList.remove("hidden");
+        document.querySelector(".history-wrap").classList.remove("hidden");
+        shooterViewEl.classList.add("hidden");
+        dressupViewEl.classList.add("hidden");
+      }
+
+      function bindDressupEvents() {
+        const dollFaces = [
+          "doll_base.png",
+          "doll_base_shy.png",
+        ];
+        const showDressupFallback = (text) => {
+          dressupFallbackMsgEl.textContent = text;
+          dressupFallbackMsgEl.classList.remove("hidden");
+        };
+        const hideDressupFallback = () => {
+          dressupFallbackMsgEl.textContent = "";
+          dressupFallbackMsgEl.classList.add("hidden");
+        };
+
+        dollBaseImageEl.addEventListener("error", () => {
+          showDressupFallback("找不到底娃圖片（doll_base.png / doll_base_shy.png），請確認檔案在專案根目錄。");
+        });
+        dollOutfitImageEl.addEventListener("error", () => {
+          showDressupFallback("找不到服裝圖片（outfit_green_adventurer.png / outfit_blue_lolita.png），請確認檔案在專案根目錄。");
+        });
+        dollBaseImageEl.addEventListener("load", hideDressupFallback);
+        dollOutfitImageEl.addEventListener("load", hideDressupFallback);
+
+        if (!dollFaceTimer) {
+          dollFaceTimer = setInterval(() => {
+            dollFaceIndex = (dollFaceIndex + 1) % dollFaces.length;
+            dollBaseImageEl.src = dollFaces[dollFaceIndex];
+          }, 1200);
+        }
+
+        openDressupBtnEl.addEventListener("click", () => {
+          diaryCardEl.classList.add("hidden");
+          document.querySelector(".history-wrap").classList.add("hidden");
+          shooterViewEl.classList.add("hidden");
+          dressupViewEl.classList.remove("hidden");
+        });
+
+        backFromDressupBtnEl.addEventListener("click", showMainDiaryView);
+
+        wearGreenBtnEl.addEventListener("click", () => {
+          dollOutfitImageEl.src = "outfit_green_adventurer.png";
+          dressupMessageEl.textContent = "艾瑪換上冒險裝，準備去探索地圖 🌿";
+        });
+
+        wearBlueBtnEl.addEventListener("click", () => {
+          dollOutfitImageEl.src = "outfit_blue_lolita.png";
+          dressupMessageEl.textContent = "艾瑪換上藍白洋裝，今天是優雅模式 🩵";
+        });
+
+        const updateFeedCount = () => {
+          dressupFeedCountEl.textContent = `已餵食艾瑪 ${dressupFeedCount} 次`;
+        };
+
+        const feedEmma = (snack = "🍰") => {
+          dressupFeedCount += 1;
+          updateFeedCount();
+          dressupMessageEl.textContent = `艾瑪吃到${snack}，開心轉圈圈 ${snack}`;
+          dressupCakeFxEl.textContent = snack;
+          dressupCakeFxEl.classList.remove("show");
+          void dressupCakeFxEl.offsetWidth;
+          dressupCakeFxEl.classList.add("show");
+        };
+
+        updateFeedCount();
+
+        feedCakeBtnEl.addEventListener("click", () => {
+          feedEmma("🍰");
+        });
+
+        dressupSnacksEl.addEventListener("click", (event) => {
+          const target = event.target.closest(".snack-btn");
+          if (!target) return;
+          feedEmma(target.dataset.snack || "🍬");
+        });
+
+        petHeadBtnEl.addEventListener("click", () => {
+          dressupMessageEl.textContent = "艾瑪被摸摸頭，乖乖發光中 ✨";
+          dressupPetFxEl.classList.remove("show");
+          void dressupPetFxEl.offsetWidth;
+          dressupPetFxEl.classList.add("show");
+          dollStackEl.classList.remove("petting");
+          void dollStackEl.offsetWidth;
+          dollStackEl.classList.add("petting");
+          if (petHeadTimer) clearTimeout(petHeadTimer);
+          petHeadTimer = setTimeout(() => {
+            dressupPetFxEl.classList.remove("show");
+            dollStackEl.classList.remove("petting");
+            petHeadTimer = null;
+          }, 520);
+        });
+      }
+
       function bindShooterEvents() {
         openShooterBtnEl.addEventListener("click", () => {
-          document.getElementById("diaryCard").classList.add("hidden");
+          diaryCardEl.classList.add("hidden");
           document.querySelector(".history-wrap").classList.add("hidden");
+          dressupViewEl.classList.add("hidden");
           shooterViewEl.classList.remove("hidden");
           renderShooterGame();
         });
 
         backDiaryBtnEl.addEventListener("click", () => {
-          shooterViewEl.classList.add("hidden");
-          document.getElementById("diaryCard").classList.remove("hidden");
-          document.querySelector(".history-wrap").classList.remove("hidden");
+          showMainDiaryView();
           stopAutoFire();
         });
 
@@ -2525,6 +2781,7 @@
       loadCustomTargetImages();
       preloadCelebrationImages();
       bindShooterEvents();
+      bindDressupEvents();
       updateShooterSoundUI();
       updateFireStyleUI();
       updateAimReticle();
