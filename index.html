@@ -19,6 +19,7 @@
         --accent: #ff5f46;
         --accent2: #ff936c;
         --chip: #ffd5c2;
+        --readable-dark: color-mix(in srgb, var(--text) 72%, #000000 28%);
       }
 
       * { box-sizing: border-box; }
@@ -97,10 +98,10 @@
         border-radius: 14px;
         padding: 10px;
       }
-      .section h2 { margin: 0 0 8px; font-size: 1rem; color: color-mix(in srgb, var(--text) 72%, #000000 28%); }
+      .section h2 { margin: 0 0 8px; font-size: 1rem; color: var(--readable-dark); }
 
-      label { display: grid; gap: 5px; margin-bottom: 9px; font-weight: 700; font-size: 0.95rem; }
-      .field-block { display: grid; gap: 5px; margin-bottom: 9px; font-weight: 700; font-size: 0.95rem; }
+      label { display: grid; gap: 5px; margin-bottom: 9px; font-weight: 700; font-size: 0.95rem; color: var(--readable-dark); }
+      .field-block { display: grid; gap: 5px; margin-bottom: 9px; font-weight: 700; font-size: 0.95rem; color: var(--readable-dark); }
 
       input[type="text"], textarea, select {
         width: 100%;
@@ -117,6 +118,7 @@
       .mood-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
       .mood-btn { border-radius: 999px; padding: 7px 11px; }
       .mood-btn.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+      #selectedMood { color: var(--readable-dark); font-weight: 700; }
 
       .grid2 { display: grid; gap: 8px; }
 
@@ -337,7 +339,7 @@
         gap: 10px;
         flex-wrap: wrap;
       }
-      .shooter-title { margin: 0; color: color-mix(in srgb, var(--text) 72%, #000000 28%); }
+      .shooter-title { margin: 0; color: var(--readable-dark); }
       .shooter-stage {
         position: relative;
         margin-top: 10px;
@@ -617,13 +619,13 @@
         border-radius: 12px;
         padding: 10px;
         font-weight: 700;
-        color: var(--muted-text);
+        color: var(--readable-dark);
       }
       .shooter-status {
         margin-top: 8px;
         font-size: 0.9rem;
         font-weight: 800;
-        color: var(--muted-text);
+        color: var(--readable-dark);
       }
       .target-burst {
         animation: targetBurst 260ms ease;
@@ -698,7 +700,7 @@
         width: min(100%, 320px);
         min-height: 42px;
         font-weight: 700;
-        color: var(--muted-text);
+        color: var(--readable-dark);
         text-align: center;
       }
       .dressup-actions, .dressup-interact, .dressup-snacks {
@@ -723,7 +725,7 @@
         font-size: 0.9rem;
         font-weight: 800;
         text-align: center;
-        color: var(--muted-text);
+        color: var(--readable-dark);
       }
       .dressup-snacks {
         grid-template-columns: repeat(3, 1fr);
