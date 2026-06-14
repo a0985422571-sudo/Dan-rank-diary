@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>第五人格排位降溫日記 v0.4</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
         --bg1: #ffe1d0;
@@ -20,6 +26,7 @@
         --accent2: #ff936c;
         --chip: #ffd5c2;
         --readable-dark: color-mix(in srgb, var(--text) 72%, #000000 28%);
+        --field-text: var(--text);
       }
 
       * { box-sizing: border-box; }
@@ -110,7 +117,7 @@
         border-radius: 10px;
         padding: 9px 10px;
         font-size: 1rem;
-        color: var(--text);
+        color: var(--field-text);
         background: #fff;
       }
 
@@ -841,6 +848,27 @@
       .section-collapsible > .quick-fill,
       .section-collapsible > .template-fill { padding: 0 10px 10px; }
 
+      /* ===== 深色主題（老大模式）可讀性修正 ===== */
+      body.theme-dark .section,
+      body.theme-dark .heat-box,
+      body.theme-dark .export-details,
+      body.theme-dark .empty-tip {
+        background: rgba(0, 0, 0, 0.32);
+      }
+      body.theme-dark .history-item {
+        background: rgba(0, 0, 0, 0.34);
+      }
+      body.theme-dark .date-box,
+      body.theme-dark .status-box {
+        background: #f7efdc;
+        color: #2c2218;
+      }
+      body.theme-dark .stat-chip,
+      body.theme-dark .shooter-comment {
+        background: rgba(0, 0, 0, 0.34);
+      }
+      body.theme-dark .stat-chip { color: var(--highlight-text); }
+
       @media (min-width: 760px) {
         .top-row { grid-template-columns: 1fr 1fr; }
         .theme-row { grid-template-columns: repeat(4, 1fr); }
@@ -861,7 +889,7 @@
         <div class="card top-row">
           <div class="date-box">
             今天哪一天：
-            <input id="diaryDate" type="date" />
+            <input id="diaryDate" type="date" aria-label="選擇日記日期" />
           </div>
           <div class="status-box">草稿狀態：<span id="saveStatus">未儲存</span></div>
         </div>
@@ -869,7 +897,7 @@
 
       <main class="card" id="diaryCard">
         <header class="head">
-          <div class="stickers" id="stickers">😡🔥💥</div>
+          <div class="stickers" id="stickers" aria-hidden="true">😡🔥💥</div>
           <h1 id="mainTitle">本日紅溫紀錄 😡🔥</h1>
           <p class="subtitle" id="subTitle">今天又被雷到了，先把火噴出來。</p>
         </header>
@@ -906,7 +934,7 @@
             <label>
               紅溫值
               <div class="heat-box">
-                <input id="heatValue" type="range" min="0" max="100" step="25" value="50" />
+                <input id="heatValue" type="range" min="0" max="100" step="25" value="50" aria-label="紅溫值（0 到 100）" />
                 <div class="heat-meta">
                   <span id="heatNumber">50</span>
                   <span id="heatLabel">想翻白眼</span>
@@ -1058,12 +1086,12 @@
             <button type="button" id="wearBlueBtn">🩵 藍白洋裝</button>
           </div>
           <div class="dressup-snacks" id="dressupSnacks">
-            <button type="button" class="snack-btn" data-snack="🍭">🍭</button>
-            <button type="button" class="snack-btn" data-snack="🍬">🍬</button>
-            <button type="button" class="snack-btn" data-snack="🍫">🍫</button>
-            <button type="button" class="snack-btn" data-snack="🍩">🍩</button>
-            <button type="button" class="snack-btn" data-snack="🍪">🍪</button>
-            <button type="button" class="snack-btn" data-snack="🧋">🧋</button>
+            <button type="button" class="snack-btn" data-snack="🍭" aria-label="餵食棒棒糖">🍭</button>
+            <button type="button" class="snack-btn" data-snack="🍬" aria-label="餵食糖果">🍬</button>
+            <button type="button" class="snack-btn" data-snack="🍫" aria-label="餵食巧克力">🍫</button>
+            <button type="button" class="snack-btn" data-snack="🍩" aria-label="餵食甜甜圈">🍩</button>
+            <button type="button" class="snack-btn" data-snack="🍪" aria-label="餵食餅乾">🍪</button>
+            <button type="button" class="snack-btn" data-snack="🧋" aria-label="餵食珍珠奶茶">🧋</button>
           </div>
           <div class="dressup-interact">
             <button type="button" id="feedCakeBtn">🍰 給蛋糕</button>
@@ -1074,14 +1102,14 @@
     </div>
 
     <nav class="tab-bar" id="tabBar" aria-label="主要功能切換">
-      <button type="button" class="tab-btn active" data-view="diary">
-        <span class="tab-icon">📔</span><span class="tab-label">日記</span>
+      <button type="button" class="tab-btn active" data-view="diary" aria-label="切換到日記">
+        <span class="tab-icon" aria-hidden="true">📔</span><span class="tab-label">日記</span>
       </button>
-      <button type="button" class="tab-btn" data-view="shooter">
-        <span class="tab-icon">🎯</span><span class="tab-label">射擊場</span>
+      <button type="button" class="tab-btn" data-view="shooter" aria-label="切換到雷包射擊場">
+        <span class="tab-icon" aria-hidden="true">🎯</span><span class="tab-label">射擊場</span>
       </button>
-      <button type="button" class="tab-btn" data-view="dressup">
-        <span class="tab-icon">🎀</span><span class="tab-label">換裝</span>
+      <button type="button" class="tab-btn" data-view="dressup" aria-label="切換到換裝艾瑪">
+        <span class="tab-icon" aria-hidden="true">🎀</span><span class="tab-label">換裝</span>
       </button>
     </nav>
 
@@ -1177,8 +1205,8 @@
           title: "今天我最大 👑",
           subtitle: "不爽被問、不爽被催、不爽被情勒。",
           stickers: "👑🖤🥀",
-          colors: ["#181818", "#311111", "#151515", "#b7a077", "#5f4822", "#9b7a35", "#6f2424", "#262220"],
-          textLayers: { title: "#d2bc88", body: "#b7a077", muted: "#9f9275", highlight: "#c6af7f" },
+          colors: ["#181818", "#311111", "#151515", "#d8c39a", "#5f4822", "#c6973d", "#6f2424", "#262220"],
+          textLayers: { title: "#ecd9aa", body: "#d8c39a", muted: "#c2b288", highlight: "#ecd9aa", readableDark: "#ecd9aa", field: "#2c2218", dark: true },
           placeholders: ["先一句：今天誰在那邊問問問", "把你的不爽與邊界一次講完", "今天最不爽被催的事"],
         },
       };
@@ -1605,6 +1633,12 @@
         root.style.setProperty("--title-color", theme.textLayers?.title || text);
         root.style.setProperty("--muted-text", theme.textLayers?.muted || text);
         root.style.setProperty("--highlight-text", theme.textLayers?.highlight || text);
+        root.style.setProperty(
+          "--readable-dark",
+          theme.textLayers?.readableDark || "color-mix(in srgb, var(--text) 72%, #000000 28%)"
+        );
+        root.style.setProperty("--field-text", theme.textLayers?.field || text);
+        document.body.classList.toggle("theme-dark", Boolean(theme.textLayers?.dark));
         mainTitleEl.textContent = theme.title;
         subTitleEl.textContent = theme.subtitle;
         stickersEl.textContent = theme.stickers;
@@ -1619,6 +1653,7 @@
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = `theme-btn ${state.theme === key ? "active" : ""}`;
+          btn.setAttribute("aria-pressed", String(state.theme === key));
           btn.textContent = theme.name;
           btn.addEventListener("click", () => {
             state.theme = key;
@@ -1678,6 +1713,7 @@
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = `mood-btn ${state.moods.includes(m) ? "active" : ""}`;
+          btn.setAttribute("aria-pressed", String(state.moods.includes(m)));
           btn.textContent = m;
           btn.addEventListener("click", () => {
             if (state.moods.includes(m)) {
@@ -1752,6 +1788,7 @@
           btn.type = "button";
           btn.className = "vent-btn";
           btn.textContent = VENT_LABELS[cfg.key] || `${cfg.emoji} ${cfg.label}`;
+          btn.setAttribute("aria-label", `${cfg.label}（短按噴一次，長按連續噴射）`);
           meta.className = "vent-meta";
           meta.textContent = `今日 ${cfg.label}：${count} 次`;
 
@@ -2146,6 +2183,7 @@
       function updateShooterSoundUI() {
         soundToggleBtnEl.textContent = shooterSoundEnabled ? "🔊 命中音效：開" : "🔇 命中音效：關";
         soundToggleBtnEl.classList.toggle("on", shooterSoundEnabled);
+        soundToggleBtnEl.setAttribute("aria-pressed", String(shooterSoundEnabled));
       }
 
       function updateFireStyleUI() {
@@ -2546,7 +2584,9 @@
         dressupViewEl.classList.toggle("hidden", !isDressup);
         if (tabBarEl) {
           tabBarEl.querySelectorAll(".tab-btn").forEach((btn) => {
-            btn.classList.toggle("active", btn.dataset.view === view);
+            const active = btn.dataset.view === view;
+            btn.classList.toggle("active", active);
+            btn.setAttribute("aria-current", active ? "page" : "false");
           });
         }
         if (isShooter) {
