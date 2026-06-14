@@ -748,10 +748,11 @@
         border-radius: 14px;
         padding: 12px;
       }
+      .dressup-left { display: flex; flex-direction: column; align-items: center; }
       .doll-stack {
         position: relative;
-        width: min(74vw, 280px);
-        max-width: 280px;
+        width: min(82vw, 330px);
+        max-width: 330px;
         margin: 0 auto;
         aspect-ratio: 1 / 1.35;
       }
@@ -1056,6 +1057,14 @@
       }
 
       @media (min-width: 760px) {
+        .dressup-stage {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+          gap: 18px;
+          align-items: center;
+        }
+        .dressup-right { align-self: center; }
+        .dressup-left .doll-stack { width: min(42vw, 400px); max-width: 400px; }
         .top-row { grid-template-columns: 1fr 1fr; }
         .theme-row { grid-template-columns: repeat(4, 1fr); }
         .grid2 { grid-template-columns: 1fr 1fr; }
@@ -1283,35 +1292,40 @@
           <h2 class="shooter-title">換裝艾瑪</h2>
         </div>
         <div class="dressup-stage">
-          <div class="doll-stack" id="dollStack">
-            <img id="dollBaseImage" class="doll-layer" src="doll_base.png" alt="底娃" />
-            <img id="dollOutfitImage" class="doll-layer" src="outfit_green_adventurer.png" alt="艾瑪服裝" />
-            <span class="dressup-cake-fx" id="dressupCakeFx" aria-hidden="true">🍰</span>
-            <span class="dressup-pet-fx" id="dressupPetFx" aria-hidden="true">🫳❤️</span>
+          <div class="dressup-left">
+            <div class="doll-stack" id="dollStack">
+              <img id="dollBaseImage" class="doll-layer" src="doll_base.png" alt="底娃" />
+              <img id="dollOutfitImage" class="doll-layer" src="outfit_green_adventurer.png" alt="艾瑪服裝" />
+              <span class="dressup-cake-fx" id="dressupCakeFx" aria-hidden="true">🍰</span>
+              <span class="dressup-pet-fx" id="dressupPetFx" aria-hidden="true">🫳❤️</span>
+            </div>
+            <div class="dressup-msg" id="dressupMessage">艾瑪今天穿得暖暖，準備繼續排位 🧸</div>
+            <div class="dressup-fallback hidden" id="dressupFallbackMsg"></div>
           </div>
-          <div class="dressup-msg" id="dressupMessage">艾瑪今天穿得暖暖，準備繼續排位 🧸</div>
-          <div class="dressup-fallback hidden" id="dressupFallbackMsg"></div>
-          <div class="dressup-feed-count" id="dressupFeedCount">已餵食艾瑪 0 次</div>
-          <div class="affection-box">
-            <div class="affection-label">好感度 <span id="affectionText">❤️ 0/100</span></div>
-            <div class="affection-bar"><div class="affection-fill" id="affectionFill"></div></div>
-            <div class="affection-status" id="affectionStatus">艾瑪還在觀察你…👀</div>
-          </div>
-          <div class="dressup-actions">
-            <button type="button" id="wearGreenBtn">🧰 原皮</button>
-            <button type="button" id="wearBlueBtn">🩵 蘭閨驚夢</button>
-          </div>
-          <div class="dressup-snacks" id="dressupSnacks">
-            <button type="button" class="snack-btn" data-snack="🍭" aria-label="餵食棒棒糖">🍭</button>
-            <button type="button" class="snack-btn" data-snack="🍬" aria-label="餵食糖果">🍬</button>
-            <button type="button" class="snack-btn" data-snack="🍫" aria-label="餵食巧克力">🍫</button>
-            <button type="button" class="snack-btn" data-snack="🍩" aria-label="餵食甜甜圈">🍩</button>
-            <button type="button" class="snack-btn" data-snack="🍪" aria-label="餵食餅乾">🍪</button>
-            <button type="button" class="snack-btn" data-snack="🧋" aria-label="餵食珍珠奶茶">🧋</button>
-          </div>
-          <div class="dressup-interact">
-            <button type="button" id="feedCakeBtn">🍰 給蛋糕</button>
-            <button type="button" id="petHeadBtn">🤲 摸摸頭</button>
+
+          <div class="dressup-right">
+            <div class="dressup-feed-count" id="dressupFeedCount">已餵食艾瑪 0 次</div>
+            <div class="affection-box">
+              <div class="affection-label">好感度 <span id="affectionText">❤️ 0/100</span></div>
+              <div class="affection-bar"><div class="affection-fill" id="affectionFill"></div></div>
+              <div class="affection-status" id="affectionStatus">艾瑪還在觀察你…👀</div>
+            </div>
+            <div class="dressup-actions">
+              <button type="button" id="wearGreenBtn">🧰 原皮</button>
+              <button type="button" id="wearBlueBtn">🩵 蘭閨驚夢</button>
+            </div>
+            <div class="dressup-snacks" id="dressupSnacks">
+              <button type="button" class="snack-btn" data-snack="🍭" aria-label="餵食棒棒糖">🍭</button>
+              <button type="button" class="snack-btn" data-snack="🍬" aria-label="餵食糖果">🍬</button>
+              <button type="button" class="snack-btn" data-snack="🍫" aria-label="餵食巧克力">🍫</button>
+              <button type="button" class="snack-btn" data-snack="🍩" aria-label="餵食甜甜圈">🍩</button>
+              <button type="button" class="snack-btn" data-snack="🍪" aria-label="餵食餅乾">🍪</button>
+              <button type="button" class="snack-btn" data-snack="🧋" aria-label="餵食珍珠奶茶">🧋</button>
+            </div>
+            <div class="dressup-interact">
+              <button type="button" id="feedCakeBtn">🍰 給蛋糕</button>
+              <button type="button" id="petHeadBtn">🤲 摸摸頭</button>
+            </div>
           </div>
         </div>
       </section>
