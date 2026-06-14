@@ -1025,6 +1025,36 @@
         color: var(--muted-text); letter-spacing: 0.5px;
       }
 
+      /* ===== 換裝艾瑪：好感度系統 ===== */
+      .affection-box { margin: 12px auto 0; width: min(100%, 320px); }
+      .affection-label { font-weight: 800; font-size: 0.9rem; color: var(--readable-dark); text-align: center; margin-bottom: 5px; }
+      .affection-bar {
+        height: 16px;
+        border: 2px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+        overflow: hidden;
+      }
+      .affection-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #ff9ec4, #ff5fa2);
+        transition: width 320ms ease;
+      }
+      .affection-status { margin-top: 6px; text-align: center; font-weight: 800; font-size: 0.9rem; color: var(--readable-dark); }
+      .emma-heart {
+        position: absolute;
+        left: var(--x, 50%);
+        top: 58%;
+        font-size: 1.4rem;
+        pointer-events: none;
+        animation: emmaHeart 1100ms ease-out forwards;
+      }
+      @keyframes emmaHeart {
+        from { opacity: 1; transform: translate(-50%, 0) scale(0.6); }
+        to { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), var(--dy, -90px)) scale(1.25); }
+      }
+
       @media (min-width: 760px) {
         .top-row { grid-template-columns: 1fr 1fr; }
         .theme-row { grid-template-columns: repeat(4, 1fr); }
@@ -1251,7 +1281,6 @@
       <section class="card dressup-wrap hidden" id="dressupView">
         <div class="dressup-head">
           <h2 class="shooter-title">換裝艾瑪</h2>
-          <button type="button" id="backFromDressupBtn">← 回到日記</button>
         </div>
         <div class="dressup-stage">
           <div class="doll-stack" id="dollStack">
@@ -1263,9 +1292,14 @@
           <div class="dressup-msg" id="dressupMessage">艾瑪今天穿得暖暖，準備繼續排位 🧸</div>
           <div class="dressup-fallback hidden" id="dressupFallbackMsg"></div>
           <div class="dressup-feed-count" id="dressupFeedCount">已餵食艾瑪 0 次</div>
+          <div class="affection-box">
+            <div class="affection-label">好感度 <span id="affectionText">❤️ 0/100</span></div>
+            <div class="affection-bar"><div class="affection-fill" id="affectionFill"></div></div>
+            <div class="affection-status" id="affectionStatus">艾瑪還在觀察你…👀</div>
+          </div>
           <div class="dressup-actions">
-            <button type="button" id="wearGreenBtn">🧰 綠色冒險裝</button>
-            <button type="button" id="wearBlueBtn">🩵 藍白洋裝</button>
+            <button type="button" id="wearGreenBtn">🧰 原皮</button>
+            <button type="button" id="wearBlueBtn">🩵 蘭閨驚夢</button>
           </div>
           <div class="dressup-snacks" id="dressupSnacks">
             <button type="button" class="snack-btn" data-snack="🍭" aria-label="餵食棒棒糖">🍭</button>
@@ -1553,7 +1587,6 @@
       const manualCloseBtnEl = document.getElementById("manualCloseBtn");
       const shooterViewEl = document.getElementById("shooterView");
       const dressupViewEl = document.getElementById("dressupView");
-      const backFromDressupBtnEl = document.getElementById("backFromDressupBtn");
       const dollStackEl = document.getElementById("dollStack");
       const dollBaseImageEl = document.getElementById("dollBaseImage");
       const dollOutfitImageEl = document.getElementById("dollOutfitImage");
@@ -1565,6 +1598,9 @@
       const dressupCakeFxEl = document.getElementById("dressupCakeFx");
       const dressupFallbackMsgEl = document.getElementById("dressupFallbackMsg");
       const dressupFeedCountEl = document.getElementById("dressupFeedCount");
+      const affectionTextEl = document.getElementById("affectionText");
+      const affectionFillEl = document.getElementById("affectionFill");
+      const affectionStatusEl = document.getElementById("affectionStatus");
       const dressupPetFxEl = document.getElementById("dressupPetFx");
       const dressupSnacksEl = document.getElementById("dressupSnacks");
       const targetViewEl = document.getElementById("targetView");
@@ -1616,6 +1652,9 @@
       let dollFaceTimer = null;
       let petHeadTimer = null;
       let dressupFeedCount = 0;
+      let emmaAffection = 0;
+      let emmaOutfit = "outfit_green_adventurer.png";
+      const DRESSUP_STORAGE_KEY = "rankDiary_dressup_data";
       const SHOOTER_STORAGE_KEY = "rankDiary_shooter_data";
       const SHOOTER_TARGETS_STORAGE_KEY = "rankDiary_shooter_target_images";
       const SHOOTER_SOUND_STORAGE_KEY = "rankDiary_shooter_sound";
@@ -3169,14 +3208,97 @@
           stopMovement();
           stopFrogBlink();
         }
+        if (isDressup) refreshDressupView();
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
+      // ===== 換裝艾瑪：好感度 / 持久化 =====
+      const SNACK_REACTIONS = [
+        "艾瑪吃到{s}，開心轉圈圈！",
+        "{s} 好吃！艾瑪眼睛發亮 ✨",
+        "艾瑪接住 {s}，臉頰鼓鼓的 🥰",
+        "再來一個 {s}！艾瑪超滿足",
+        "{s}！艾瑪小聲說謝謝你 💕",
+      ];
+      const PET_REACTIONS = [
+        "艾瑪被摸摸頭，乖乖發光 ✨",
+        "艾瑪瞇起眼睛，超享受 🥰",
+        "摸摸頭～艾瑪蹭了蹭你的手 🫶",
+        "艾瑪開心到搖來搖去 🧸",
+      ];
+
+      function saveDressupData() {
+        localStorage.setItem(
+          DRESSUP_STORAGE_KEY,
+          JSON.stringify({ affection: emmaAffection, feedCount: dressupFeedCount, outfit: emmaOutfit })
+        );
+      }
+
+      function loadDressupData() {
+        const raw = localStorage.getItem(DRESSUP_STORAGE_KEY);
+        if (!raw) return;
+        try {
+          const d = JSON.parse(raw);
+          emmaAffection = Math.max(0, Math.min(100, Number(d.affection || 0)));
+          dressupFeedCount = Number(d.feedCount || 0);
+          if (typeof d.outfit === "string" && d.outfit) emmaOutfit = d.outfit;
+        } catch {
+          // ignore bad data
+        }
+      }
+
+      function updateFeedCount() {
+        dressupFeedCountEl.textContent = `已餵食艾瑪 ${dressupFeedCount} 次`;
+      }
+
+      function getAffectionStatus(a) {
+        if (a >= 100) return "你是艾瑪的最愛 👑💕";
+        if (a >= 80) return "艾瑪超愛你！💗";
+        if (a >= 50) return "艾瑪很黏你 💕";
+        if (a >= 20) return "艾瑪開始喜歡你了 🧸";
+        return "艾瑪還在觀察你…👀";
+      }
+
+      function updateAffectionUI() {
+        affectionTextEl.textContent = `❤️ ${emmaAffection}/100`;
+        affectionFillEl.style.width = `${emmaAffection}%`;
+        affectionStatusEl.textContent = getAffectionStatus(emmaAffection);
+      }
+
+      function spawnEmmaHearts() {
+        const emojis = ["💕", "💗", "💖", "✨", "🧸"];
+        for (let i = 0; i < 10; i++) {
+          const h = document.createElement("span");
+          h.className = "emma-heart";
+          h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          h.style.setProperty("--x", `${20 + Math.random() * 60}%`);
+          h.style.setProperty("--dx", `${-45 + Math.random() * 90}px`);
+          h.style.setProperty("--dy", `${-80 - Math.random() * 80}px`);
+          dollStackEl.appendChild(h);
+          h.addEventListener("animationend", () => h.remove(), { once: true });
+        }
+      }
+
+      function addAffection(n) {
+        const before = emmaAffection;
+        emmaAffection = Math.min(100, emmaAffection + n);
+        updateAffectionUI();
+        const crossed = [20, 50, 80, 100].some((m) => before < m && emmaAffection >= m);
+        if (crossed) {
+          spawnEmmaHearts();
+          showToast(getAffectionStatus(emmaAffection));
+        }
+        saveDressupData();
+      }
+
+      function refreshDressupView() {
+        dollOutfitImageEl.src = emmaOutfit;
+        updateFeedCount();
+        updateAffectionUI();
+      }
+
       function bindDressupEvents() {
-        const dollFaces = [
-          "doll_base.png",
-          "doll_base_shy.png",
-        ];
+        const dollFaces = ["doll_base.png", "doll_base_shy.png"];
         const showDressupFallback = (text) => {
           dressupFallbackMsgEl.textContent = text;
           dressupFallbackMsgEl.classList.remove("hidden");
@@ -3202,37 +3324,33 @@
           }, 1200);
         }
 
-        backFromDressupBtnEl.addEventListener("click", () => switchView("diary"));
-
         wearGreenBtnEl.addEventListener("click", () => {
-          dollOutfitImageEl.src = "outfit_green_adventurer.png";
-          dressupMessageEl.textContent = "艾瑪換上冒險裝，準備去探索地圖 🌿";
+          emmaOutfit = "outfit_green_adventurer.png";
+          dollOutfitImageEl.src = emmaOutfit;
+          dressupMessageEl.textContent = "艾瑪換上原皮，回歸最初的樣子 🌿";
+          saveDressupData();
         });
 
         wearBlueBtnEl.addEventListener("click", () => {
-          dollOutfitImageEl.src = "outfit_blue_lolita.png";
-          dressupMessageEl.textContent = "艾瑪換上藍白洋裝，今天是優雅模式 🩵";
+          emmaOutfit = "outfit_blue_lolita.png";
+          dollOutfitImageEl.src = emmaOutfit;
+          dressupMessageEl.textContent = "艾瑪換上蘭閨驚夢，今天是優雅模式 🩵";
+          saveDressupData();
         });
-
-        const updateFeedCount = () => {
-          dressupFeedCountEl.textContent = `已餵食艾瑪 ${dressupFeedCount} 次`;
-        };
 
         const feedEmma = (snack = "🍰") => {
           dressupFeedCount += 1;
           updateFeedCount();
-          dressupMessageEl.textContent = `艾瑪吃到${snack}，開心轉圈圈 ${snack}`;
+          addAffection(3);
+          dressupMessageEl.textContent = SNACK_REACTIONS[Math.floor(Math.random() * SNACK_REACTIONS.length)].replaceAll("{s}", snack);
           dressupCakeFxEl.textContent = snack;
           dressupCakeFxEl.classList.remove("show");
           void dressupCakeFxEl.offsetWidth;
           dressupCakeFxEl.classList.add("show");
+          saveDressupData();
         };
 
-        updateFeedCount();
-
-        feedCakeBtnEl.addEventListener("click", () => {
-          feedEmma("🍰");
-        });
+        feedCakeBtnEl.addEventListener("click", () => feedEmma("🍰"));
 
         dressupSnacksEl.addEventListener("click", (event) => {
           const target = event.target.closest(".snack-btn");
@@ -3241,7 +3359,8 @@
         });
 
         petHeadBtnEl.addEventListener("click", () => {
-          dressupMessageEl.textContent = "艾瑪被摸摸頭，乖乖發光中 ✨";
+          addAffection(2);
+          dressupMessageEl.textContent = PET_REACTIONS[Math.floor(Math.random() * PET_REACTIONS.length)];
           dressupPetFxEl.classList.remove("show");
           void dressupPetFxEl.offsetWidth;
           dressupPetFxEl.classList.add("show");
@@ -3255,6 +3374,8 @@
             petHeadTimer = null;
           }, 520);
         });
+
+        refreshDressupView();
       }
 
       function bindShooterEvents() {
@@ -3473,6 +3594,7 @@
       preloadFireStyleImages().then(updateFireStyleUI);
       loadCustomTargetImages();
       preloadCelebrationImages();
+      loadDressupData();
       bindShooterEvents();
       bindDressupEvents();
       updateShooterSoundUI();
