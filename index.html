@@ -36,8 +36,12 @@
         font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
         color: var(--text);
         min-height: 100vh;
-        background-image: var(--bg-pattern), radial-gradient(circle at 20% 0%, var(--bg1), var(--bg2));
-        background-size: var(--bg-pattern-size), auto;
+        background-image:
+          var(--bg-pattern),
+          radial-gradient(circle at 85% 4%, color-mix(in srgb, var(--accent2) 32%, transparent), transparent 40%),
+          radial-gradient(circle at 8% 96%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 45%),
+          linear-gradient(160deg, var(--bg1), var(--bg2));
+        background-size: var(--bg-pattern-size), auto, auto, auto;
         background-attachment: fixed;
         transition: background 0.35s ease;
         padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px));
@@ -46,11 +50,11 @@
       .wrap { width: min(920px, 95%); margin: 16px auto 24px; }
 
       .card {
-        background: var(--card);
+        background: linear-gradient(180deg, color-mix(in srgb, var(--card) 90%, #fff 10%), var(--card) 58%);
         border: 2px solid var(--line);
         border-radius: 20px;
         padding: 14px;
-        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.14);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.35);
       }
 
       .top { position: sticky; top: 8px; z-index: 30; display: grid; gap: 10px; margin-bottom: 12px; }
@@ -97,7 +101,12 @@
       button:active { transform: scale(0.98); }
       button:disabled { opacity: 0.45; cursor: not-allowed; }
 
-      .theme-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+      .theme-btn.active {
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #fff;
+        border-color: var(--accent);
+        box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 40%, transparent);
+      }
 
       .section {
         margin-top: 12px;
@@ -140,7 +149,12 @@
       .quick-btn, .template-btn, .history-summary { color: var(--muted-text); }
 
       .action-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
-      .action-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+      .action-btn.primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #fff;
+        border-color: var(--accent);
+        box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 38%, transparent);
+      }
 
       .vent-grid { display: grid; gap: 8px; overflow: visible; }
       .vent-item { position: relative; overflow: visible; }
@@ -540,9 +554,10 @@
         font-weight: 900;
       }
       .start-frenzy-btn {
-        background: var(--accent);
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
         color: #fff;
         border-color: var(--accent);
+        box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 38%, transparent);
       }
       .start-frenzy-btn:disabled { opacity: 0.5; }
       .shooter-top-controls {
@@ -856,9 +871,10 @@
       .tab-btn .tab-icon { font-size: 1.25rem; line-height: 1; }
       .tab-btn:hover { transform: translateY(-1px); filter: none; }
       .tab-btn.active {
-        background: var(--accent);
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
         color: #fff;
         border-color: var(--accent);
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 38%, transparent);
       }
       .tab-btn.active .tab-label { font-weight: 800; }
 
@@ -930,6 +946,85 @@
       }
       body.theme-dark .stat-chip { color: var(--highlight-text); }
 
+      /* ===== 老子才是老大：色塊跩男（OPUS 4.8 畫的）===== */
+      .swag-man-wrap { display: none; margin: 12px auto 4px; text-align: center; }
+      body.theme-dark .swag-man-wrap { display: block; }
+      .swag-man {
+        position: relative;
+        width: 150px;
+        height: 188px;
+        margin: 0 auto;
+        animation: swagBob 3.6s ease-in-out infinite;
+      }
+      @keyframes swagBob {
+        0%, 100% { transform: rotate(-1.6deg); }
+        50% { transform: rotate(1.6deg); }
+      }
+      .swag-man > div { position: absolute; }
+      .sm-glow {
+        left: 50%; top: 24px; transform: translateX(-50%);
+        width: 150px; height: 150px;
+        background: radial-gradient(circle, color-mix(in srgb, var(--accent) 45%, transparent), transparent 65%);
+        z-index: 0;
+      }
+      .sm-shoulders {
+        left: 50%; bottom: 0; transform: translateX(-50%);
+        width: 150px; height: 74px;
+        background: linear-gradient(180deg, #26221a, #131009);
+        border-radius: 64px 64px 22px 22px;
+        z-index: 1;
+      }
+      .sm-lapel { bottom: 6px; width: 13px; height: 58px; background: linear-gradient(180deg, #e0ad4c, #9a6c22); z-index: 2; }
+      .sm-lapel-l { left: 54px; transform: rotate(15deg); transform-origin: top center; border-radius: 4px; }
+      .sm-lapel-r { right: 54px; transform: rotate(-15deg); transform-origin: top center; border-radius: 4px; }
+      .sm-collar { bottom: 14px; width: 12px; height: 48px; background: #f3ead4; z-index: 3; }
+      .sm-collar-l { left: 61px; transform: rotate(19deg); transform-origin: top center; }
+      .sm-collar-r { right: 61px; transform: rotate(-19deg); transform-origin: top center; }
+      .sm-chain {
+        left: 50%; bottom: 24px; transform: translateX(-50%);
+        width: 46px; height: 40px;
+        border: 4px solid #ecc860; border-top: none;
+        border-radius: 0 0 40px 40px; z-index: 4;
+      }
+      .sm-neck {
+        left: 50%; bottom: 58px; transform: translateX(-50%);
+        width: 34px; height: 30px; background: #c1925f; border-radius: 6px; z-index: 4;
+      }
+      .sm-ear { top: 64px; width: 14px; height: 22px; background: #c1925f; border-radius: 8px; z-index: 4; }
+      .sm-ear-l { left: 33px; }
+      .sm-ear-r { right: 33px; }
+      .sm-head {
+        left: 50%; top: 30px; transform: translateX(-50%);
+        width: 74px; height: 84px;
+        background: linear-gradient(180deg, #e2b685, #cf9b66);
+        border-radius: 34px 34px 28px 28px; z-index: 5;
+      }
+      /* 西瓜皮齊瀏海：圓頂 + 平直瀏海蓋住額頭（很台的鍋蓋頭）*/
+      .sm-hair {
+        left: 50%; top: 10px; transform: translateX(-50%);
+        width: 92px; height: 52px;
+        background: linear-gradient(180deg, #1d1812, #0c0a06);
+        border-radius: 48px 48px 6px 6px;
+        z-index: 6;
+      }
+      .sm-glasses {
+        top: 60px; width: 30px; height: 22px;
+        background: linear-gradient(160deg, #333, #050505);
+        border: 2px solid #e0ad4c; border-radius: 9px;
+        box-shadow: inset 4px 4px 0 rgba(255, 255, 255, 0.16); z-index: 7;
+      }
+      .sm-glasses-l { left: 40px; }
+      .sm-glasses-r { right: 40px; }
+      .sm-bridge { top: 66px; left: 50%; transform: translateX(-50%); width: 16px; height: 5px; background: #e0ad4c; z-index: 7; }
+      .sm-smirk {
+        top: 94px; left: 50%; transform: translateX(-50%) rotate(-9deg);
+        width: 30px; height: 7px; background: #7a4a39; border-radius: 0 0 10px 10px; z-index: 7;
+      }
+      .swag-man-caption {
+        margin-top: 6px; font-size: 0.8rem; font-weight: 800;
+        color: var(--muted-text); letter-spacing: 0.5px;
+      }
+
       @media (min-width: 760px) {
         .top-row { grid-template-columns: 1fr 1fr; }
         .theme-row { grid-template-columns: repeat(4, 1fr); }
@@ -961,6 +1056,27 @@
           <div class="stickers" id="stickers" aria-hidden="true">😡🔥💥</div>
           <h1 id="mainTitle">本日紅溫紀錄 😡🔥</h1>
           <p class="subtitle" id="subTitle">今天又被雷到了，先把火噴出來。</p>
+          <div class="swag-man-wrap" id="swagMan" aria-hidden="true">
+            <div class="swag-man">
+              <div class="sm-glow"></div>
+              <div class="sm-shoulders"></div>
+              <div class="sm-lapel sm-lapel-l"></div>
+              <div class="sm-lapel sm-lapel-r"></div>
+              <div class="sm-collar sm-collar-l"></div>
+              <div class="sm-collar sm-collar-r"></div>
+              <div class="sm-chain"></div>
+              <div class="sm-neck"></div>
+              <div class="sm-ear sm-ear-l"></div>
+              <div class="sm-ear sm-ear-r"></div>
+              <div class="sm-head"></div>
+              <div class="sm-hair"></div>
+              <div class="sm-glasses sm-glasses-l"></div>
+              <div class="sm-glasses sm-glasses-r"></div>
+              <div class="sm-bridge"></div>
+              <div class="sm-smirk"></div>
+            </div>
+            <div class="swag-man-caption">OPUS 4.8 畫的 😎</div>
+          </div>
         </header>
 
         <section class="theme-row" id="themeRow"></section>
@@ -1242,10 +1358,12 @@
           stickers: "😡🔥💥",
           colors: ["#ffe1d0", "#ff9f78", "#fff7f2", "#542b2b", "#ef8f6a", "#ff5f46", "#ff936c", "#ffd5c2"],
           bgPattern: makeEmojiPattern([
-            { icon: "🔥", x: 18, y: 30, size: 16, opacity: 0.12, rotate: -10 },
-            { icon: "😡", x: 76, y: 24, size: 15, opacity: 0.1, rotate: 8 },
-            { icon: "🔥", x: 104, y: 80, size: 18, opacity: 0.11, rotate: 12 },
-            { icon: "😠", x: 36, y: 104, size: 14, opacity: 0.09, rotate: -6 },
+            { icon: "🔥", x: 16, y: 28, size: 17, opacity: 0.12, rotate: -12 },
+            { icon: "😡", x: 74, y: 22, size: 15, opacity: 0.1, rotate: 8 },
+            { icon: "💢", x: 108, y: 56, size: 14, opacity: 0.1, rotate: 0 },
+            { icon: "🔥", x: 100, y: 100, size: 18, opacity: 0.11, rotate: 14 },
+            { icon: "😠", x: 34, y: 104, size: 14, opacity: 0.09, rotate: -6 },
+            { icon: "💥", x: 52, y: 64, size: 13, opacity: 0.08, rotate: 6 },
           ]),
           bgPatternSize: "128px 128px",
           placeholders: ["你現在最想罵什麼", "今天哪一波最讓你想砸手機", "今天最雷的是誰 / 哪件事"],
@@ -1256,6 +1374,14 @@
           subtitle: "今天本來想卸載，想到夢角又忍住了。",
           stickers: "😭💔💕",
           colors: ["#ffe8f5", "#ffb3d9", "#fff8fc", "#653351", "#ef87bc", "#f05aa6", "#ff95c9", "#ffd8ec"],
+          bgPattern: makeEmojiPattern([
+            { icon: "💕", x: 18, y: 30, size: 16, opacity: 0.16, rotate: -10 },
+            { icon: "😭", x: 78, y: 24, size: 15, opacity: 0.11, rotate: 8 },
+            { icon: "💔", x: 106, y: 70, size: 16, opacity: 0.14, rotate: 12 },
+            { icon: "💗", x: 40, y: 100, size: 15, opacity: 0.14, rotate: -6 },
+            { icon: "🥺", x: 60, y: 60, size: 13, opacity: 0.09, rotate: 4 },
+          ]),
+          bgPatternSize: "128px 128px",
           placeholders: ["今天又是因為誰沒辦法退坑", "今天發生什麼讓你一邊崩潰一邊留在坑裡", "今天最讓你心碎的是什麼"],
         },
         shame: {
@@ -1264,6 +1390,14 @@
           subtitle: "打得爛到怕被匿名公審，先寫下來。",
           stickers: "🥹💦🫠",
           colors: ["#dde8ff", "#a2b7df", "#f6f9ff", "#304164", "#819cc9", "#617fc9", "#89a5e1", "#d8e4ff"],
+          bgPattern: makeEmojiPattern([
+            { icon: "💦", x: 18, y: 30, size: 15, opacity: 0.14, rotate: -8 },
+            { icon: "🫠", x: 76, y: 26, size: 16, opacity: 0.11, rotate: 6 },
+            { icon: "🥹", x: 106, y: 72, size: 15, opacity: 0.12, rotate: 10 },
+            { icon: "💧", x: 40, y: 102, size: 14, opacity: 0.13, rotate: -4 },
+            { icon: "😰", x: 58, y: 62, size: 13, opacity: 0.09, rotate: 2 },
+          ]),
+          bgPatternSize: "128px 128px",
           placeholders: ["你現在最想替自己找什麼藉口", "今天哪一波最值得社死", "今天你最怕別人拿哪件事公審你"],
         },
         boss: {
@@ -1272,6 +1406,14 @@
           subtitle: "不爽被問、不爽被催、不爽被情勒。",
           stickers: "👑🖤🥀",
           colors: ["#181818", "#311111", "#151515", "#d8c39a", "#5f4822", "#c6973d", "#6f2424", "#262220"],
+          bgPattern: makeEmojiPattern([
+            { icon: "👑", x: 18, y: 30, size: 16, opacity: 0.14, rotate: -10 },
+            { icon: "🥀", x: 78, y: 24, size: 15, opacity: 0.12, rotate: 8 },
+            { icon: "🖤", x: 106, y: 72, size: 15, opacity: 0.12, rotate: 12 },
+            { icon: "💰", x: 40, y: 102, size: 14, opacity: 0.1, rotate: -6 },
+            { icon: "👑", x: 58, y: 62, size: 12, opacity: 0.08, rotate: 4 },
+          ]),
+          bgPatternSize: "128px 128px",
           textLayers: { title: "#ecd9aa", body: "#d8c39a", muted: "#c2b288", highlight: "#ecd9aa", readableDark: "#ecd9aa", field: "#2c2218", dark: true },
           placeholders: ["先一句：今天誰在那邊問問問", "把你的不爽與邊界一次講完", "今天最不爽被催的事"],
         },
