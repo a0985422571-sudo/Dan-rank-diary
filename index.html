@@ -33,6 +33,7 @@
         background-size: var(--bg-pattern-size), auto;
         background-attachment: fixed;
         transition: background 0.35s ease;
+        padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px));
       }
 
       .wrap { width: min(920px, 95%); margin: 16px auto 24px; }
@@ -224,7 +225,7 @@
       .toast {
         position: fixed;
         left: 50%;
-        bottom: 20px;
+        bottom: calc(90px + env(safe-area-inset-bottom, 0px));
         transform: translateX(-50%) translateY(20px);
         background: var(--accent);
         color: #fff;
@@ -754,13 +755,100 @@
         100% { transform: scale(1) rotate(0deg); }
       }
 
+      /* ===== 底部分頁導航 ===== */
+      .tab-bar {
+        position: fixed;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+        width: min(920px, 100%);
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+        background: color-mix(in srgb, var(--card) 90%, transparent);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-top: 2px solid var(--line);
+        box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.12);
+        z-index: 60;
+      }
+      .tab-btn {
+        display: grid;
+        justify-items: center;
+        gap: 2px;
+        padding: 7px 6px;
+        border: 2px solid transparent;
+        border-radius: 14px;
+        background: transparent;
+        font-size: 0.78rem;
+        color: var(--muted-text);
+        box-shadow: none;
+      }
+      .tab-btn .tab-icon { font-size: 1.25rem; line-height: 1; }
+      .tab-btn:hover { transform: translateY(-1px); filter: none; }
+      .tab-btn.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .tab-btn.active .tab-label { font-weight: 800; }
+
+      /* ===== 匯出折疊區 ===== */
+      .export-details {
+        margin-top: 8px;
+        border: 2px dashed var(--line);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.5);
+        overflow: hidden;
+      }
+      .export-details > summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 11px 12px;
+        font-weight: 800;
+        color: var(--readable-dark);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .export-details > summary::-webkit-details-marker { display: none; }
+      .export-details > summary::after { content: "▾"; transition: transform 0.2s ease; }
+      .export-details[open] > summary::after { transform: rotate(180deg); }
+      .export-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 0 12px 12px;
+      }
+
+      /* ===== 可折疊次要區塊 ===== */
+      .section-collapsible { padding: 0; overflow: hidden; }
+      .section-collapsible > summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 11px 10px;
+        font-weight: 800;
+        font-size: 1rem;
+        color: var(--readable-dark);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .section-collapsible > summary::-webkit-details-marker { display: none; }
+      .section-collapsible > summary::after { content: "▾"; transition: transform 0.2s ease; }
+      .section-collapsible[open] > summary::after { transform: rotate(180deg); }
+      .section-collapsible > .quick-fill,
+      .section-collapsible > .template-fill { padding: 0 10px 10px; }
+
       @media (min-width: 760px) {
         .top-row { grid-template-columns: 1fr 1fr; }
         .theme-row { grid-template-columns: repeat(4, 1fr); }
         .grid2 { grid-template-columns: 1fr 1fr; }
         .quick-fill, .template-fill { grid-template-columns: repeat(3, 1fr); }
         .vent-grid { grid-template-columns: 1fr 1fr; }
-        .action-row { grid-template-columns: repeat(5, 1fr); }
+        .action-row { grid-template-columns: 1fr; }
+        .export-actions { grid-template-columns: repeat(3, 1fr); }
         .shooter-actions { grid-template-columns: repeat(4, 1fr); }
         .fire-btn { grid-column: auto; }
       }
@@ -788,15 +876,15 @@
 
         <section class="theme-row" id="themeRow"></section>
 
-        <section class="section">
-          <h2>快速填入（一鍵發瘋）</h2>
+        <details class="section section-collapsible">
+          <summary>快速填入（一鍵發瘋）</summary>
           <div class="quick-fill" id="quickFill"></div>
-        </section>
+        </details>
 
-        <section class="section">
-          <h2>主日記模板（只填主日記）</h2>
+        <details class="section section-collapsible">
+          <summary>主日記模板（只填主日記）</summary>
           <div class="template-fill" id="templateFill"></div>
-        </section>
+        </details>
 
         <section class="section">
           <h2>排位降溫日記本體</h2>
@@ -860,12 +948,15 @@
           <h2>主要操作</h2>
           <div class="action-row">
             <button id="saveRecordBtn" class="action-btn primary" type="button">存成今天紀錄</button>
-            <button id="copyExportBtn" class="action-btn" type="button">匯出文字（複製）</button>
-            <button id="downloadExportBtn" class="action-btn" type="button">匯出文字（下載）</button>
-            <button id="shareShotBtn" class="action-btn" type="button">截圖分享</button>
-            <button id="openShooterBtn" class="action-btn" type="button">進入雷包射擊場</button>
-            <button id="openDressupBtn" class="action-btn" type="button">🎀 打開換裝艾瑪</button>
           </div>
+          <details class="export-details">
+            <summary>📤 匯出與分享</summary>
+            <div class="export-actions">
+              <button id="copyExportBtn" class="action-btn" type="button">匯出文字（複製）</button>
+              <button id="downloadExportBtn" class="action-btn" type="button">匯出文字（下載）</button>
+              <button id="shareShotBtn" class="action-btn" type="button">截圖分享</button>
+            </div>
+          </details>
         </section>
 
         <button class="clear-btn" id="clearTodayBtn" type="button">清空今天草稿</button>
@@ -981,6 +1072,18 @@
         </div>
       </section>
     </div>
+
+    <nav class="tab-bar" id="tabBar" aria-label="主要功能切換">
+      <button type="button" class="tab-btn active" data-view="diary">
+        <span class="tab-icon">📔</span><span class="tab-label">日記</span>
+      </button>
+      <button type="button" class="tab-btn" data-view="shooter">
+        <span class="tab-icon">🎯</span><span class="tab-label">射擊場</span>
+      </button>
+      <button type="button" class="tab-btn" data-view="dressup">
+        <span class="tab-icon">🎀</span><span class="tab-label">換裝</span>
+      </button>
+    </nav>
 
     <div id="toast" class="toast">已存成今天紀錄</div>
     <div id="diaryCompleteCelebration" class="diary-complete-celebration" aria-hidden="true">
@@ -1212,8 +1315,6 @@
       const manualCopyTextEl = document.getElementById("manualCopyText");
       const manualSelectBtnEl = document.getElementById("manualSelectBtn");
       const manualCloseBtnEl = document.getElementById("manualCloseBtn");
-      const openShooterBtnEl = document.getElementById("openShooterBtn");
-      const openDressupBtnEl = document.getElementById("openDressupBtn");
       const shooterViewEl = document.getElementById("shooterView");
       const backDiaryBtnEl = document.getElementById("backDiaryBtn");
       const dressupViewEl = document.getElementById("dressupView");
@@ -2431,11 +2532,29 @@
         shooterAutoInterval = null;
       }
 
-      function showMainDiaryView() {
-        diaryCardEl.classList.remove("hidden");
-        document.querySelector(".history-wrap").classList.remove("hidden");
-        shooterViewEl.classList.add("hidden");
-        dressupViewEl.classList.add("hidden");
+      const tabBarEl = document.getElementById("tabBar");
+      const historyWrapEl = document.querySelector(".history-wrap");
+
+      // 三大區塊（日記 / 射擊場 / 換裝）統一切換入口
+      function switchView(view) {
+        const isDiary = view === "diary";
+        const isShooter = view === "shooter";
+        const isDressup = view === "dressup";
+        diaryCardEl.classList.toggle("hidden", !isDiary);
+        historyWrapEl.classList.toggle("hidden", !isDiary);
+        shooterViewEl.classList.toggle("hidden", !isShooter);
+        dressupViewEl.classList.toggle("hidden", !isDressup);
+        if (tabBarEl) {
+          tabBarEl.querySelectorAll(".tab-btn").forEach((btn) => {
+            btn.classList.toggle("active", btn.dataset.view === view);
+          });
+        }
+        if (isShooter) {
+          renderShooterGame();
+        } else {
+          stopAutoFire();
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
       function bindDressupEvents() {
@@ -2468,14 +2587,7 @@
           }, 1200);
         }
 
-        openDressupBtnEl.addEventListener("click", () => {
-          diaryCardEl.classList.add("hidden");
-          document.querySelector(".history-wrap").classList.add("hidden");
-          shooterViewEl.classList.add("hidden");
-          dressupViewEl.classList.remove("hidden");
-        });
-
-        backFromDressupBtnEl.addEventListener("click", showMainDiaryView);
+        backFromDressupBtnEl.addEventListener("click", () => switchView("diary"));
 
         wearGreenBtnEl.addEventListener("click", () => {
           dollOutfitImageEl.src = "outfit_green_adventurer.png";
@@ -2531,18 +2643,7 @@
       }
 
       function bindShooterEvents() {
-        openShooterBtnEl.addEventListener("click", () => {
-          diaryCardEl.classList.add("hidden");
-          document.querySelector(".history-wrap").classList.add("hidden");
-          dressupViewEl.classList.add("hidden");
-          shooterViewEl.classList.remove("hidden");
-          renderShooterGame();
-        });
-
-        backDiaryBtnEl.addEventListener("click", () => {
-          showMainDiaryView();
-          stopAutoFire();
-        });
+        backDiaryBtnEl.addEventListener("click", () => switchView("diary"));
 
         prevTargetBtnEl.addEventListener("click", () => switchTarget(shooterState.currentTargetIndex - 1));
         nextTargetBtnEl.addEventListener("click", () => switchTarget(shooterState.currentTargetIndex + 1));
@@ -2756,6 +2857,13 @@
         writeJSON(STORAGE_KEYS.historyRecords, historyRecords);
         renderHistory();
         showToast("全部歷史紀錄已清空");
+      });
+
+      // 底部分頁列：統一切換日記 / 射擊場 / 換裝
+      tabBarEl.addEventListener("click", (event) => {
+        const btn = event.target.closest(".tab-btn");
+        if (!btn) return;
+        switchView(btn.dataset.view);
       });
 
       // 初始渲染
